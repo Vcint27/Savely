@@ -594,7 +594,7 @@ input::placeholder, textarea::placeholder { color: #9aa4b5; }
 <button type="button" class="financial-tab" data-settings-tab="account">Account</button>
 </div><div class="section-grid"><div class="panel" id="settingsDateTimePanel" data-settings-panel="datetime"><div class="panel-head"><div><h2>Live date &amp; time</h2><div class="panel-sub">Current local time in the Philippines, updated every second.</div></div><button class="btn btn-secondary btn-sm" type="button" onclick="openDateTimeSettings()">✎ Edit</button><span class="pill">LIVE</span></div><div id="settingsLiveDateTime" aria-live="off" style="padding:18px 0 8px"><div style="font-size:30px;font-weight:800;font-variant-numeric:tabular-nums">Loading time…</div><div class="muted">Loading date…</div></div><div class="panel-sub" id="dateTimeZoneLabel">Timezone: Asia/Manila (UTC+8)</div></div><div class="panel" id="settingsBackupPanel" data-settings-panel="backup"><div class="panel-head"><div><h2>Data backup</h2><div class="panel-sub">Save a copy of your records or restore a backup.</div></div></div><p class="muted">This standalone HTML version stores data in this browser using local storage. Export a backup regularly, especially before clearing browser data.</p><div class="form-actions" style="justify-content:flex-start"><button class="btn btn-primary" onclick="backupJSON()">↓ Download backup</button><label class="btn btn-light">↑ Restore backup<input type="file" accept=".json,application/json" onchange="restoreJSON(event)" hidden></label></div></div><div class="panel" id="versionHistoryPanel" data-settings-panel="version"><div class="panel-head"><div><h2>Version history</h2><div class="panel-sub">Current version: <strong>v2.8.12</strong></div></div><span class="pill">CHANGELOG</span></div>
       <div class="version-history-scroll" style="display:grid;gap:14px;max-height:360px;overflow-y:auto;overflow-x:hidden;padding:4px 12px 8px 2px;scrollbar-gutter:stable"> 
-<div style="border-left:3px solid var(--green);padding:2px 0 2px 14px"><div style="font-weight:800">v2.8.14 <span class="pill" style="margin-left:6px">Current</span></div><div class="panel-sub">Restored live daily-interest panel and one bank-graph point per day</div><ul style="margin:8px 0 0;padding-left:18px;color:var(--muted)"><li>Removed the header logout button; logout is available only in Settings → Account &amp; session.</li><li>Restored a live estimated daily-interest panel in MariBank item history that refreshes every minute.</li><li>Keeps minute-by-minute estimates out of saved graph history; MariBank graph shows at most one balance point per day.</li></ul><div style="font-weight:800;margin-top:12px">v2.8.10</div><div class="panel-sub">Reliable in-page logout</div><ul style="margin:8px 0 0;padding-left:18px;color:var(--muted)"><li>Logout immediately returns to the Savely welcome/login screen without navigating away.</li><li>Clears the saved local session and attempts to sign out the Supabase session.</li><li>Shows a confirmation message after logout.</li></ul></div><div style="border-left:3px solid var(--line);padding:2px 0 2px 14px"><div style="font-weight:800">v2.8.9</div><div class="panel-sub">Google sign-in option and Settings version history</div><ul style="margin:8px 0 0;padding-left:18px;color:var(--muted)"><li>Added a Continue with Google button to the login screen.</li><li>Restored Version History as a horizontal Settings navigation tab.</li></ul></div><div style="border-left:3px solid var(--line);padding:2px 0 2px 14px"><div style="font-weight:800">v2.4.8</div><div class="panel-sub">Financial trend and dashboard updates</div><ul style="margin:8px 0 0;padding-left:18px;color:var(--muted)"><li>Added date and time labels along the Overall Financial Trend graph so balance changes can be matched to timestamps.</li><li>Added date and time labels to the Financial List savings trend graph.</li><li>Kept the graphs showing all recorded history without period filters.</li>
+<div style="border-left:3px solid var(--green);padding:2px 0 2px 14px"><div style="font-weight:800">v2.8.15 <span class="pill" style="margin-left:6px">Current</span></div><div class="panel-sub">Restored live daily-interest panel and one bank-graph point per day</div><ul style="margin:8px 0 0;padding-left:18px;color:var(--muted)"><li>Removed the header logout button; logout is available only in Settings → Account &amp; session.</li><li>Restored a live estimated daily-interest panel in MariBank item history that refreshes every minute.</li><li>Keeps minute-by-minute estimates out of saved graph history; MariBank graph shows at most one balance point per day.</li></ul><div style="font-weight:800;margin-top:12px">v2.8.10</div><div class="panel-sub">Reliable in-page logout</div><ul style="margin:8px 0 0;padding-left:18px;color:var(--muted)"><li>Logout immediately returns to the Savely welcome/login screen without navigating away.</li><li>Clears the saved local session and attempts to sign out the Supabase session.</li><li>Shows a confirmation message after logout.</li></ul></div><div style="border-left:3px solid var(--line);padding:2px 0 2px 14px"><div style="font-weight:800">v2.8.9</div><div class="panel-sub">Google sign-in option and Settings version history</div><ul style="margin:8px 0 0;padding-left:18px;color:var(--muted)"><li>Added a Continue with Google button to the login screen.</li><li>Restored Version History as a horizontal Settings navigation tab.</li></ul></div><div style="border-left:3px solid var(--line);padding:2px 0 2px 14px"><div style="font-weight:800">v2.4.8</div><div class="panel-sub">Financial trend and dashboard updates</div><ul style="margin:8px 0 0;padding-left:18px;color:var(--muted)"><li>Added date and time labels along the Overall Financial Trend graph so balance changes can be matched to timestamps.</li><li>Added date and time labels to the Financial List savings trend graph.</li><li>Kept the graphs showing all recorded history without period filters.</li>
             <li>Hide Add Savings on Overview and move graph period filters above the Overall Financial Trend heading.</li>
             <li>Changed the first card to Savings + Salary / Income total only.</li>
             <li>Added numeric-only increase/decrease amounts to Overview cards and Overall Total.</li>
@@ -646,49 +646,43 @@ function ensureInterestTracking(item, now){
  }
 }
 function accrueRealtimeInterest(){
- const now=getDisplayedDateTime().getTime(), dayMs=86400000, annualNetRate=0.0325*0.8;
+ // Live interest is a display-only estimate. Do not mutate the bank balance every minute.
+ // Apply one estimated net daily-interest credit only when the local calendar day changes.
+ const now=getDisplayedDateTime().getTime(), annualNetRate=0.0325*0.8;
  let changed=false;
  for(const item of (data.savingsList||[])){
   if(!isRealtimeDailyInterestItem(item))continue;
   ensureInterestTracking(item,now);
   const t=item.interestTracking;
-  const last=Number(t.lastTickAt)||now;
-  if(now<last){t.lastTickAt=now;changed=true;continue;}
-  const elapsed=Math.max(0,Math.min(now-last,7*dayMs));
-  if(elapsed>0){
-   const oldBalance=Math.max(0,Number(item.amount)||0);
-   // Smooth estimate between daily crediting events; based on 3.25% p.a. less 20% withholding tax.
-   const newBalance=oldBalance*(1+annualNetRate*elapsed/dayMs/365);
-   item.amount=newBalance;
-   t.lastTickAt=now;
-   // Do not write minute-by-minute interest estimates to graphHistory.
-   // The live estimate is rendered only in the item History panel; the bank graph
-   // records one endpoint per local calendar day (added at the day rollover below).
-   const hist=item.graphHistory;
-   for(let i=hist.length-1;i>=0;i--){
-    if(hist[i]&&hist[i].liveMinute){hist.splice(i,1);}
-   }
-   changed=true;
-  }
   const today=interestLocalDate(now);
+  // Remove legacy minute samples from the graph; the graph should only have one point per day.
+  if(Array.isArray(item.graphHistory)){
+   const seen=new Map();
+   for(const point of item.graphHistory){
+    if(!point)continue;
+    const day=interestLocalDate(Number(point.at)||now);
+    const old=seen.get(day);
+    if(!old || (Number(point.at)||0)>(Number(old.at)||0))seen.set(day,point);
+   }
+   const cleaned=[...seen.values()].sort((a,b)=>(Number(a.at)||0)-(Number(b.at)||0));
+   if(cleaned.length!==item.graphHistory.length || cleaned.some((point,i)=>point!==item.graphHistory[i])){item.graphHistory=cleaned;changed=true;}
+  }
   if(t.lastHistoryDate!==today){
    const previousDate=t.lastHistoryDate||today;
-   const oldDayBalance=Math.max(0,Number(t.dayStartBalance)||Number(item.amount)||0);
-   const newDayBalance=Math.max(0,Number(item.amount)||0);
-   const earned=Math.max(0,newDayBalance-oldDayBalance);
-   if(earned>0){
-    item.changeHistory.push({
-     at:now,oldName:item.name,newName:item.name,
-     oldAmount:oldDayBalance,newAmount:newDayBalance,
-     type:'interest',label:'Estimated daily interest',
-     interestEarned:earned,interestDate:previousDate
-    });
-   }
-   const dailyPoint=item.graphHistory.find(point=>interestLocalDate(Number(point.at)||0)===today);
-   if(dailyPoint){dailyPoint.at=now;dailyPoint.amount=newDayBalance;delete dailyPoint.liveMinute;}
-   else item.graphHistory.push({at:now,amount:newDayBalance,dailyInterestDate:previousDate});
-   t.dayStartBalance=newDayBalance;
+   const oldBalance=Math.max(0,Number(t.dayStartBalance)||Number(item.amount)||0);
+   // Estimate one full day's net interest from the balance at the start of that day.
+   const dailyInterest=oldBalance*annualNetRate/365;
+   const newBalance=oldBalance+dailyInterest;
+   item.amount=newBalance;
+   if(!Array.isArray(item.changeHistory))item.changeHistory=[];
+   item.changeHistory.push({at:now,oldName:item.name,newName:item.name,oldAmount:oldBalance,newAmount:newBalance,type:'interest',label:'Estimated daily interest',interestEarned:dailyInterest,interestDate:previousDate});
+   if(!Array.isArray(item.graphHistory))item.graphHistory=[];
+   const existing=item.graphHistory.find(point=>interestLocalDate(Number(point.at)||now)===today);
+   if(existing){existing.at=now;existing.amount=newBalance;delete existing.liveMinute;}
+   else item.graphHistory.push({at:now,amount:newBalance,dailyInterestDate:previousDate});
+   t.dayStartBalance=newBalance;
    t.lastHistoryDate=today;
+   t.lastTickAt=now;
    changed=true;
   }
  }
@@ -1554,10 +1548,11 @@ function openSavingsHistory(id){
  document.getElementById('savingsHistoryTitle').textContent=(item.name||'Savings')+' · History';
  const changes=Array.isArray(item.changeHistory)?item.changeHistory:[];
  const graph=Array.isArray(item.graphHistory)?item.graphHistory:[];
- // Build entries from both logs. Older app versions may have graphHistory entries
- // but only one changeHistory entry, so never let one log hide the other.
- let rows=changes.map(h=>({at:Number(h.at)||0,oldAmount:Number(h.oldAmount)||0,newAmount:Number(h.newAmount)||0,oldName:h.oldName??item.name,newName:h.newName??item.name,type:h.type||'edit',label:h.label||''})).filter(h=>h.type==='edit'||Math.abs(h.newAmount-h.oldAmount)>=0.005);
- if(graph.length>1){
+ const isDailyInterestBank=isRealtimeDailyInterestItem(item);
+ // Build entries from actual edits and daily interest records. For MariBank, graph samples
+ // are not bank-history events: never turn those samples into minute-by-minute history cards.
+ let rows=changes.map(h=>({at:Number(h.at)||0,oldAmount:Number(h.oldAmount)||0,newAmount:Number(h.newAmount)||0,oldName:h.oldName??item.name,newName:h.newName??item.name,type:h.type||'edit',label:h.label||''})).filter(h=>isDailyInterestBank ? (h.type==='edit'||h.type==='interest') : (h.type==='edit'||Math.abs(h.newAmount-h.oldAmount)>=0.005));
+ if(!isDailyInterestBank && graph.length>1){
   for(let i=1;i<graph.length;i++){
    const g={at:Number(graph[i].at)||0,oldAmount:Number(graph[i-1].amount)||0,newAmount:Number(graph[i].amount)||0,oldName:item.name,newName:item.name,type:'balance',label:''};
    const delta=g.newAmount-g.oldAmount;
@@ -1575,7 +1570,6 @@ function openSavingsHistory(id){
  }
  // If legacy records are missing timestamps, keep every entry rather than collapsing them.
  const content=document.getElementById('savingsHistoryContent');
- const isDailyInterestBank=/mari\s?bank/i.test(String(item.name||''));
  const liveBalance=Math.max(0,Number(item.amount)||0);
  const liveDailyNet=liveBalance*0.0325*0.8/365;
  const livePanel=isDailyInterestBank?`<div id="mariBankLiveInterestPanel" style="border:1px solid #b8ead4;background:#effbf5;border-radius:14px;padding:14px 16px;margin-bottom:12px"><div style="display:flex;align-items:center;justify-content:space-between;gap:12px"><strong style="color:#07845e">LIVE · Estimated daily interest</strong><span style="font-size:11px;font-weight:800;color:#07845e">UPDATES EVERY MINUTE</span></div><div id="mariBankLiveInterestAmount" style="font-size:26px;font-weight:850;color:#07845e;margin:8px 0 3px">+${peso(liveDailyNet)}</div><div class="panel-sub">Estimated net interest for 24 hours at the configured 3.25% p.a. rate, after 20% withholding tax.</div><div class="panel-sub" style="margin-top:5px">Current estimated balance: <strong id="mariBankLiveBalance">${peso(liveBalance)}</strong></div></div>`:'';
