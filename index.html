@@ -961,7 +961,7 @@ function renderSavingsTrend(){
  if(activeFinancialCategory!=='Savings')return;
  const bankColor=name=>{
   const key=String(name||'').trim().toLowerCase();
-  const known={'bdo':'#0757a6','bpi':'#b21f2d','metrobank':'#0067a5','unionbank':'#e1262f','rcbc':'#7b2b83','pnb':'#16478e','landbank':'#16834a','security bank':'#c21f32','china bank':'#b8202e','eastwest bank':'#007b83','psbank':'#0097d7','aub':'#17468b','maya':'#00a878','gotyme bank':'#00a6a6','seabank':'#0b65c2','seabank (legacy)':'#0b65c2','maribank':'#168a68','cimb bank':'#e53935','tonik bank':'#6f42c1','uno digital bank':'#ec407a','ownbank':'#2e7d32','netbank':'#2455a4','diskartech':'#00a4a6','komo':'#5b8e3e','other':'#64748b'};
+  const known={'bdo':'#0757a6','bpi':'#b21f2d','metrobank':'#0067a5','unionbank':'#e1262f','rcbc':'#7b2b83','pnb':'#16478e','landbank':'#16834a','security bank':'#c21f32','china bank':'#b8202e','eastwest bank':'#007b83','psbank':'#0097d7','aub':'#17468b','maya':'#00a878','gotyme bank':'#00a6a6','seabank':'#0b65c2','seabank (legacy)':'#0b65c2','maribank':'#f28c28','cimb bank':'#e53935','tonik bank':'#6f42c1','uno digital bank':'#ec407a','ownbank':'#2e7d32','netbank':'#2455a4','diskartech':'#00a4a6','komo':'#5b8e3e','other':'#64748b'};
   return known[key]||'#64748b';
  };
  const groups=new Map();
@@ -1262,7 +1262,7 @@ const bankOptions=[
  {name:'Maya',short:'M',color:'#00a878',group:'Digital banks & wallets'},
  {name:'GCash',short:'G',color:'#007dff',group:'Digital banks & wallets'},
  {name:'GoTyme Bank',short:'GT',color:'#e45b3c',group:'Digital banks & wallets'},
- {name:'MariBank',short:'MB',color:'#0879e8',group:'Digital banks & wallets'},
+ {name:'MariBank',short:'MB',color:'#f28c28',group:'Digital banks & wallets'},
  {name:'CIMB Bank',short:'CIMB',color:'#7b2c91',group:'Digital banks & wallets'},
  {name:'Tonik Bank',short:'T',color:'#e65c9c',group:'Digital banks & wallets'},
  {name:'UNO Digital Bank',short:'UNO',color:'#263b8f',group:'Digital banks & wallets'},
@@ -1272,10 +1272,8 @@ const bankOptions=[
  {name:'DiskarTech',short:'DT',color:'#ef7622',group:'Digital banks & wallets'},
  {name:'Komo',short:'K',color:'#1969aa',group:'Digital banks & wallets'},
  {name:'Cash',short:'₱',color:'#168765',group:'Other'},
- {name:'₱1 Coins',short:'₱1',color:'#a7b0bd',group:'Other'},
- {name:'₱5 Coins',short:'₱5',color:'#8c9aa9',group:'Other'},
- {name:'₱10 Coins',short:'₱10',color:'#b7a36a',group:'Other'},
- {name:'₱20 Coins',short:'₱20',color:'#c5a35a',group:'Other'},
+ {name:'₱1 Coin',short:'₱1',color:'#a7b0bd',group:'Other'},
+ {name:'Coins (₱5, ₱10, ₱20)',short:'₱5/10/20',color:'#b7a36a',group:'Other'},
  {name:'Other',short:'+',color:'#758097',group:'Other'}
 ];
 let activeBankPickerFilter='Traditional banks';
@@ -1388,7 +1386,7 @@ const interestBankRates = {
   {name:'Maya Savings',short:'M',rate:3,color:'#00a878',source:'https://www.mayabank.ph/highinterestsavings/',note:'3% base p.a.; bonus rates up to 15% require qualifying activity and apply only up to ₱100,000'},
   {name:'GCash GSave · CIMB',short:'CIMB',rate:2.3,color:'#792b91',source:'https://www.cimbbank.com.ph/en/help-and-support/faqs/savings-account/gsave-account/what-is-the-interest-rate-of-the-gsave-account.html',note:'2.30% base p.a.; promotional boosts may be conditional and time-limited'},
   {name:'GoTyme Bank',short:'GT',rate:3,color:'#e45b3c',source:'https://www.gotyme.com.ph/',note:'Go Save / GoalSave standard rate snapshot: 3% p.a.'},
-  {name:'MariBank (formerly SeaBank)',short:'MB',rate:3.25,color:'#0074c8',source:'https://www.maribank.ph/fees-rates',note:'3.25% p.a. on balances up to ₱1M; 3.75% applies to the portion above ₱1M'},
+  {name:'MariBank (formerly SeaBank)',short:'MB',rate:3.25,color:'#f28c28',source:'https://www.maribank.ph/fees-rates',note:'3.25% p.a. on balances up to ₱1M; 3.75% applies to the portion above ₱1M'},
   {name:'Tonik Account',short:'T',rate:1,color:'#e85a9b',source:'https://tonikbank.com/deposit-interest-rates',note:'Regular Tonik Account: 1% p.a.; Stash products have separate rates'},
   {name:'Tonik Solo Stash',short:'TS',rate:4,color:'#e85a9b',source:'https://tonikbank.com/deposit-interest-rates',note:'Solo Stash: 4% p.a.; Group Stash may earn 4.5% with qualifying participants'},
   {name:'UNO Digital Bank (#UNOready)',short:'UNO',rate:3.5,color:'#273f8f',source:'https://www.uno.bank/savings-account/',note:'3% below ₱5,000; 3.5% from ₱5,000 to below ₱5M; 1% from ₱5M. Conditional promos excluded'},
