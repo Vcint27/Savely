@@ -458,7 +458,7 @@ input::placeholder, textarea::placeholder { color: #9aa4b5; }
         <div class="auth-perk"><span>✓</span> Set meaningful savings goals</div>
         <div class="auth-perk"><span>✓</span> Understand your money at a glance</div>
         <div class="auth-perk"><span>✓</span> Keep your account simple and secure</div>
-        <div class="auth-perk"><span>✓</span> Your financial data stays in this browser</div>
+        <div class="auth-perk"><span>✓</span> Sync your financial data across your devices</div>
       </div>
     </div>
     <div class="auth-story-foot">Small steps today. More possibilities tomorrow.</div>
@@ -466,7 +466,7 @@ input::placeholder, textarea::placeholder { color: #9aa4b5; }
   <section class="auth-panel-wrap">
     <div class="auth-panel">
       <h2 id="savely-auth-title">Welcome back</h2>
-      <p class="auth-subtitle" id="savely-auth-subtitle">Testing mode: click Log in to enter the app.</p>
+      <p class="auth-subtitle" id="savely-auth-subtitle">Sign in to sync your Savely data across devices.</p>
       <div class="auth-message" id="savely-auth-message" role="status" aria-live="polite"></div>
       <div class="auth-tabs" role="tablist" aria-label="Account access">
         <button type="button" id="savely-login-tab" class="active" role="tab" aria-selected="true">Log in</button>
@@ -490,14 +490,14 @@ input::placeholder, textarea::placeholder { color: #9aa4b5; }
       <div class="auth-divider" aria-hidden="true"><span>or continue with</span></div>
       <button type="button" class="auth-google-btn" id="savely-google-signin"><svg aria-hidden="true" viewBox="0 0 48 48" width="19" height="19"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.73 7.18l7.65 5.94c4.47-4.13 7.12-10.2 7.12-17.59z"/><path fill="#FBBC05" d="M10.53 28.59A14.4 14.4 0 0 1 9.75 24c0-1.59.27-3.13.76-4.59l-7.98-6.19A23.9 23.9 0 0 0 0 24c0 3.87.93 7.52 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.9-5.81l-7.65-5.94c-2.12 1.42-4.83 2.25-8.25 2.25-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 43.62 14.62 48 24 48z"/></svg><span>Continue with Google</span></button>
       <p class="auth-google-note" id="savely-google-note">Google sign-in requires Google provider setup in Supabase.</p>
-      <p class="auth-privacy">Testing mode: no account details are required. Your session is saved only in this browser; no account is created and no data is uploaded.</p>
+      <p class="auth-privacy">Your financial records are stored in your private Savely account when cloud sync is enabled.</p>
     </div>
   </section>
 </div>
 
 <div class="app">
 <aside class="sidebar">
-  <div class="brand"><div class="brand-mark">₱</div><div><span>savely</span><div style="font-size:10px;font-weight:750;color:var(--muted);letter-spacing:.6px;margin-top:2px">VERSION 2.8.14</div></div></div>
+  <div class="brand"><div class="brand-mark">₱</div><div><span>savely</span><div style="font-size:10px;font-weight:750;color:var(--muted);letter-spacing:.6px;margin-top:2px">VERSION 2.8.15</div></div></div>
   <div><div class="nav-label">WORKSPACE</div><nav class="nav" id="nav">
     <button class="active" data-page="dashboard"><span class="ico">▦</span>Overview</button>
     <button data-page="financial-list"><span class="ico">☷</span>Financial List</button>
@@ -596,7 +596,7 @@ input::placeholder, textarea::placeholder { color: #9aa4b5; }
 <button type="button" class="financial-tab" data-settings-tab="security">Local Security</button>
 <button type="button" class="financial-tab" data-settings-tab="account">Account</button>
 <button type="button" class="financial-tab" data-settings-tab="logout">Log out</button>
-</div><div class="section-grid"><div class="panel" id="settingsDateTimePanel" data-settings-panel="datetime"><div class="panel-head"><div><h2>Live date &amp; time</h2><div class="panel-sub">Current local time in the Philippines, updated every second.</div></div><button class="btn btn-secondary btn-sm" type="button" onclick="openDateTimeSettings()">✎ Edit</button><span class="pill">LIVE</span></div><div id="settingsLiveDateTime" aria-live="off" style="padding:18px 0 8px"><div style="font-size:30px;font-weight:800;font-variant-numeric:tabular-nums">Loading time…</div><div class="muted">Loading date…</div></div><div class="panel-sub" id="dateTimeZoneLabel">Timezone: Asia/Manila (UTC+8)</div></div><div class="panel" id="settingsBackupPanel" data-settings-panel="backup"><div class="panel-head"><div><h2>Data backup</h2><div class="panel-sub">Save a copy of your records or restore a backup.</div></div></div><p class="muted">This standalone HTML version stores data in this browser using local storage. Export a backup regularly, especially before clearing browser data.</p><div class="form-actions" style="justify-content:flex-start"><button class="btn btn-primary" onclick="backupJSON()">↓ Download backup</button><label class="btn btn-light">↑ Restore backup<input type="file" accept=".json,application/json" onchange="restoreJSON(event)" hidden></label></div></div><div class="panel" id="settingsRecurringPanel" data-settings-panel="recurring"><div class="panel-head"><div><h2>Recurring deposits</h2><div class="panel-sub">Track planned deposits. This file does not execute bank transfers.</div></div><button class="btn btn-primary" onclick="openModal('recurring')">＋ Add schedule</button></div><div id="recurringList"></div></div><div class="panel" id="settingsSecurityPanel" data-settings-panel="security"><div class="panel-head"><div><h2>Local security</h2></div></div><p class="muted">This HTML-only edition has no server login or encrypted multi-user database. Anyone with access to this browser profile may be able to access its saved data.</p><button class="btn btn-danger" onclick="resetData()">Reset all local data</button></div><div class="panel" id="settingsAccountPanel" data-settings-panel="account"><div class="panel-head"><div><h2>Account &amp; session</h2><div class="panel-sub">Manage your current Savely session.</div></div><span class="pill">ACCOUNT</span></div><p class="muted">Log out to return to the Savely welcome screen. Your locally saved savings data will remain in this browser unless you reset or clear it.</p><div class="form-actions" style="justify-content:flex-start"><button class="btn btn-danger" type="button" id="settingsLogoutButton">↪ Log out</button></div></div><div class="panel" id="settingsLogoutPanel" data-settings-panel="logout"><div class="form-actions" style="justify-content:flex-start;margin:0"><button class="btn btn-danger" type="button" id="settingsLogoutMenuButton">↪ Log out</button></div></div></div></div></section>
+</div><div class="section-grid"><div class="panel" id="settingsDateTimePanel" data-settings-panel="datetime"><div class="panel-head"><div><h2>Live date &amp; time</h2><div class="panel-sub">Current local time in the Philippines, updated every second.</div></div><button class="btn btn-secondary btn-sm" type="button" onclick="openDateTimeSettings()">✎ Edit</button><span class="pill">LIVE</span></div><div id="settingsLiveDateTime" aria-live="off" style="padding:18px 0 8px"><div style="font-size:30px;font-weight:800;font-variant-numeric:tabular-nums">Loading time…</div><div class="muted">Loading date…</div></div><div class="panel-sub" id="dateTimeZoneLabel">Timezone: Asia/Manila (UTC+8)</div></div><div class="panel" id="settingsBackupPanel" data-settings-panel="backup"><div class="panel-head"><div><h2>Data backup</h2><div class="panel-sub">Save a copy of your records or restore a backup.</div></div></div><p class="muted">Your data is synced to your Savely cloud account and cached in this browser. Export a backup regularly.</p><div class="form-actions" style="justify-content:flex-start"><button class="btn btn-primary" onclick="backupJSON()">↓ Download backup</button><label class="btn btn-light">↑ Restore backup<input type="file" accept=".json,application/json" onchange="restoreJSON(event)" hidden></label></div></div><div class="panel" id="settingsRecurringPanel" data-settings-panel="recurring"><div class="panel-head"><div><h2>Recurring deposits</h2><div class="panel-sub">Track planned deposits. This file does not execute bank transfers.</div></div><button class="btn btn-primary" onclick="openModal('recurring')">＋ Add schedule</button></div><div id="recurringList"></div></div><div class="panel" id="settingsSecurityPanel" data-settings-panel="security"><div class="panel-head"><div><h2>Local security</h2></div></div><p class="muted">Your account uses Supabase Authentication and row-level access policies. Keep your password private and sign out on shared devices.</p><button class="btn btn-danger" onclick="resetData()">Reset all local data</button></div><div class="panel" id="settingsAccountPanel" data-settings-panel="account"><div class="panel-head"><div><h2>Account &amp; session</h2><div class="panel-sub">Manage your current Savely session.</div></div><span class="pill">ACCOUNT</span></div><p class="muted">Log out to return to the Savely welcome screen. Your cloud records remain linked to your account.</p><div class="form-actions" style="justify-content:flex-start"><button class="btn btn-danger" type="button" id="settingsLogoutButton">↪ Log out</button></div></div><div class="panel" id="settingsLogoutPanel" data-settings-panel="logout"><div class="form-actions" style="justify-content:flex-start;margin:0"><button class="btn btn-danger" type="button" id="settingsLogoutMenuButton">↪ Log out</button></div></div></div></div></section>
 </main>
 </div>
 <div class="modal-backdrop" id="modalBackdrop" onclick="if(event.target===this)closeModal()"><div class="modal"><h2 id="modalTitle">Add transaction</h2><p id="modalDesc">Record a money movement.</p><form id="modalForm"></form></div></div>
@@ -758,6 +758,7 @@ function saveDateTimeSettings(){
 }
 function updateLiveDateTime(){const now=getDisplayedDateTime();const date=new Intl.DateTimeFormat('en-PH',{timeZone:dateTimePrefs.timezone,weekday:'long',month:'long',day:'numeric',year:'numeric'}).format(now);const time=new Intl.DateTimeFormat('en-PH',{timeZone:dateTimePrefs.timezone,hour:'numeric',minute:'2-digit',second:'2-digit',hour12:dateTimePrefs.format!=='24'}).format(now);const el=document.getElementById('today');if(el){el.setAttribute('aria-label',`${date}, ${time} Philippine Time`);el.title='Live Philippine date and time';el.innerHTML=`<span style="display:block;font-weight:750;color:var(--text);font-variant-numeric:tabular-nums">${time}</span><span style="display:block;font-size:11px">${date} · PHT</span>`;}const settingsEl=document.getElementById('settingsLiveDateTime');if(settingsEl){const zoneLabel=document.getElementById('dateTimeZoneLabel');if(zoneLabel){const offset=new Intl.DateTimeFormat('en-US',{timeZone:dateTimePrefs.timezone,timeZoneName:'shortOffset'}).formatToParts(now).find(p=>p.type==='timeZoneName')?.value||'';zoneLabel.textContent=`Timezone: ${dateTimePrefs.timezone} (${offset})`;}settingsEl.innerHTML=`<div style="font-size:30px;font-weight:800;font-variant-numeric:tabular-nums;letter-spacing:-.5px">${time}</div><div style="font-size:15px;margin-top:5px">${date}</div>`;}}
 function render(){updateLiveDateTime();renderDashboard();renderTransactions();renderAccounts();renderGoals();renderBudget();renderReports();renderRecurring();renderSavingsList()}
+window.SavelyDataBridge={get:function(){return data},set:function(next){data=next;try{localStorage.setItem(STORE,JSON.stringify(data))}catch(e){}render()}};
 function renderDashboard(){const bal=totalBalance(),goal=data.goals[0];const month=todayISO().slice(0,7);const inc=data.transactions.filter(t=>(t.type==='deposit'||t.type==='interest')&&t.date.slice(0,7)===month).reduce((s,t)=>s+ +t.amount,0);const out=data.transactions.filter(t=>(t.type==='expense'||t.type==='withdrawal')&&t.date.slice(0,7)===month).reduce((s,t)=>s+ +t.amount,0);
 const financialItems=Array.isArray(data.savingsList)?data.savingsList:[];
 const financialSum=cat=>financialItems.filter(item=>(item.category||'Savings')===cat).reduce((sum,item)=>sum+Number(item.amount||0),0);
@@ -1851,6 +1852,86 @@ document.addEventListener('click',function(e){
 </div>
 
 
+<script id="savely-cloud-sync">
+(function(){
+ const URL='https://gqgwfjsoxvdqhvixpeyq.supabase.co';
+ const KEY='sb_publishable_FuNJsGStp6BNdI0QCpLwWg_zQ22VmgE';
+ const STORE='savely_html_v1';
+ let session=null,user=null,ready=false,pushTimer=null,pollTimer=null,lastRemoteStamp='';
+ const arrayKeys=['accounts','goals','transactions','budgets','recurring','savingsList'];
+ function localData(){try{return JSON.parse(localStorage.getItem(STORE)||'null')}catch(e){return null}}
+ function mergeData(local,remote){
+   if(!local)return remote||{}; if(!remote)return local;
+   const out={...remote,...local};
+   for(const k of arrayKeys){
+     const a=Array.isArray(remote[k])?remote[k]:[], b=Array.isArray(local[k])?local[k]:[];
+     const map=new Map();
+     for(const item of a) if(item&&item.id!=null) map.set(String(item.id),item);
+     for(const item of b) if(item&&item.id!=null){
+       const id=String(item.id),old=map.get(id);
+       if(!old){map.set(id,item);continue;}
+       const oldTime=Number(old.updatedAt||old.updated_at||old.modifiedAt||0),newTime=Number(item.updatedAt||item.updated_at||item.modifiedAt||0);
+       map.set(id,newTime>=oldTime?item:old);
+     }
+     out[k]=Array.from(map.values());
+   }
+   return out;
+ }
+ async function request(path,options={}){
+   const headers={'apikey':KEY,'Authorization':'Bearer '+(session?.access_token||KEY),'Content-Type':'application/json','Accept':'application/json'};
+   Object.assign(headers,options.headers||{});
+   const r=await fetch(URL+path,{...options,headers});
+   if(!r.ok){let msg='Cloud sync request failed ('+r.status+').';try{const j=await r.json();msg=j.message||j.details||j.hint||msg}catch(e){}throw new Error(msg)}
+   if(r.status===204)return null;
+   const text=await r.text();return text?JSON.parse(text):null;
+ }
+ async function pull(){
+   if(!session?.access_token||!user?.id)return;
+   const rows=await request('/rest/v1/savely_user_data?user_id=eq.'+encodeURIComponent(user.id)+'&select=user_id,data,updated_at',{method:'GET'});
+   return Array.isArray(rows)&&rows.length?rows[0]:null;
+ }
+ async function push(nextData){
+   if(!ready||!session?.access_token||!user?.id)return;
+   await request('/rest/v1/savely_user_data?on_conflict=user_id',{method:'POST',headers:{'Prefer':'resolution=merge-duplicates,return=representation'},body:JSON.stringify({user_id:user.id,data:nextData,updated_at:new Date().toISOString()})});
+ }
+ function queuePush(){if(!ready)return;clearTimeout(pushTimer);pushTimer=setTimeout(async()=>{try{await push(window.SavelyDataBridge?.get()||localData())}catch(e){console.warn('Savely cloud save failed:',e);showSyncStatus('Cloud sync failed. Check Supabase table/RLS settings.')}},700)}
+ function showSyncStatus(text){const el=document.getElementById('savely-auth-user-email');if(el)el.title=text;}
+ async function syncOnce(){
+   if(!ready)return;
+   try{
+     const remote=await pull();
+     if(remote&&remote.data){
+       const local=window.SavelyDataBridge?.get()||localData();
+       const merged=mergeData(local,remote.data);
+       window.SavelyDataBridge?.set(merged);
+       const stamp=remote.updated_at||'';
+       if(stamp!==lastRemoteStamp){lastRemoteStamp=stamp;await push(merged)}
+     }else{await push(window.SavelyDataBridge?.get()||localData())}
+   }catch(e){console.warn('Savely cloud sync error:',e);showSyncStatus('Cloud sync unavailable. Check database setup.');}
+ }
+ async function start(nextSession,nextUser){
+   if(!nextSession?.access_token||!nextUser?.id)return;
+   session=nextSession;user=nextUser;ready=false;
+   try{
+     const remote=await pull();
+     const local=window.SavelyDataBridge?.get()||localData();
+     const merged=mergeData(local,remote?.data||null);
+     window.SavelyDataBridge?.set(merged);
+     ready=true;
+     await push(merged);
+     if(pollTimer)clearInterval(pollTimer);
+     pollTimer=setInterval(syncOnce,12000);
+     window.addEventListener('focus',syncOnce);
+     showSyncStatus('Cloud sync active');
+   }catch(e){ready=false;console.error('Savely cloud sync could not start:',e);showSyncStatus('Cloud sync setup needed. Open setup instructions.');}
+ }
+ window.SavelyCloudSync={start,queuePush};
+ // Watch writes to the main local data key so existing app features sync without rewriting every form handler.
+ const originalSetItem=Storage.prototype.setItem;
+ Storage.prototype.setItem=function(key,value){const result=originalSetItem.call(this,key,value);if(key===STORE&&ready)queuePush();return result};
+})();
+</script>
+
 <script id="savely-auth">
 (function(){
   const URL='https://gqgwfjsoxvdqhvixpeyq.supabase.co';
@@ -1885,7 +1966,7 @@ document.addEventListener('click',function(e){
     loginTab.setAttribute('aria-selected',String(!signup));signupTab.setAttribute('aria-selected',String(signup));
     nameWrap.hidden=!signup;nameInput.required=signup;
     title.textContent=signup?'Create your account':'Welcome back';
-    subtitle.textContent=signup?'Testing mode: click Create account to enter the app.':'Testing mode: click Log in to enter the app.';
+    subtitle.textContent=signup?'Testing mode: click Create account to enter the app.':'Sign in to sync your Savely data across devices.';
     submit.textContent=signup?'Create account':'Log in to Savely';
     passwordInput.autocomplete=signup?'new-password':'current-password';
   }
@@ -1899,6 +1980,7 @@ document.addEventListener('click',function(e){
       avatar.textContent=String(fullName).trim().split(/\s+/).map(p=>p[0]).join('').slice(0,2).toUpperCase();
       avatar.title=fullName;
     }
+    if(session && !session.testingOnly && user && user.id && window.SavelyCloudSync){window.SavelyCloudSync.start(session,user).catch(e=>console.error(e));}
   }
   function showGate(){gate.style.display='grid';userChip.hidden=true}
   async function api(path,body,token){
@@ -1924,6 +2006,7 @@ document.addEventListener('click',function(e){
     }
     const saved=readSession();
     if(!saved){showGate();return}
+    session=saved;
     // Local testing account is only a UI preview; it is not an authenticated Supabase session.
     if(saved.testingOnly){showApp(saved.user||{});return}
     if(!saved.access_token){showGate();return}
@@ -1945,21 +2028,21 @@ document.addEventListener('click',function(e){
     googleNote.textContent='Redirecting to Google…';
     location.href=url;
   });
-  // TESTING MODE: no credentials are required. Clicking either action opens the app.
-  // This creates a local-only preview session and does not create/authenticate a Supabase account.
-  form.addEventListener('submit',e=>{
-    e.preventDefault();
-    const email=emailInput.value.trim();
-    const fullName=nameInput.value.trim();
-    const demoUser={
-      id:'demo-'+Date.now(),
-      email:email || '',
-      full_name:fullName || '',
-      user_metadata:{full_name:fullName || ''},
-      testingOnly:true
-    };
-    saveSession({testingOnly:true,user:demoUser});
-    showApp(demoUser);
+  form.addEventListener('submit',async e=>{
+    e.preventDefault();clearMessage();
+    const email=emailInput.value.trim();const password=passwordInput.value;const fullName=nameInput.value.trim();
+    if(!email||!password){showMessage('Enter your email and password.','error');return;}
+    if(password.length<6){showMessage('Password must be at least 6 characters.','error');return;}
+    submit.disabled=true;submit.textContent=mode==='signup'?'Creating account…':'Signing in…';
+    try{
+      let result;
+      if(mode==='signup'){
+        result=await api('/auth/v1/signup',{email,password,data:{full_name:fullName}});
+        if(!result.access_token){showMessage('Account created. Check your email to confirm it, then log in.','success');setMode('login');return;}
+      }else result=await api('/auth/v1/token?grant_type=password',{email,password});
+      saveSession(result);showApp(result.user||{});showMessage('Signed in successfully. Syncing your records…','success');
+    }catch(err){showMessage(err.message||'Authentication failed. Check your credentials and Supabase Auth settings.','error');}
+    finally{submit.disabled=false;submit.textContent=mode==='signup'?'Create account':'Log in to Savely';}
   });
   logout.addEventListener('click',async()=>{
     const saved=readSession();
