@@ -493,7 +493,7 @@ input::placeholder, textarea::placeholder { color: #9aa4b5; }
 
 <div class="app">
 <aside class="sidebar">
-  <div class="brand"><div class="brand-mark">₱</div><div><span>savely</span><div style="font-size:10px;font-weight:750;color:var(--muted);letter-spacing:.6px;margin-top:2px">VERSION 2.8.11</div></div></div>
+  <div class="brand"><div class="brand-mark">₱</div><div><span>savely</span><div style="font-size:10px;font-weight:750;color:var(--muted);letter-spacing:.6px;margin-top:2px">VERSION 2.8.10</div></div></div>
   <div><div class="nav-label">WORKSPACE</div><nav class="nav" id="nav">
     <button class="active" data-page="dashboard"><span class="ico">▦</span>Overview</button>
     <button data-page="financial-list"><span class="ico">☷</span>Financial List</button>
@@ -1616,33 +1616,8 @@ function openAllSavingsHistory(){
 }
 
 function closeSavingsHistory(){document.getElementById('savingsHistoryBackdrop').style.display='none'}
-function persistFinancialListChange(successMessage){
-  try{
-    // Persist the full updated app state before refreshing any calculated totals.
-    localStorage.setItem(STORE, JSON.stringify(data));
-  }catch(e){
-    toast('Could not save this change. Browser storage may be full or blocked.');
-    return false;
-  }
-  // Refresh the dashboard, goals, charts, and Financial List from the same state.
-  render();
-  if(typeof renderOverallTrend==='function') renderOverallTrend();
-  if(typeof renderSavingsTrend==='function') renderSavingsTrend();
-  if(successMessage) toast(successMessage);
-  return true;
-}
-function deleteSavingsItem(id){
-  const before=(data.savingsList||[]).length;
-  data.savingsList=(data.savingsList||[]).filter(item=>String(item.id)!==String(id));
-  if(data.savingsList.length===before){toast('Financial item not found. Refresh the page and try again.');return;}
-  persistFinancialListChange('Financial item removed.');
-}
-function clearSavingsList(){
-  if(!confirm('Clear every item from your financial list? This cannot be undone unless you have a backup.')) return;
-  const previous=data.savingsList;
-  data.savingsList=[];
-  if(!persistFinancialListChange('Financial list cleared.')) data.savingsList=previous;
-}
+function deleteSavingsItem(id){data.savingsList=data.savingsList.filter(item=>item.id!==id);try{localStorage.setItem(STORE,JSON.stringify(data))}catch(e){}renderSavingsList();toast('Financial item removed.')}
+function clearSavingsList(){if(confirm('Clear every item from your financial list?')){data.savingsList=[];try{localStorage.setItem(STORE,JSON.stringify(data))}catch(e){}renderSavingsList();toast('Financial list cleared.')}}
 
 function renderRecurring(){let el=document.getElementById('recurringList');if(!data.recurring.length){el.innerHTML='<div class="empty">No recurring deposit schedules yet.</div>';return}el.innerHTML=data.recurring.map(r=>`<div class="account"><div class="account-icon">↻</div><div class="account-info"><strong>${peso(r.amount)} · ${esc(r.frequency)}</strong><small>${esc(r.name)} · Next: ${fmtDate(r.next)}</small></div><button class="delete-btn" onclick="deleteRecurring('${r.id}')">Delete</button></div>`).join('')}
 function openFinancialList(){showPage('financial-list') }
@@ -1965,6 +1940,87 @@ document.addEventListener('click',function(e){
     },180);
   });
 })(); 
+</script>
+
+
+<script id="savely-cloud-sync">
+(function(){
+  // Cross-device financial sync requires the SQL table and RLS policies supplied with this file.
+  const URL='https://gqgwfjsoxvdqhvixpeyq.supabase.co';
+  const KEY='sb_publishable_FuNJsGStp6BNdI0QCpLwWg_zQ22VmgE';
+  const STORE='savely_html_v1';
+  const SESSION_KEY='savely_auth_session_v1';
+  const nativeSetItem=Storage.prototype.setItem;
+  let syncedUserId=null, syncing=false, cloudReady=false, pushTimer=null, lastToken=null;
+  let lastLocalSnapshot='';
+  function getSession(){try{return JSON.parse(localStorage.getItem(SESSION_KEY)||'null')}catch(_){return null}}
+  function showStatus(msg){try{if(typeof toast==='function')toast(msg)}catch(_){}}
+  async function request(path, options, token){
+    const response=await fetch(URL+path,{...options,headers:{apikey:KEY,Authorization:'Bearer '+token,'Content-Type':'application/json',...(options&&options.headers||{})}});
+    const body=await response.text();
+    let parsed=null;try{parsed=body?JSON.parse(body):null}catch(_){}
+    if(!response.ok){const err=new Error((parsed&&(parsed.message||parsed.error||parsed.details))||('Supabase request failed ('+response.status+')'));err.status=response.status;throw err}
+    return parsed;
+  }
+  function localData(){try{return JSON.parse(localStorage.getItem(STORE)||'null')}catch(_){return null}}
+  async function syncInitial(session){
+    if(syncing)return; syncing=true; cloudReady=false;
+    try{
+      const uid=session.user.id;
+      const rows=await request('/rest/v1/savely_user_data?user_id=eq.'+encodeURIComponent(uid)+'&select=user_id,data,updated_at',{method:'GET'},session.access_token);
+      if(Array.isArray(rows)&&rows.length&&rows[0].data&&typeof rows[0].data==='object'){
+        // Cloud copy is canonical once a record exists, so deletions remain deleted on every device.
+        data=rows[0].data;
+        if(!Array.isArray(data.savingsList))data.savingsList=[];
+        nativeSetItem.call(localStorage,STORE,JSON.stringify(data));
+        lastLocalSnapshot=JSON.stringify(data);
+        if(typeof render==='function')render();
+        showStatus('Savely synced with your account.');
+      }else{
+        const local=localData()||data;
+        await request('/rest/v1/savely_user_data',{method:'POST',headers:{Prefer:'resolution=merge-duplicates,return=minimal'},body:JSON.stringify({user_id:uid,data:local,updated_at:new Date().toISOString()})},session.access_token);
+        lastLocalSnapshot=JSON.stringify(local);
+        showStatus('This device’s Savely data was backed up to your account.');
+      }
+      syncedUserId=uid;lastToken=session.access_token;cloudReady=true;
+    }catch(err){
+      console.error('Savely cloud sync setup failed:',err);
+      showStatus(err.status===401?'Cloud sync needs you to sign in again.':'Cloud sync is not ready. Check the Supabase SQL setup and account sign-in.');
+    }finally{syncing=false;}
+  }
+  async function pushLatest(){
+    if(!cloudReady||!syncedUserId)return;
+    const session=getSession();
+    if(!session||!session.access_token||session.testingOnly||!session.user||session.user.id!==syncedUserId)return;
+    const snapshot=localStorage.getItem(STORE)||'{}';
+    if(snapshot===lastLocalSnapshot)return;
+    try{
+      const parsed=JSON.parse(snapshot);
+      await request('/rest/v1/savely_user_data?on_conflict=user_id',{method:'POST',headers:{Prefer:'resolution=merge-duplicates,return=minimal'},body:JSON.stringify({user_id:syncedUserId,data:parsed,updated_at:new Date().toISOString()})},session.access_token);
+      lastLocalSnapshot=snapshot;
+    }catch(err){console.error('Savely cloud save failed:',err);showStatus('Changes are saved on this device, but cloud sync failed.');}
+  }
+  // All app writes to its main local data store trigger a debounced cloud save.
+  Storage.prototype.setItem=function(key,value){
+    const result=nativeSetItem.call(this,key,value);
+    if(key===STORE&&cloudReady){clearTimeout(pushTimer);pushTimer=setTimeout(pushLatest,700);}
+    return result;
+  };
+  async function checkSession(){
+    const session=getSession();
+    if(!session||session.testingOnly||!session.access_token||!session.user||!session.user.id){
+      if(syncedUserId){syncedUserId=null;cloudReady=false;lastToken=null;}
+      return;
+    }
+    if(session.user.id!==syncedUserId || session.access_token!==lastToken){
+      // On first sign-in, upload this device only when no cloud row exists; otherwise pull the canonical cloud copy.
+      await syncInitial(session);
+    }
+  }
+  window.addEventListener('online',()=>{if(cloudReady)pushLatest();else checkSession()});
+  setInterval(checkSession,1200);
+  checkSession();
+})();
 </script>
 
 <script id="savely-anonymous-analytics">
