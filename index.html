@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Savely — Savings Manager | v2.8.13</title>
+<title>Savely — Savings Manager | v2.8.7</title>
 <style>
 :root{--bg:#f5f7fb;--panel:#fff;--text:#172033;--muted:#758097;--line:#e8edf4;--green:#168765;--green2:#e6f7ef;--blue:#4569e8;--blue2:#edf1ff;--orange:#df8a2f;--red:#d94d5c;--shadow:0 10px 35px #2636550a}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);font:14px/1.5 Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;color:var(--text)}button,input,select,textarea{font:inherit}button{cursor:pointer}.app{display:grid;grid-template-columns:245px minmax(0,1fr);min-height:100vh}.sidebar{background:#fff;border-right:1px solid var(--line);padding:25px 16px;display:flex;flex-direction:column;gap:28px}.brand{display:flex;align-items:center;gap:11px;padding:0 10px;font-size:20px;font-weight:800;letter-spacing:-.6px}.brand-mark{display:grid;place-items:center;width:38px;height:38px;border-radius:13px;background:var(--green);color:#fff;font-size:21px}.nav-label{color:#a0a8b8;font-size:10px;font-weight:800;letter-spacing:1.5px;padding:0 12px;margin-bottom:8px}.nav{display:grid;gap:5px}.nav button{border:0;background:transparent;color:#667188;text-align:left;padding:12px;border-radius:11px;display:flex;align-items:center;gap:12px;font-weight:600}.nav button .ico{width:20px;text-align:center;font-size:17px}.nav button.active{background:var(--green2);color:var(--green)}.side-bottom{margin-top:auto;background:#f7f9fc;border:1px solid var(--line);padding:15px;border-radius:14px}.side-bottom strong{display:block;margin-bottom:5px}.side-bottom p{font-size:12px;color:var(--muted);margin:0 0 12px}.side-bottom button{border:0;background:#fff;border:1px solid var(--line);padding:8px 10px;border-radius:8px;font-weight:650;width:100%}.main{min-width:0;padding:28px clamp(18px,3vw,42px) 48px}.topbar{display:flex;justify-content:space-between;align-items:center;gap:16px;margin-bottom:28px}.eyebrow{font-size:12px;color:var(--muted);margin-bottom:4px}.page-title{font-size:27px;letter-spacing:-.8px;margin:0;font-weight:800}.top-actions{display:flex;gap:10px;align-items:center}.date-pill,.avatar{background:#fff;border:1px solid var(--line);border-radius:11px;padding:10px 13px;color:#5e687c}.avatar{background:#dff4e9;color:#197453;font-weight:800;border:0;border-radius:50%;width:40px;height:40px;padding:0;display:grid;place-items:center}.btn{border:0;border-radius:10px;padding:10px 14px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;gap:7px}.btn-primary{background:var(--green);color:#fff}.btn-light{background:#fff;border:1px solid var(--line);color:#4e5a70}.btn-danger{background:#fff0f1;color:var(--red)}.cards{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:15px;margin-bottom:20px}.stat,.panel{background:var(--panel);border:1px solid var(--line);border-radius:17px;box-shadow:var(--shadow)}.stat{padding:20px;min-width:0}.stat-top{display:flex;justify-content:space-between;align-items:center;color:var(--muted);font-size:12px;font-weight:650}.stat-icon{width:34px;height:34px;display:grid;place-items:center;border-radius:11px;background:var(--green2);color:var(--green);font-size:17px}.stat-value{font-size:25px;letter-spacing:-.7px;font-weight:800;margin:12px 0 4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.stat-foot{font-size:11px;color:var(--muted)}.positive{color:var(--green)}.layout{display:grid;grid-template-columns:minmax(0,1.45fr) minmax(280px,.85fr);gap:18px;margin-bottom:18px}.panel{padding:21px;min-width:0}.panel-head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:18px}.panel h2{font-size:16px;margin:0;letter-spacing:-.3px}.panel-sub{font-size:12px;color:var(--muted);margin-top:4px}.link-btn{border:0;background:transparent;color:var(--green);font-size:12px;font-weight:750}.goal-amount{font-size:25px;font-weight:800;letter-spacing:-.5px;margin:14px 0 2px}.progress{height:8px;background:#edf0f5;border-radius:99px;overflow:hidden;margin:15px 0 10px}.progress>span{display:block;height:100%;background:var(--green);border-radius:99px;transition:width .2s}.between{display:flex;justify-content:space-between;gap:10px;font-size:12px;color:var(--muted)}.goal-meta{display:flex;gap:10px;align-items:center;margin-top:20px;padding-top:16px;border-top:1px solid var(--line)}.goal-meta .mini{width:36px;height:36px;border-radius:11px;background:var(--blue2);display:grid;place-items:center;color:var(--blue)}.goal-meta strong{display:block;font-size:12px}.goal-meta small{color:var(--muted)}.chart{height:190px;display:flex;align-items:end;gap:clamp(6px,2vw,18px);padding:10px 4px 0;border-bottom:1px solid var(--line);position:relative}.bar-wrap{flex:1;height:100%;display:flex;flex-direction:column;justify-content:end;align-items:center;gap:8px;min-width:0}.bar{width:min(32px,75%);min-height:4px;background:#c9d6d2;border-radius:7px 7px 2px 2px;transition:height .25s}.bar.current{background:var(--green)}.bar-label{font-size:10px;color:var(--muted);padding-bottom:7px}.legend{display:flex;gap:8px;align-items:center;color:var(--muted);font-size:11px}.dot{width:7px;height:7px;border-radius:50%;background:var(--green)}.accounts{display:grid;gap:10px}.account{display:flex;align-items:center;gap:12px;border:1px solid var(--line);padding:13px;border-radius:13px}.account-icon{width:39px;height:39px;display:grid;place-items:center;background:#edf1ff;color:#536be0;border-radius:12px;font-size:18px}.account:nth-child(2) .account-icon{background:#fff3e5;color:var(--orange)}.account-info{flex:1;min-width:0}.account-info strong{display:block;font-size:13px}.account-info small{color:var(--muted);font-size:11px}.account-balance{font-weight:800;font-size:13px;text-align:right;white-space:nowrap}.table-wrap{overflow:auto}table{width:100%;border-collapse:collapse;white-space:nowrap}th{text-align:left;color:#96a0b2;font-size:10px;text-transform:uppercase;letter-spacing:.8px;font-weight:750;padding:10px 8px;border-bottom:1px solid var(--line)}td{padding:13px 8px;border-bottom:1px solid #f0f2f6;font-size:12px}tbody tr:last-child td{border-bottom:0}.tx-title{font-weight:750;font-size:12px}.tx-sub{color:var(--muted);font-size:10px;margin-top:3px}.pill{display:inline-flex;align-items:center;border-radius:99px;padding:4px 8px;font-size:10px;font-weight:750;background:#e7f7ef;color:var(--green)}.pill.expense{background:#fff0f1;color:var(--red)}.amount-in{color:var(--green);font-weight:800}.amount-out{color:var(--red);font-weight:800}.page{display:none}.page.active{display:block}.section-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}.empty{text-align:center;padding:30px;color:var(--muted)}.form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px}.field{display:grid;gap:6px}.field.full{grid-column:1/-1}.field label{font-size:12px;color:#647087;font-weight:700}.field input,.field select,.field textarea{width:100%;padding:11px 12px;border:1px solid #dfe5ed;border-radius:10px;background:#fff;outline:none;color:var(--text)}.field input:focus,.field select:focus{border-color:#75bba2;box-shadow:0 0 0 3px #16876512}.form-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:18px}.notice{background:#fff8e9;border:1px solid #f3e1b8;color:#82642c;border-radius:12px;padding:12px 14px;font-size:12px;margin-bottom:18px}.budget-row{padding:14px 0;border-bottom:1px solid var(--line)}.budget-row:last-child{border-bottom:0}.budget-top{display:flex;justify-content:space-between;gap:12px;margin-bottom:9px;font-size:12px}.budget-top strong{font-size:13px}.small-progress{height:6px;background:#edf0f5;border-radius:99px;overflow:hidden}.small-progress span{display:block;height:100%;background:var(--blue);border-radius:99px}.muted{color:var(--muted)}.financial-tabs{display:flex;gap:8px;border-bottom:1px solid var(--line);margin:0 0 20px;padding-bottom:12px;overflow-x:auto}
@@ -411,7 +411,7 @@
 </style>
 
 
-<!-- Savely v2.8.13: modern typography system -->
+<!-- Savely v2.8.7: modern typography system -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -593,9 +593,9 @@ input::placeholder, textarea::placeholder { color: #9aa4b5; }
 <button type="button" class="financial-tab" data-settings-tab="security">Local Security</button>
 <button type="button" class="financial-tab" data-settings-tab="account">Account</button>
 <button type="button" class="financial-tab" data-settings-tab="logout">Log out</button>
-</div><div class="section-grid"><div class="panel" id="settingsDateTimePanel" data-settings-panel="datetime"><div class="panel-head"><div><h2>Live date &amp; time</h2><div class="panel-sub">Current local time in the Philippines, updated every second.</div></div><button class="btn btn-secondary btn-sm" type="button" onclick="openDateTimeSettings()">✎ Edit</button><span class="pill">LIVE</span></div><div id="settingsLiveDateTime" aria-live="off" style="padding:18px 0 8px"><div style="font-size:30px;font-weight:800;font-variant-numeric:tabular-nums">Loading time…</div><div class="muted">Loading date…</div></div><div class="panel-sub" id="dateTimeZoneLabel">Timezone: Asia/Manila (UTC+8)</div></div><div class="panel" id="settingsBackupPanel" data-settings-panel="backup"><div class="panel-head"><div><h2>Data backup</h2><div class="panel-sub">Save a copy of your records or restore a backup.</div></div></div><p class="muted">This standalone HTML version stores data in this browser using local storage. Export a backup regularly, especially before clearing browser data.</p><div class="form-actions" style="justify-content:flex-start"><button class="btn btn-primary" onclick="backupJSON()">↓ Download backup</button><label class="btn btn-light">↑ Restore backup<input type="file" accept=".json,application/json" onchange="restoreJSON(event)" hidden></label></div></div><div class="panel" id="versionHistoryPanel" data-settings-panel="version"><div class="panel-head"><div><h2>Version history</h2><div class="panel-sub">Current version: <strong>v2.8.13</strong></div></div><span class="pill">CHANGELOG</span></div>
+</div><div class="section-grid"><div class="panel" id="settingsDateTimePanel" data-settings-panel="datetime"><div class="panel-head"><div><h2>Live date &amp; time</h2><div class="panel-sub">Current local time in the Philippines, updated every second.</div></div><button class="btn btn-secondary btn-sm" type="button" onclick="openDateTimeSettings()">✎ Edit</button><span class="pill">LIVE</span></div><div id="settingsLiveDateTime" aria-live="off" style="padding:18px 0 8px"><div style="font-size:30px;font-weight:800;font-variant-numeric:tabular-nums">Loading time…</div><div class="muted">Loading date…</div></div><div class="panel-sub" id="dateTimeZoneLabel">Timezone: Asia/Manila (UTC+8)</div></div><div class="panel" id="settingsBackupPanel" data-settings-panel="backup"><div class="panel-head"><div><h2>Data backup</h2><div class="panel-sub">Save a copy of your records or restore a backup.</div></div></div><p class="muted">This standalone HTML version stores data in this browser using local storage. Export a backup regularly, especially before clearing browser data.</p><div class="form-actions" style="justify-content:flex-start"><button class="btn btn-primary" onclick="backupJSON()">↓ Download backup</button><label class="btn btn-light">↑ Restore backup<input type="file" accept=".json,application/json" onchange="restoreJSON(event)" hidden></label></div></div><div class="panel" id="versionHistoryPanel" data-settings-panel="version"><div class="panel-head"><div><h2>Version history</h2><div class="panel-sub">Current version: <strong>v2.8.12</strong></div></div><span class="pill">CHANGELOG</span></div>
       <div class="version-history-scroll" style="display:grid;gap:14px;max-height:360px;overflow-y:auto;overflow-x:hidden;padding:4px 12px 8px 2px;scrollbar-gutter:stable"> 
-<div style="border-left:3px solid var(--green);padding:2px 0 2px 14px"><div style="font-weight:800">v2.8.13 <span class="pill" style="margin-left:6px">Current</span></div><div class="panel-sub">Long-history graph rendering fix</div><ul style="margin:8px 0 0;padding-left:18px;color:var(--muted)"><li>Graph points now use actual timestamps on a shared timeline.</li><li>Long histories are visually reduced to a manageable number of points and axis labels no longer overlap.</li></ul></div><div style="border-left:3px solid var(--line);padding:2px 0 0 14px"><div style="font-weight:800">v2.8.12</div><div class="panel-sub">Dedicated Log out menu in Settings</div></div><div style="border-left:3px solid var(--line);padding:2px 0 2px 14px"><div style="font-weight:800">v2.8.10</div><div class="panel-sub">Reliable in-page logout</div><ul style="margin:8px 0 0;padding-left:18px;color:var(--muted)"><li>Logout immediately returns to the Savely welcome/login screen without navigating away.</li><li>Clears the saved local session and attempts to sign out the Supabase session.</li><li>Shows a confirmation message after logout.</li></ul></div><div style="border-left:3px solid var(--line);padding:2px 0 2px 14px"><div style="font-weight:800">v2.8.9</div><div class="panel-sub">Google sign-in option and Settings version history</div><ul style="margin:8px 0 0;padding-left:18px;color:var(--muted)"><li>Added a Continue with Google button to the login screen.</li><li>Restored Version History as a horizontal Settings navigation tab.</li></ul></div><div style="border-left:3px solid var(--line);padding:2px 0 2px 14px"><div style="font-weight:800">v2.4.8</div><div class="panel-sub">Financial trend and dashboard updates</div><ul style="margin:8px 0 0;padding-left:18px;color:var(--muted)"><li>Added date and time labels along the Overall Financial Trend graph so balance changes can be matched to timestamps.</li><li>Added date and time labels to the Financial List savings trend graph.</li><li>Kept the graphs showing all recorded history without period filters.</li>
+<div style="border-left:3px solid var(--green);padding:2px 0 2px 14px"><div style="font-weight:800">v2.8.12 <span class="pill" style="margin-left:6px">Current</span></div><div class="panel-sub">Dedicated Log out menu in Settings</div><ul style="margin:8px 0 0;padding-left:18px;color:var(--muted)"><li>Added a separate Log out tab in Settings with its own logout action.</li><li>Kept the Account logout action available.</li></ul></div><div style="border-left:3px solid var(--line);padding:2px 0 2px 14px"><div style="font-weight:800">v2.8.10</div><div class="panel-sub">Reliable in-page logout</div><ul style="margin:8px 0 0;padding-left:18px;color:var(--muted)"><li>Logout immediately returns to the Savely welcome/login screen without navigating away.</li><li>Clears the saved local session and attempts to sign out the Supabase session.</li><li>Shows a confirmation message after logout.</li></ul></div><div style="border-left:3px solid var(--line);padding:2px 0 2px 14px"><div style="font-weight:800">v2.8.9</div><div class="panel-sub">Google sign-in option and Settings version history</div><ul style="margin:8px 0 0;padding-left:18px;color:var(--muted)"><li>Added a Continue with Google button to the login screen.</li><li>Restored Version History as a horizontal Settings navigation tab.</li></ul></div><div style="border-left:3px solid var(--line);padding:2px 0 2px 14px"><div style="font-weight:800">v2.4.8</div><div class="panel-sub">Financial trend and dashboard updates</div><ul style="margin:8px 0 0;padding-left:18px;color:var(--muted)"><li>Added date and time labels along the Overall Financial Trend graph so balance changes can be matched to timestamps.</li><li>Added date and time labels to the Financial List savings trend graph.</li><li>Kept the graphs showing all recorded history without period filters.</li>
             <li>Hide Add Savings on Overview and move graph period filters above the Overall Financial Trend heading.</li>
             <li>Changed the first card to Savings + Salary / Income total only.</li>
             <li>Added numeric-only increase/decrease amounts to Overview cards and Overall Total.</li>
@@ -637,82 +637,73 @@ function interestLocalDate(ts){
  return `${parts.year}-${parts.month}-${parts.day}`;
 }
 function ensureInterestTracking(item, now){
+ const today=interestLocalDate(now);
  if(!item.interestTracking || typeof item.interestTracking!=='object'){
   const amount=Math.max(0,Number(item.amount)||0);
-  item.interestTracking={lastTickAt:now,dayStartBalance:amount,lastHistoryDate:interestLocalDate(now)};
+  item.interestTracking={lastTickAt:now,dayStartBalance:amount,lastHistoryDate:today};
  }
+ const t=item.interestTracking;
+ // Preserve the current balance when upgrading from the old per-minute estimator.
+ if((t.lastHistoryDate||today)===today)t.dayStartBalance=Math.max(Number(t.dayStartBalance)||0,Number(item.amount)||0);
  if(!Array.isArray(item.changeHistory))item.changeHistory=[];
- if(!Array.isArray(item.graphHistory)||!item.graphHistory.length){
-  item.graphHistory=[{at:now-1,amount:Math.max(0,Number(item.amount)||0)}];
+ if(!Array.isArray(item.graphHistory)||!item.graphHistory.length)item.graphHistory=[{at:now,amount:Math.max(0,Number(item.amount)||0)}];
+ // Collapse legacy interest records into a single daily entry.
+ const oldInterest=item.changeHistory.filter(h=>h&&h.type==='interest');
+ if(oldInterest.length>1){
+  const grouped=new Map();
+  item.changeHistory=item.changeHistory.filter(h=>!h||h.type!=='interest');
+  oldInterest.forEach(h=>{
+   const day=h.interestDate||interestLocalDate(Number(h.at)||now), prev=grouped.get(day);
+   if(!prev)grouped.set(day,{...h,interestDate:day});
+   else{
+    prev.oldAmount=Math.min(Number(prev.oldAmount)||0,Number(h.oldAmount)||0);
+    prev.newAmount=Math.max(Number(prev.newAmount)||0,Number(h.newAmount)||0);
+    prev.interestEarned=Math.max(0,prev.newAmount-prev.oldAmount);
+    prev.at=Math.max(Number(prev.at)||0,Number(h.at)||0);
+   }
+  });
+  item.changeHistory.push(...grouped.values());
  }
- // Older versions recorded estimated interest every few minutes. Keep only the
- // last balance snapshot for each local calendar day, preserving the initial zero point.
+ // Keep only one graph snapshot per local day to avoid long, minute-by-minute timelines.
  const history=item.graphHistory;
  if(history.length>2){
   const byDay=new Map();
   history.forEach((point,index)=>{
-   const at=Number(point.at)||now;
-   const day=interestLocalDate(at);
-   const existing=byDay.get(day);
-   if(!existing||at>=Number(existing.point.at)||index===history.length-1)byDay.set(day,{point:{...point,at},index});
+   const at=Number(point.at)||now, day=interestLocalDate(at), prev=byDay.get(day);
+   if(!prev||at>=Number(prev.at)||index===history.length-1)byDay.set(day,{...point,at});
   });
-  const compact=[...byDay.values()].sort((a,b)=>Number(a.point.at)-Number(b.point.at)).map(x=>x.point);
+  const compact=[...byDay.values()].sort((a,b)=>Number(a.at)-Number(b.at));
   const first=history[0];
-  if(Number(first.amount)===0 && compact[0]!==first && Number(first.at)<Number(compact[0]?.at))compact.unshift(first);
+  if(Number(first.amount)===0&&compact[0]&&Number(first.at)<Number(compact[0].at))compact.unshift(first);
   item.graphHistory=compact;
  }
+ t.lastTickAt=now;
 }
 function accrueRealtimeInterest(){
- const now=getDisplayedDateTime().getTime(), dayMs=86400000, annualNetRate=0.0325*0.8;
+ const now=getDisplayedDateTime().getTime(), annualNetRate=0.0325*0.8;
  let changed=false;
  for(const item of (data.savingsList||[])){
   if(!isRealtimeDailyInterestItem(item))continue;
+  const oldGraphLength=Array.isArray(item.graphHistory)?item.graphHistory.length:0;
+  const oldChangeLength=Array.isArray(item.changeHistory)?item.changeHistory.length:0;
   ensureInterestTracking(item,now);
-  const t=item.interestTracking;
-  const last=Number(t.lastTickAt)||now;
-  if(now<last){t.lastTickAt=now;changed=true;continue;}
-  const elapsed=Math.max(0,Math.min(now-last,7*dayMs));
-  if(elapsed>0){
-   const oldBalance=Math.max(0,Number(item.amount)||0);
-   // Smooth estimate between daily crediting events; based on 3.25% p.a. less 20% withholding tax.
-   const newBalance=oldBalance*(1+annualNetRate*elapsed/dayMs/365);
+  const t=item.interestTracking, today=interestLocalDate(now), lastDate=t.lastHistoryDate||today;
+  if(lastDate!==today){
+   // Credit one full day's estimated net interest only when the local date rolls over.
+   const oldBalance=Math.max(0,Number(t.dayStartBalance)||Number(item.amount)||0);
+   const elapsedDays=Math.max(1,Math.min(365,Math.round((Date.parse(today+'T00:00:00Z')-Date.parse(lastDate+'T00:00:00Z'))/86400000)||1));
+   const earned=oldBalance*annualNetRate/365*elapsedDays;
+   const newBalance=oldBalance+earned;
    item.amount=newBalance;
-   t.lastTickAt=now;
-   // Update the running estimate in the saved balance, but do not create graph
-   // points on every tick. The graph records one cumulative daily-interest point
-   // when the local calendar day rolls over, preventing a per-minute sawtooth.
-   changed=true;
+   if(earned>=0.005)item.changeHistory.push({at:now,oldName:item.name,newName:item.name,oldAmount:oldBalance,newAmount:newBalance,type:'interest',label:'Daily interest estimate',interestEarned:earned,interestDate:lastDate});
+   const lastPoint=item.graphHistory[item.graphHistory.length-1];
+   if(lastPoint&&interestLocalDate(Number(lastPoint.at)||0)===today){lastPoint.amount=newBalance;lastPoint.at=now;}
+   else item.graphHistory.push({at:now,amount:newBalance});
+   t.dayStartBalance=newBalance;t.lastHistoryDate=today;t.lastTickAt=now;changed=true;
   }
-  const today=interestLocalDate(now);
-  if(t.lastHistoryDate!==today){
-   const previousDate=t.lastHistoryDate||today;
-   const oldDayBalance=Math.max(0,Number(t.dayStartBalance)||Number(item.amount)||0);
-   const newDayBalance=Math.max(0,Number(item.amount)||0);
-   const earned=Math.max(0,newDayBalance-oldDayBalance);
-   if(earned>0){
-    item.changeHistory.push({
-     at:now,oldName:item.name,newName:item.name,
-     oldAmount:oldDayBalance,newAmount:newDayBalance,
-     type:'interest',label:'Estimated daily interest',
-     interestEarned:earned,interestDate:previousDate
-    });
-   }
-   const lastGraphPoint=item.graphHistory[item.graphHistory.length-1];
-   if(!lastGraphPoint || interestLocalDate(Number(lastGraphPoint.at)||0)!==today){
-    item.graphHistory.push({at:now,amount:newDayBalance});
-   }else{
-    lastGraphPoint.amount=newDayBalance;
-    lastGraphPoint.at=now;
-   }
-   t.dayStartBalance=newDayBalance;
-   t.lastHistoryDate=today;
-   changed=true;
-  }
+  if(item.graphHistory.length!==oldGraphLength||item.changeHistory.length!==oldChangeLength)changed=true;
  }
- if(changed){
-  try{localStorage.setItem(STORE,JSON.stringify(data));}catch(e){}
-  if(typeof renderSavingsList==='function')renderSavingsList();
- }
+ if(changed){try{localStorage.setItem(STORE,JSON.stringify(data));}catch(e){}if(typeof renderSavingsList==='function')renderSavingsList();}
 }
 
 function toast(msg){const el=document.getElementById('toast');el.textContent=msg;el.style.display='block';setTimeout(()=>el.style.display='none',2400)}
@@ -778,7 +769,8 @@ financialItems.forEach(item=>{
   financialHistory.push({at:Number(h.at)||0,name:h.newName||h.oldName||item.name,category:item.category||'Savings',oldAmount,newAmount,delta,label:h.label||(h.type==='interest'?'Interest earned':'Balance updated'),type:h.type||'edit'});
  });
  const graph=Array.isArray(item.graphHistory)?item.graphHistory:[];
- for(let i=1;i<graph.length;i++){
+ // For MariBank, graph snapshots are visualization points, not financial-history events.
+ if(!isRealtimeDailyInterestItem(item))for(let i=1;i<graph.length;i++){
   const at=Number(graph[i].at)||0,oldAmount=Number(graph[i-1].amount)||0,newAmount=Number(graph[i].amount)||0,delta=newAmount-oldAmount;
   if(Math.abs(delta)<0.005)continue;
   const duplicate=changes.some(h=>Math.abs((Number(h.at)||0)-at)<60000&&Math.abs((Number(h.oldAmount)||0)-oldAmount)<0.01&&Math.abs((Number(h.newAmount)||0)-newAmount)<0.01);
@@ -1031,25 +1023,15 @@ function renderSavingsTrend(){
  ctx.font='11px system-ui,sans-serif';ctx.textBaseline='middle';
  for(let j=0;j<=4;j++){const y=pad.t+plotH*j/4,val=axisHigh-(axisRange*j/4);ctx.strokeStyle=lineColor;ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(pad.l,y);ctx.lineTo(width-pad.r,y);ctx.stroke();ctx.fillStyle=textColor;ctx.textAlign='right';ctx.fillText(fmt(Math.max(0,val)),pad.l-8,y);}
  if(!entries.length){ctx.fillStyle=textColor;ctx.textAlign='center';ctx.fillText('Add savings accounts to see the comparison graph.',pad.l+plotW/2,pad.t+plotH/2);return;}
- // Plot actual recorded balance changes on one shared timestamp axis.
- const savingsTimeline=entries.flatMap(e=>e.history).map(p=>Number(p.at)).filter(Number.isFinite);
- const savingsTimeMin=Math.min(Date.now(),...(savingsTimeline.length?savingsTimeline:[Date.now()]));
- const savingsTimeMax=Math.max(savingsTimeMin+1,...savingsTimeline);
- const xForSavingsTime=at=>pad.l+((Number(at)-savingsTimeMin)/(savingsTimeMax-savingsTimeMin))*plotW;
- const sampleHistory=(history,limit=120)=>{
-  if(history.length<=limit)return history;
-  const chosen=new Set([0,history.length-1]);
-  const step=(history.length-1)/(limit-1);
-  for(let i=1;i<limit-1;i++)chosen.add(Math.round(i*step));
-  return [...chosen].sort((a,b)=>a-b).map(i=>history[i]);
- };
+ // Plot actual recorded balance changes. Editing 100 -> 90 -> 100 creates a visible dip and rise.
  entries.forEach(entry=>{
   const baseBankName=entry.name.includes(' · ')?entry.name.split(' · ').slice(-1)[0]:entry.name;
   const color=bankColor(baseBankName);
-  let points=sampleHistory(entry.history);
+  let points=entry.history;
   if(points.length===1) points=[{...points[0],at:points[0].at-1,amount:0},{...points[0]}];
   else if(points[0].amount!==0) points=[{...points[0],at:points[0].at-1,amount:0},...points];
-  const coords=points.map(p=>({x:xForSavingsTime(p.at),y:yForAmount(p.amount),amount:p.amount}));
+  // Use evenly spaced event positions so each recorded edit creates a visible diagonal segment.
+  const coords=points.map((p,i)=>({x:pad.l+(points.length===1?0:(plotW*i/(points.length-1))),y:yForAmount(p.amount),amount:p.amount}));
   // Render each balance change as a candlestick instead of a dot:
   // green = balance increased, red = balance decreased, gray = unchanged.
   for(let k=1;k<coords.length;k++){
@@ -1080,14 +1062,14 @@ function renderSavingsTrend(){
   const last=coords[coords.length-1];ctx.fillStyle=textColor;ctx.textAlign='right';ctx.fillText(entry.name.length>18?entry.name.slice(0,17)+'…':entry.name,Math.min(width-pad.r,last.x),height-pad.b+14);
  });
  // Date axis: show the recorded dates at evenly spaced points across the timeline.
- const timeline=[...new Map(entries.flatMap(e=>e.history).sort((a,b)=>a.at-b.at).map(p=>[p.at,p])).values()];
+ const timeline=entries.flatMap(e=>e.history).sort((a,b)=>a.at-b.at);
  if(timeline.length){
   const count=Math.min(5,timeline.length);
   ctx.fillStyle=textColor;ctx.font='10px system-ui,sans-serif';ctx.textBaseline='top';
   for(let i=0;i<count;i++){
    const idx=count===1?timeline.length-1:Math.round(i*(timeline.length-1)/(count-1));
    const point=timeline[idx];
-   const x=xForSavingsTime(point.at);
+   const x=pad.l+(timeline.length===1?plotW:plotW*idx/(timeline.length-1));
    const dateLabel=new Date(point.at).toLocaleString('en-PH',{day:'2-digit',month:'short',year:'2-digit',hour:'2-digit',minute:'2-digit',hour12:true});
    ctx.textAlign=i===0?'left':i===count-1?'right':'center';
    ctx.fillText(dateLabel,Math.max(pad.l,Math.min(width-pad.r,x)),height-pad.b+31);
@@ -1155,16 +1137,6 @@ function renderOverallTrend(){
  const css=getComputedStyle(document.body),textColor=css.getPropertyValue('--muted').trim()||'#64748b',lineColor=css.getPropertyValue('--line').trim()||'#e2e8f0';
  const pad={l:82,r:18,t:18,b:58},plotW=width-pad.l-pad.r,plotH=height-pad.t-pad.b;
  const amounts=categories.flatMap(c=>c.points.map(p=>p.amount));
- const overallTimes=categories.flatMap(c=>c.points.map(p=>Number(p.at))).filter(Number.isFinite);
- const overallTimeMin=Math.min(...overallTimes,Date.now()),overallTimeMax=Math.max(overallTimeMin+1,...overallTimes);
- const xForOverallTime=at=>pad.l+((Number(at)-overallTimeMin)/(overallTimeMax-overallTimeMin))*plotW;
- const sampleOverall=(points,limit=160)=>{
-  if(points.length<=limit)return points;
-  const indexes=new Set([0,points.length-1]);
-  const step=(points.length-1)/(limit-1);
-  for(let i=1;i<limit-1;i++)indexes.add(Math.round(i*step));
-  return [...indexes].sort((a,b)=>a-b).map(i=>points[i]);
- };
  let low=Math.min(0,...amounts),high=Math.max(1,...amounts);if(high===low)high=low+1;
  const range=high-low||1;
  const y=v=>pad.t+plotH-((v-low)/range)*plotH;
@@ -1173,24 +1145,24 @@ function renderOverallTrend(){
  const hasData=items.length>0;
  if(!hasData){ctx.fillStyle=textColor;ctx.textAlign='center';ctx.fillText('Add savings, salary, or debt items to see trends.',pad.l+plotW/2,pad.t+plotH/2);return;}
  categories.forEach(c=>{
-  let pts=sampleOverall(c.points);
+  let pts=c.points;
   if(pts.length===1)pts=[{at:pts[0].at-1,amount:0},pts[0]];
   else if(pts[0].amount!==0)pts=[{at:pts[0].at-1,amount:0},...pts];
-  const coords=pts.map(p=>({x:xForOverallTime(p.at),y:y(p.amount),amount:p.amount}));
+  const coords=pts.map((p,i)=>({x:pad.l+(pts.length===1?0:plotW*i/(pts.length-1)),y:y(p.amount),amount:p.amount}));
   ctx.strokeStyle=c.color;ctx.lineWidth=2.5;ctx.lineJoin='round';ctx.lineCap='round';
   ctx.beginPath();coords.forEach((p,i)=>i?ctx.lineTo(p.x,p.y):ctx.moveTo(p.x,p.y));ctx.stroke();
   coords.forEach(p=>{ctx.fillStyle=c.color;ctx.beginPath();ctx.arc(p.x,p.y,3,0,Math.PI*2);ctx.fill();});
   const last=coords[coords.length-1];ctx.fillStyle=c.color;ctx.textAlign='right';ctx.fillText(c.label,Math.min(width-pad.r,last.x),height-pad.b+14);
  });
  // Date axis based on actual recorded event timestamps.
- const timeline=[...new Map(viewEvents.map(e=>[e.at,e])).values()].sort((a,b)=>a.at-b.at);
+ const timeline=viewEvents;
  if(timeline.length){
   const count=Math.min(6,timeline.length);
   ctx.fillStyle=textColor;ctx.font='10px system-ui,sans-serif';ctx.textBaseline='top';
   for(let i=0;i<count;i++){
    const idx=count===1?timeline.length-1:Math.round(i*(timeline.length-1)/(count-1));
    const event=timeline[idx];
-   const x=xForOverallTime(event.at);
+   const x=pad.l+(timeline.length===1?plotW:plotW*idx/(timeline.length-1));
    const dateLabel=new Date(event.at).toLocaleString('en-PH',{day:'2-digit',month:'short',year:'2-digit',hour:'2-digit',minute:'2-digit',hour12:true});
    ctx.textAlign=i===0?'left':i===count-1?'right':'center';
    ctx.fillText(dateLabel,Math.max(pad.l,Math.min(width-pad.r,x)),height-pad.b+31);
