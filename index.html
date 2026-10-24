@@ -512,7 +512,7 @@ input::placeholder, textarea::placeholder { color: #9aa4b5; }
 <main class="main">
   <header class="topbar"><div><div class="eyebrow" id="eyebrow">YOUR MONEY, IN FOCUS</div><h1 class="page-title" id="pageTitle">Good afternoon 👋</h1></div><div class="top-actions"><div class="date-pill" id="today">
 
-</div><button id="topbarAddSavingsButton" class="btn btn-primary" style="background:var(--green);border-color:var(--green)" onclick="openFinancialAdd()">＋ <span class="desktop-label">Add Savings</span><span class="mobile-label">Add Savings</span></button><div class="avatar">S</div><div class="auth-user-chip" id="savely-auth-user-chip" hidden><span class="auth-user-email" id="savely-auth-user-email"></span><button type="button" class="auth-logout" id="savely-auth-logout">Log out</button></div></div></header>
+</div><button id="topbarAddSavingsButton" class="btn btn-primary" style="background:var(--green);border-color:var(--green)" onclick="openFinancialAdd()">＋ <span class="desktop-label">Add Savings</span><span class="mobile-label">Add Savings</span></button><div class="avatar">S</div><div class="auth-user-chip" id="savely-auth-user-chip" hidden><span class="auth-user-email" id="savely-auth-user-email"></span></div></div></header>
   <section class="page active" id="page-dashboard">
     <div class="cards" id="stats"></div>
     <div class="panel" id="overallTrendPanel" style="margin-bottom:18px">
@@ -592,9 +592,9 @@ input::placeholder, textarea::placeholder { color: #9aa4b5; }
 <button type="button" class="financial-tab" data-settings-tab="version">Version History</button>
 <button type="button" class="financial-tab" data-settings-tab="security">Local Security</button>
 <button type="button" class="financial-tab" data-settings-tab="account">Account</button>
-</div><div class="section-grid"><div class="panel" id="settingsDateTimePanel" data-settings-panel="datetime"><div class="panel-head"><div><h2>Live date &amp; time</h2><div class="panel-sub">Current local time in the Philippines, updated every second.</div></div><button class="btn btn-secondary btn-sm" type="button" onclick="openDateTimeSettings()">✎ Edit</button><span class="pill">LIVE</span></div><div id="settingsLiveDateTime" aria-live="off" style="padding:18px 0 8px"><div style="font-size:30px;font-weight:800;font-variant-numeric:tabular-nums">Loading time…</div><div class="muted">Loading date…</div></div><div class="panel-sub" id="dateTimeZoneLabel">Timezone: Asia/Manila (UTC+8)</div></div><div class="panel" id="settingsBackupPanel" data-settings-panel="backup"><div class="panel-head"><div><h2>Data backup</h2><div class="panel-sub">Save a copy of your records or restore a backup.</div></div></div><p class="muted">This standalone HTML version stores data in this browser using local storage. Export a backup regularly, especially before clearing browser data.</p><div class="form-actions" style="justify-content:flex-start"><button class="btn btn-primary" onclick="backupJSON()">↓ Download backup</button><label class="btn btn-light">↑ Restore backup<input type="file" accept=".json,application/json" onchange="restoreJSON(event)" hidden></label></div></div><div class="panel" id="versionHistoryPanel" data-settings-panel="version"><div class="panel-head"><div><h2>Version history</h2><div class="panel-sub">Current version: <strong>v2.8.10</strong></div></div><span class="pill">CHANGELOG</span></div>
+</div><div class="section-grid"><div class="panel" id="settingsDateTimePanel" data-settings-panel="datetime"><div class="panel-head"><div><h2>Live date &amp; time</h2><div class="panel-sub">Current local time in the Philippines, updated every second.</div></div><button class="btn btn-secondary btn-sm" type="button" onclick="openDateTimeSettings()">✎ Edit</button><span class="pill">LIVE</span></div><div id="settingsLiveDateTime" aria-live="off" style="padding:18px 0 8px"><div style="font-size:30px;font-weight:800;font-variant-numeric:tabular-nums">Loading time…</div><div class="muted">Loading date…</div></div><div class="panel-sub" id="dateTimeZoneLabel">Timezone: Asia/Manila (UTC+8)</div></div><div class="panel" id="settingsBackupPanel" data-settings-panel="backup"><div class="panel-head"><div><h2>Data backup</h2><div class="panel-sub">Save a copy of your records or restore a backup.</div></div></div><p class="muted">This standalone HTML version stores data in this browser using local storage. Export a backup regularly, especially before clearing browser data.</p><div class="form-actions" style="justify-content:flex-start"><button class="btn btn-primary" onclick="backupJSON()">↓ Download backup</button><label class="btn btn-light">↑ Restore backup<input type="file" accept=".json,application/json" onchange="restoreJSON(event)" hidden></label></div></div><div class="panel" id="versionHistoryPanel" data-settings-panel="version"><div class="panel-head"><div><h2>Version history</h2><div class="panel-sub">Current version: <strong>v2.8.12</strong></div></div><span class="pill">CHANGELOG</span></div>
       <div class="version-history-scroll" style="display:grid;gap:14px;max-height:360px;overflow-y:auto;overflow-x:hidden;padding:4px 12px 8px 2px;scrollbar-gutter:stable"> 
-<div style="border-left:3px solid var(--green);padding:2px 0 2px 14px"><div style="font-weight:800">v2.8.10 <span class="pill" style="margin-left:6px">Current</span></div><div class="panel-sub">Reliable in-page logout</div><ul style="margin:8px 0 0;padding-left:18px;color:var(--muted)"><li>Logout immediately returns to the Savely welcome/login screen without navigating away.</li><li>Clears the saved local session and attempts to sign out the Supabase session.</li><li>Shows a confirmation message after logout.</li></ul></div><div style="border-left:3px solid var(--line);padding:2px 0 2px 14px"><div style="font-weight:800">v2.8.9</div><div class="panel-sub">Google sign-in option and Settings version history</div><ul style="margin:8px 0 0;padding-left:18px;color:var(--muted)"><li>Added a Continue with Google button to the login screen.</li><li>Restored Version History as a horizontal Settings navigation tab.</li></ul></div><div style="border-left:3px solid var(--line);padding:2px 0 2px 14px"><div style="font-weight:800">v2.4.8</div><div class="panel-sub">Financial trend and dashboard updates</div><ul style="margin:8px 0 0;padding-left:18px;color:var(--muted)"><li>Added date and time labels along the Overall Financial Trend graph so balance changes can be matched to timestamps.</li><li>Added date and time labels to the Financial List savings trend graph.</li><li>Kept the graphs showing all recorded history without period filters.</li>
+<div style="border-left:3px solid var(--green);padding:2px 0 2px 14px"><div style="font-weight:800">v2.8.12 <span class="pill" style="margin-left:6px">Current</span></div><div class="panel-sub">Settings-only logout and live interest history</div><ul style="margin:8px 0 0;padding-left:18px;color:var(--muted)"><li>Removed the header logout button; logout is available only in Settings → Account &amp; session.</li><li>Records live estimated interest graph points every minute and keeps small live changes visible in item history.</li></ul><div style="font-weight:800;margin-top:12px">v2.8.10</div><div class="panel-sub">Reliable in-page logout</div><ul style="margin:8px 0 0;padding-left:18px;color:var(--muted)"><li>Logout immediately returns to the Savely welcome/login screen without navigating away.</li><li>Clears the saved local session and attempts to sign out the Supabase session.</li><li>Shows a confirmation message after logout.</li></ul></div><div style="border-left:3px solid var(--line);padding:2px 0 2px 14px"><div style="font-weight:800">v2.8.9</div><div class="panel-sub">Google sign-in option and Settings version history</div><ul style="margin:8px 0 0;padding-left:18px;color:var(--muted)"><li>Added a Continue with Google button to the login screen.</li><li>Restored Version History as a horizontal Settings navigation tab.</li></ul></div><div style="border-left:3px solid var(--line);padding:2px 0 2px 14px"><div style="font-weight:800">v2.4.8</div><div class="panel-sub">Financial trend and dashboard updates</div><ul style="margin:8px 0 0;padding-left:18px;color:var(--muted)"><li>Added date and time labels along the Overall Financial Trend graph so balance changes can be matched to timestamps.</li><li>Added date and time labels to the Financial List savings trend graph.</li><li>Kept the graphs showing all recorded history without period filters.</li>
             <li>Hide Add Savings on Overview and move graph period filters above the Overall Financial Trend heading.</li>
             <li>Changed the first card to Savings + Salary / Income total only.</li>
             <li>Added numeric-only increase/decrease amounts to Overview cards and Overall Total.</li>
@@ -664,7 +664,7 @@ function accrueRealtimeInterest(){
    // Keep chart points reasonably light while still making the line appear to move in real time.
    const hist=item.graphHistory;
    const lastPoint=hist[hist.length-1];
-   if(!lastPoint || now-(Number(lastPoint.at)||0)>=5*60*1000){
+   if(!lastPoint || now-(Number(lastPoint.at)||0)>=60*1000){
     hist.push({at:now,amount:newBalance});
     if(hist.length>1500)hist.splice(1,hist.length-1500);
    }else{
@@ -1167,7 +1167,7 @@ function setSettingsTab(tab){
 }
 document.querySelectorAll('[data-settings-tab]').forEach(btn=>btn.addEventListener('click',()=>setSettingsTab(btn.dataset.settingsTab)));
 const settingsLogoutButton=document.getElementById('settingsLogoutButton');
-if(settingsLogoutButton)settingsLogoutButton.addEventListener('click',()=>{const authLogout=document.getElementById('savely-auth-logout');if(authLogout)authLogout.click();});
+if(settingsLogoutButton)settingsLogoutButton.addEventListener('click',()=>{if(typeof window.savelyLogout==='function')window.savelyLogout();});
 setSettingsTab('datetime');
 function renderSavingsList(){
  const items=Array.isArray(data.savingsList)?data.savingsList:[];
@@ -1548,7 +1548,7 @@ function openSavingsHistory(id){
    const g={at:Number(graph[i].at)||0,oldAmount:Number(graph[i-1].amount)||0,newAmount:Number(graph[i].amount)||0,oldName:item.name,newName:item.name,type:'balance',label:''};
    const delta=g.newAmount-g.oldAmount;
    // Hide graph-only samples that round to ₱0.00; they are visual sampling points, not meaningful history events.
-   if(Math.abs(delta)<0.005)continue;
+   if(Math.abs(delta)<0.000001)continue;
    // A manual edit is written to changeHistory and graphHistory at nearly the same time.
    // Treat matching amounts within the same displayed minute as one event, not two cards.
    const sameEvent=rows.some(h=>
@@ -1902,7 +1902,7 @@ document.addEventListener('click',function(e){
     saveSession({testingOnly:true,user:demoUser});
     showApp(demoUser);
   });
-  logout.addEventListener('click',async()=>{
+  async function performLogout(){
     const saved=readSession();
     // Clear the browser session and return to the welcome screen immediately,
     // without navigating away from the current Savely page.
@@ -1912,7 +1912,6 @@ document.addEventListener('click',function(e){
     passwordInput.value='';
     emailInput.value='';
     showMessage('You have been logged out.','success');
-    logout.disabled=true;
     const settingsLogout=document.getElementById('settingsLogoutButton');
     if(settingsLogout)settingsLogout.disabled=true;
     try{
@@ -1925,10 +1924,10 @@ document.addEventListener('click',function(e){
       }
     }catch(e){console.warn('Server sign-out could not be confirmed; local Savely session was cleared.',e)}
     finally{
-      logout.disabled=false;
       if(settingsLogout)settingsLogout.disabled=false;
     }
-  });
+  }
+  window.savelyLogout=performLogout;
   setMode('login');restore();
   // Charts are custom canvas drawings; redraw when viewport dimensions change.
   let chartResizeTimer=null;
