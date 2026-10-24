@@ -1572,7 +1572,7 @@ function openSavingsHistory(id){
  const content=document.getElementById('savingsHistoryContent');
  const liveBalance=Math.max(0,Number(item.amount)||0);
  const liveDailyNet=liveBalance*0.0325*0.8/365;
- const livePanel=isDailyInterestBank?`<div id="mariBankLiveInterestPanel" style="border:1px solid #b8ead4;background:#effbf5;border-radius:14px;padding:14px 16px;margin-bottom:12px"><div style="display:flex;align-items:center;justify-content:space-between;gap:12px"><strong style="color:#07845e">LIVE · Estimated daily interest</strong><span style="font-size:11px;font-weight:800;color:#07845e">LIVE · RESETS DAILY</span></div><div id="mariBankLiveInterestAmount" style="font-size:26px;font-weight:850;color:#07845e;margin:8px 0 3px">+${peso(0)}</div><div class="panel-sub">Estimated net interest accumulated today so far. This live estimate refreshes every minute and resets at midnight. Full-day estimate: ${peso(liveDailyNet)} at 3.25% p.a. after 20% withholding tax.</div><div class="panel-sub" style="margin-top:5px">Current estimated balance: <strong id="mariBankLiveBalance">${peso(liveBalance)}</strong></div><div class="panel-sub" style="margin-top:5px">Last updated: <strong id="mariBankLiveTimestamp">Waiting for clock…</strong></div></div>`:'';
+ const livePanel=isDailyInterestBank?`<div id="mariBankLiveInterestPanel" style="border:1px solid #b8ead4;background:#effbf5;border-radius:14px;padding:14px 16px;margin-bottom:12px"><div style="display:flex;align-items:center;justify-content:space-between;gap:12px"><strong style="color:#07845e">LIVE · Estimated daily interest</strong><span style="font-size:11px;font-weight:800;color:#07845e">LIVE · RESETS DAILY</span></div><div id="mariBankLiveInterestAmount" style="font-size:26px;font-weight:850;color:#07845e;margin:8px 0 3px">+${peso(0)}</div><div class="panel-sub">Estimated net interest accumulated today so far. This live estimate refreshes every minute and resets at midnight. Full-day estimate: ${peso(liveDailyNet)} at 3.25% p.a. after 20% withholding tax.</div><div class="panel-sub" style="margin-top:5px">Current estimated balance: <strong id="mariBankLiveBalance">${peso(liveBalance)}</strong></div><div class="panel-sub" style="margin-top:5px">Philippines time · <strong id="mariBankLiveTimestamp">Starting live clock…</strong></div></div>`:'';
  if(!rows.length){
   content.innerHTML=livePanel+'<div class="empty">No changes recorded yet. Edit this item to start building its history.</div>';
  }else{
@@ -1588,6 +1588,7 @@ function openSavingsHistory(id){
   }).join('')+'</div>';
  }
  document.getElementById('savingsHistoryBackdrop').style.display='flex';
+ updateMariBankLivePanel();
 }
 
 function openAllSavingsHistory(){
@@ -1751,28 +1752,30 @@ function resetData(){if(confirm('This permanently clears all Savely data stored 
 document.querySelector('.top-actions .btn').classList.add('main-add');
 document.querySelectorAll('.mobile-label').forEach(e=>e.style.display='none');
 if(matchMedia('(max-width:720px)').matches){document.querySelectorAll('.desktop-label').forEach(e=>e.style.display='none');document.querySelectorAll('.mobile-label').forEach(e=>e.style.display='inline')}
-render();updateLiveDateTime();setInterval(updateLiveDateTime,1000);setFinancialCategory('Savings');document.getElementById('interestForm').dispatchEvent(new Event('submit',{cancelable:true}));
+render();updateLiveDateTime();setFinancialCategory('Savings');document.getElementById('interestForm').dispatchEvent(new Event('submit',{cancelable:true}));
 
-// Update the local interest estimate and graph while the page is open.
-setInterval(()=>{
- accrueRealtimeInterest();
+// Live panel is display-only: update every second, but never write these ticks to history or graph.
+function updateMariBankLivePanel(){
  const panel=document.getElementById('mariBankLiveInterestPanel');
- if(panel){
-  const item=(data.savingsList||[]).find(x=>isRealtimeDailyInterestItem(x));
-  if(item){
-   const balance=Math.max(0,Number(item.amount)||0),daily=balance*0.0325*0.8/365;
-   const now=getDisplayedDateTime();
-   const clockParts=new Intl.DateTimeFormat('en-GB',{timeZone:dateTimePrefs.timezone||'Asia/Manila',hour:'2-digit',minute:'2-digit',second:'2-digit',hourCycle:'h23'}).formatToParts(now).reduce((o,p)=>(o[p.type]=Number(p.value),o),{});
-   const elapsedSeconds=(clockParts.hour||0)*3600+(clockParts.minute||0)*60+(clockParts.second||0);
-   const accruedToday=daily*Math.min(1,Math.max(0,elapsedSeconds/86400));
-   const amountEl=document.getElementById('mariBankLiveInterestAmount'),balanceEl=document.getElementById('mariBankLiveBalance'),timestampEl=document.getElementById('mariBankLiveTimestamp');
-   // Show sub-cent progress so the live estimate visibly advances during the day.
-   if(amountEl)amountEl.textContent='+'+new Intl.NumberFormat('en-PH',{style:'currency',currency:'PHP',minimumFractionDigits:4,maximumFractionDigits:4}).format(accruedToday);
-   if(balanceEl)balanceEl.textContent=peso(balance);
-   if(timestampEl)timestampEl.textContent=new Intl.DateTimeFormat('en-PH',{timeZone:dateTimePrefs.timezone||'Asia/Manila',year:'numeric',month:'short',day:'numeric',hour:'numeric',minute:'2-digit',second:'2-digit',hour12:true}).format(now);
-  }
- }
-},60000);
+ if(!panel)return;
+ const item=(data.savingsList||[]).find(x=>isRealtimeDailyInterestItem(x));
+ if(!item)return;
+ const balance=Math.max(0,Number(item.amount)||0);
+ const dailyNet=balance*0.0325*0.8/365;
+ const now=new Date();
+ const parts=new Intl.DateTimeFormat('en-GB',{timeZone:'Asia/Manila',hour:'2-digit',minute:'2-digit',second:'2-digit',hourCycle:'h23'}).formatToParts(now).reduce((o,p)=>(o[p.type]=Number(p.value),o),{});
+ const elapsedSeconds=(parts.hour||0)*3600+(parts.minute||0)*60+(parts.second||0);
+ const accruedToday=dailyNet*Math.min(1,Math.max(0,elapsedSeconds/86400));
+ const amountEl=document.getElementById('mariBankLiveInterestAmount');
+ const balanceEl=document.getElementById('mariBankLiveBalance');
+ const timestampEl=document.getElementById('mariBankLiveTimestamp');
+ if(amountEl)amountEl.textContent='+'+new Intl.NumberFormat('en-PH',{style:'currency',currency:'PHP',minimumFractionDigits:6,maximumFractionDigits:6}).format(accruedToday);
+ if(balanceEl)balanceEl.textContent=peso(balance);
+ if(timestampEl)timestampEl.textContent=new Intl.DateTimeFormat('en-PH',{timeZone:'Asia/Manila',year:'numeric',month:'short',day:'numeric',hour:'numeric',minute:'2-digit',second:'2-digit',hour12:true}).format(now)+' PHT';
+}
+updateMariBankLivePanel();
+setInterval(updateLiveDateTime,1000);
+setInterval(updateMariBankLivePanel,1000);
 setInterval(accrueRealtimeInterest,30000);
 accrueRealtimeInterest();
 </script>
