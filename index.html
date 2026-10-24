@@ -629,7 +629,29 @@ try{data=JSON.parse(localStorage.getItem(STORE))||seed();if(!Array.isArray(data.
 function save(){try{localStorage.setItem(STORE,JSON.stringify(data))}catch(e){toast('Browser storage is unavailable. Export a backup to keep your data safe.')}render()}
 
 function isRealtimeDailyInterestItem(item){
- return !!item && (item.category||'Savings')==='Savings' && /mari\s?bank/i.test(String(item.name||''));
+ if(!item || (item.category||'Savings')!=='Savings')return false;
+ // Track only savings products whose interest accrues daily and whose base rate is configured.
+ const n=String(item.name||'').toLowerCase();
+ const supported=/mari\s?bank|seabank|maya|gotyme|tonik|cimb|ownbank|own it|own wish/.test(n);
+ return supported && getInterestRate(item.name,'Savings')!==null;
+}
+function estimatedDailyNetInterest(item, balanceOverride){
+ const balance=Math.max(0,Number(balanceOverride??item?.amount)||0);
+ const name=String(item?.name||'');
+ const n=name.toLowerCase();
+ if(/mari\s?bank|seabank/.test(n)){
+  const gross=Math.min(balance,1000000)*0.0325+Math.max(0,balance-1000000)*0.0375;
+  return gross*0.8/365;
+ }
+ let rate=getInterestRate(name,'Savings');
+ if(/maya/.test(n))rate=Number(item?.mayaBonusRate)||3;
+ if(rate===null||rate===undefined||!Number.isFinite(Number(rate)))return 0;
+ return balance*(Number(rate)/100)*0.8/365;
+}
+function dailyInterestElapsedFraction(now){
+ const d=new Date(now);
+ const parts=new Intl.DateTimeFormat('en-GB',{timeZone:dateTimePrefs.timezone||'Asia/Manila',hour:'2-digit',minute:'2-digit',second:'2-digit',hourCycle:'h23'}).formatToParts(d).reduce((o,p)=>(o[p.type]=Number(p.value),o),{});
+ return Math.min(1,Math.max(0,((parts.hour||0)*3600+(parts.minute||0)*60+(parts.second||0))/86400));
 }
 function interestLocalDate(ts){
  const d=new Date(ts);
@@ -680,7 +702,7 @@ function ensureInterestTracking(item, now){
  t.lastTickAt=now;
 }
 function accrueRealtimeInterest(){
- const now=getDisplayedDateTime().getTime(), annualNetRate=0.0325*0.8;
+ const now=getDisplayedDateTime().getTime();
  let changed=false;
  for(const item of (data.savingsList||[])){
   if(!isRealtimeDailyInterestItem(item))continue;
@@ -692,7 +714,7 @@ function accrueRealtimeInterest(){
    // Credit one full day's estimated net interest only when the local date rolls over.
    const oldBalance=Math.max(0,Number(t.dayStartBalance)||Number(item.amount)||0);
    const elapsedDays=Math.max(1,Math.min(365,Math.round((Date.parse(today+'T00:00:00Z')-Date.parse(lastDate+'T00:00:00Z'))/86400000)||1));
-   const earned=oldBalance*annualNetRate/365*elapsedDays;
+   const earned=estimatedDailyNetInterest(item,oldBalance)*elapsedDays;
    const newBalance=oldBalance+earned;
    item.amount=newBalance;
    if(earned>=0.005)item.changeHistory.push({at:now,oldName:item.name,newName:item.name,oldAmount:oldBalance,newAmount:newBalance,type:'interest',label:'Daily interest estimate',interestEarned:earned,interestDate:lastDate});
@@ -1482,7 +1504,7 @@ function addFinancialItemFromForm(e){
  if(!Array.isArray(data.savingsList))data.savingsList=[];
  const category=['Savings','Salary','Debt'].includes(activeFinancialCategory)?activeFinancialCategory:'Savings';
  const createdAt=Date.now();
- data.savingsList.push({id:uid(),name,amount,category,date:todayISO(),...((/^maya$/i.test(name)||/maya savings/i.test(name))&&category==='Savings'?{mayaBonusRate:Number(document.getElementById('mayaAddBonusRate').value||3)}:{}),graphHistory:[{at:createdAt-1,amount:0},{at:createdAt,amount}],...( /mari\s?bank/i.test(name)&&category==='Savings'?{interestTracking:{lastTickAt:createdAt,dayStartBalance:amount,lastHistoryDate:interestLocalDate(createdAt)}}:{})});
+ data.savingsList.push({id:uid(),name,amount,category,date:todayISO(),...((/^maya$/i.test(name)||/maya savings/i.test(name))&&category==='Savings'?{mayaBonusRate:Number(document.getElementById('mayaAddBonusRate').value||3)}:{}),graphHistory:[{at:createdAt-1,amount:0},{at:createdAt,amount}],...(category==='Savings'&&/mari\s?bank|seabank|maya|gotyme|tonik|cimb|ownbank|own it|own wish/i.test(name)&&getInterestRate(name,'Savings')!==null?{interestTracking:{lastTickAt:createdAt,dayStartBalance:amount,lastHistoryDate:interestLocalDate(createdAt)}}:{})});
  try{localStorage.setItem(STORE,JSON.stringify(data));}
  catch(err){data.savingsList.pop();toast('Could not save: browser storage is full or blocked.');return;}
  closeFinancialAdd();
@@ -1552,6 +1574,11 @@ function openSavingsHistory(id){
  document.getElementById('savingsHistoryTitle').textContent=(item.name||'Savings')+' · History';
  const changes=Array.isArray(item.changeHistory)?item.changeHistory:[];
  const graph=Array.isArray(item.graphHistory)?item.graphHistory:[];
+ const liveInterestEligible=isRealtimeDailyInterestItem(item);
+ const liveNow=getDisplayedDateTime().getTime();
+ const liveToday=interestLocalDate(liveNow);
+ const tracking=item.interestTracking||{dayStartBalance:Number(item.amount)||0,lastHistoryDate:liveToday};
+ const accruedToday=liveInterestEligible?estimatedDailyNetInterest(item,tracking.dayStartBalance)*(tracking.lastHistoryDate===liveToday?dailyInterestElapsedFraction(liveNow):1):0;
  // Build entries from both logs. Older app versions may have graphHistory entries
  // but only one changeHistory entry, so never let one log hide the other.
  let rows=changes.map(h=>({at:Number(h.at)||0,oldAmount:Number(h.oldAmount)||0,newAmount:Number(h.newAmount)||0,oldName:h.oldName??item.name,newName:h.newName??item.name,type:h.type||'edit',label:h.label||''})).filter(h=>h.type==='edit'||Math.abs(h.newAmount-h.oldAmount)>=0.005);
@@ -1573,11 +1600,12 @@ function openSavingsHistory(id){
  }
  // If legacy records are missing timestamps, keep every entry rather than collapsing them.
  const content=document.getElementById('savingsHistoryContent');
+ const liveCard=liveInterestEligible?`<div id="liveDailyInterestCard" style="border:1px solid #b8ead3;background:#f0fbf5;border-radius:12px;padding:13px 14px;margin-bottom:10px"><div style="font-size:11px;font-weight:800;letter-spacing:.03em;color:#168765;margin-bottom:6px">TODAY'S ESTIMATED INTEREST · LIVE</div><div class="between"><strong id="liveDailyInterestAmount" style="font-size:18px;color:#168765">+${peso(accruedToday)}</strong><span id="liveDailyInterestClock" style="font-size:11px;color:var(--muted)">Updates every minute</span></div><div class="panel-sub" style="margin-top:6px">This live estimate is shown here only. The graph and Recent Financial History record one daily total, not every minute.</div></div>`:'';
  if(!rows.length){
-  content.innerHTML='<div class="empty">No changes recorded yet. Edit this item to start building its history.</div>';
+  content.innerHTML=liveCard+'<div class="empty">No changes recorded yet. Edit this item to start building its history.</div>';
  }else{
   rows.sort((a,b)=>(Number(b.at)||0)-(Number(a.at)||0));
-  content.innerHTML='<div style="display:grid;gap:10px;max-height:52vh;overflow-y:auto;padding-right:4px">'+rows.map(h=>{
+  content.innerHTML=liveCard+'<div style="display:grid;gap:10px;max-height:52vh;overflow-y:auto;padding-right:4px">'+rows.map(h=>{
    const delta=Number(h.newAmount||0)-Number(h.oldAmount||0);
    const positive=delta>0,negative=delta<0;
    const color=positive?'var(--green)':negative?'var(--red)':'var(--muted)';
@@ -1588,6 +1616,21 @@ function openSavingsHistory(id){
   }).join('')+'</div>';
  }
  document.getElementById('savingsHistoryBackdrop').style.display='flex';
+}
+
+
+function updateLiveDailyInterestHistory(){
+ const amountEl=document.getElementById('liveDailyInterestAmount');
+ if(!amountEl||document.getElementById('savingsHistoryBackdrop')?.style.display!=='flex')return;
+ const title=document.getElementById('savingsHistoryTitle')?.textContent||'';
+ const item=(data.savingsList||[]).find(x=>`${x.name||'Savings'} · History`===title);
+ if(!item||!isRealtimeDailyInterestItem(item))return;
+ const now=getDisplayedDateTime().getTime(),today=interestLocalDate(now),tracking=item.interestTracking||{dayStartBalance:Number(item.amount)||0,lastHistoryDate:today};
+ const elapsed=tracking.lastHistoryDate===today?dailyInterestElapsedFraction(now):1;
+ const accrued=estimatedDailyNetInterest(item,tracking.dayStartBalance)*elapsed;
+ amountEl.textContent='+'+peso(accrued);
+ const clock=document.getElementById('liveDailyInterestClock');
+ if(clock)clock.textContent='Updated '+new Date(now).toLocaleTimeString('en-PH',{hour:'2-digit',minute:'2-digit'});
 }
 
 function openAllSavingsHistory(){
@@ -1755,6 +1798,7 @@ render();updateLiveDateTime();setInterval(updateLiveDateTime,1000);setFinancialC
 
 // Update the local interest estimate and graph while the page is open.
 setInterval(accrueRealtimeInterest,30000);
+setInterval(updateLiveDailyInterestHistory,60000);
 accrueRealtimeInterest();
 </script>
 <div class="modal-backdrop" id="dateTimeSettingsBackdrop" style="display:none" role="dialog" aria-modal="true" aria-labelledby="dateTimeSettingsTitle" onclick="if(event.target===this)closeDateTimeSettings()"><div class="modal"><div class="modal-head"><h2 id="dateTimeSettingsTitle">Date &amp; time settings</h2><button type="button" class="icon-btn" onclick="closeDateTimeSettings()" aria-label="Close">×</button></div><p class="muted">Set the date and exact time. The clock will continue ticking from your chosen values.</p><div class="form-grid" style="gap:14px"><div class="form-group"><label for="dateTimeDate">Date</label><input type="date" id="dateTimeDate" required style="width:100%;min-height:44px"></div><div class="form-group"><label for="dateTimeClock">Time (hours, minutes, seconds)</label><input type="time" id="dateTimeClock" step="1" required style="width:100%;min-height:44px"></div><div class="form-group"><label for="dateTimeTimezone">Timezone</label><select id="dateTimeTimezone" style="width:100%;min-height:44px"><option value="Asia/Manila">Philippines — Asia/Manila (PHT, UTC+8)</option><option value="Asia/Singapore">Singapore — Asia/Singapore (UTC+8)</option><option value="Asia/Tokyo">Japan — Asia/Tokyo (UTC+9)</option><option value="Australia/Sydney">Sydney — Australia/Sydney</option><option value="Europe/London">London — Europe/London</option><option value="America/New_York">New York — America/New_York</option><option value="America/Los_Angeles">Los Angeles — America/Los_Angeles</option><option value="UTC">UTC</option></select></div><div class="form-group"><label for="dateTimeFormat">Time format</label><select id="dateTimeFormat" style="width:100%;min-height:44px"><option value="12">12-hour (AM/PM)</option><option value="24">24-hour</option></select></div></div><div class="form-actions"><button class="btn btn-secondary" type="button" onclick="closeDateTimeSettings()">Cancel</button><button class="btn btn-primary" type="button" onclick="saveDateTimeSettings()">Save settings</button></div></div></div><div class="modal-backdrop interest-backdrop" id="mariBankInterestBackdrop" style="display:none" role="dialog" aria-modal="true" aria-labelledby="mariBankInterestTitle" onclick="if(event.target===this)closeMariBankInterest()"><button type="button" class="interest-exit" onclick="closeMariBankInterest()" aria-label="Exit interest details">×</button><div class="modal interest-modal"><div class="modal-head"><div><h2 id="mariBankInterestTitle">MariBank interest</h2><div class="muted">Savings account · estimated earnings</div></div></div><div id="mariBankInterestContent"></div><div class="footer-note">Rates verified from MariBank’s official fees and rates page. 3.25% p.a. applies to the first ₱1,000,000; 3.75% p.a. applies to the portion above ₱1,000,000. Daily interest is based on the previous day’s ending balance and subject to 20% withholding tax. Estimates assume the balance stays unchanged and use 365 days.</div><div class="form-actions"><button class="btn btn-secondary" type="button" onclick="closeMariBankInterest()">Close</button><a class="btn btn-secondary" href="https://www.maribank.ph/fees-rates" target="_blank" rel="noopener">Official rates</a></div></div></div><div class="modal-backdrop" id="mariBankInterestBackdrop" style="display:none" role="dialog" aria-modal="true" aria-labelledby="mariBankInterestTitle" onclick="if(event.target===this)closeMariBankInterest()"><div class="modal"><div class="modal-head"><h2 id="mariBankInterestTitle">MariBank interest estimate</h2><button type="button" class="icon-btn" onclick="closeMariBankInterest()" aria-label="Close">×</button></div><p class="muted">Official savings rate: 3.25% p.a. on balances up to ₱1,000,000 and 3.75% p.a. on the portion above ₱1,000,000. Interest is credited daily, subject to 20% withholding tax.</p><div class="form-group"><label for="mariBankBalance">Account balance (₱)</label><input id="mariBankBalance" type="number" min="0" step="0.01" value="0" oninput="calculateMariBankInterest()"></div><div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:16px 0"><div class="stat-card"><div class="muted">Daily net</div><strong id="mariBankDaily">₱0.00</strong></div><div class="stat-card"><div class="muted">Monthly net*</div><strong id="mariBankMonthly">₱0.00</strong></div><div class="stat-card"><div class="muted">Annual net*</div><strong id="mariBankAnnual">₱0.00</strong></div></div><div class="muted" style="font-size:12px">*Estimates assume a constant balance and 365 days per year; monthly is annual divided by 12. Actual daily credit uses the previous day's ending balance and may vary.</div><p style="margin-top:12px"><a href="https://www.maribank.ph/product/savings" target="_blank" rel="noopener noreferrer">Check MariBank's official savings rates ↗</a></p><div class="form-actions"><button class="btn btn-primary" type="button" onclick="closeMariBankInterest()">Done</button></div></div></div>
