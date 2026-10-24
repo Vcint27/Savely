@@ -1185,6 +1185,18 @@ document.querySelectorAll('[data-settings-tab]').forEach(btn=>btn.addEventListen
 const settingsLogoutButtons=[document.getElementById('settingsLogoutButton'),document.getElementById('settingsLogoutMenuButton')].filter(Boolean);
 settingsLogoutButtons.forEach(button=>button.addEventListener('click',()=>{const authLogout=document.getElementById('savely-auth-logout');if(authLogout)authLogout.click();}));
 setSettingsTab('datetime');
+function getSavingsPrivacyHidden(){try{return localStorage.getItem('savelyHideSavingsTotal')==='true';}catch(e){return false;}}
+function toggleSavingsTotalPrivacy(){
+ const hidden=!getSavingsPrivacyHidden();
+ try{localStorage.setItem('savelyHideSavingsTotal',hidden?'true':'false');}catch(e){}
+ const valueEl=document.getElementById('savingsTotalPrivacyValue');
+ const iconEl=document.getElementById('savingsTotalPrivacyIcon');
+ const amount=(Array.isArray(data.savingsList)?data.savingsList:[]).filter(i=>(i.category||'Savings')==='Savings').reduce((sum,item)=>sum+Number(item.amount||0),0);
+ if(valueEl)valueEl.textContent=hidden?'********':peso(amount);
+ if(iconEl){iconEl.innerHTML=hidden?'<path d="M3 3l18 18"></path><path d="M10.6 10.6a2 2 0 0 0 2.8 2.8"></path><path d="M9.9 5.2A11 11 0 0 1 12 5c6.4 0 10 7 10 7a16.5 16.5 0 0 1-3.1 3.9"></path><path d="M6.6 6.6C3.7 8.4 2 12 2 12s3.6 7 10 7a10.7 10.7 0 0 0 4-.8"></path>':'<path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7-10-7-10-7Z"></path><circle cx="12" cy="12" r="3"></circle>';}
+ const button=valueEl?.closest('div.stat')?.querySelector('.privacy-toggle');
+ if(button){button.setAttribute('aria-label',hidden?'Show savings total':'Hide savings total');button.title=hidden?'Show savings total':'Hide savings total';}
+}
 function renderSavingsList(){
  const items=Array.isArray(data.savingsList)?data.savingsList:[];
  const goalBankItems=(Array.isArray(data.goals)?data.goals:[]).flatMap(goal=>(Array.isArray(goal.banks)?goal.banks:Array.isArray(goal.selectedBanks)?goal.selectedBanks:[]).map((bank,index)=>{const bankName=typeof bank==='string'?bank:(bank.name||bank.bankName||bank.bank||'Bank');const rawAmount=typeof bank==='object'?(bank.amount??bank.balance??bank.value??0):0;return {id:`goalalloc-${goal.id}-${index}`,name:`${goal.name||'Savings Goal'} · ${bankName}`,amount:Math.max(0,Number(rawAmount)||0),category:'Savings',date:goal.created||todayISO(),isGoalAllocation:true,goalId:goal.id,bankName};}));
@@ -1222,7 +1234,7 @@ function renderSavingsList(){
   : `<div class="stat-foot" style="color:var(--muted)">No increase recorded</div>`;
  document.getElementById('financialCategoryStats').innerHTML=
 
-  `<div class="stat"><div class="stat-top">Savings total</div><div class="stat-value" style="color:var(--green)">${peso(savings)}</div>${savingsChangeHtml}</div>`+
+  `<div class="stat"><div class="stat-top" style="display:flex;align-items:center;justify-content:space-between;gap:8px"><span>Savings total</span><button type="button" class="privacy-toggle" onclick="toggleSavingsTotalPrivacy()" aria-label="Hide savings total" title="Hide savings total" style="border:0;background:transparent;color:var(--muted);padding:3px 5px;border-radius:6px;display:inline-flex;align-items:center;justify-content:center"><svg id="savingsTotalPrivacyIcon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7-10-7-10-7Z"></path><circle cx="12" cy="12" r="3"></circle></svg></button></div><div class="stat-value" id="savingsTotalPrivacyValue" style="color:var(--green)">${getSavingsPrivacyHidden()?'********':peso(savings)}</div>${savingsChangeHtml}</div>`+
   `<div class="stat"><div class="stat-top">Salary / income total</div><div class="stat-value" style="color:var(--blue)">${peso(income)}</div><div class="stat-foot">Across all recorded items</div></div>`+
   `<div class="stat"><div class="stat-top">Debt total</div><div class="stat-value" style="color:var(--red)">${peso(debt)}</div><div class="stat-foot">Across all recorded items</div></div>`;
  renderSavingsTrend();
