@@ -645,6 +645,22 @@ function ensureInterestTracking(item, now){
  if(!Array.isArray(item.graphHistory)||!item.graphHistory.length){
   item.graphHistory=[{at:now-1,amount:Math.max(0,Number(item.amount)||0)}];
  }
+ // Older versions recorded estimated interest every few minutes. Keep only the
+ // last balance snapshot for each local calendar day, preserving the initial zero point.
+ const history=item.graphHistory;
+ if(history.length>2){
+  const byDay=new Map();
+  history.forEach((point,index)=>{
+   const at=Number(point.at)||now;
+   const day=interestLocalDate(at);
+   const existing=byDay.get(day);
+   if(!existing||at>=Number(existing.point.at)||index===history.length-1)byDay.set(day,{point:{...point,at},index});
+  });
+  const compact=[...byDay.values()].sort((a,b)=>Number(a.point.at)-Number(b.point.at)).map(x=>x.point);
+  const first=history[0];
+  if(Number(first.amount)===0 && compact[0]!==first && Number(first.at)<Number(compact[0]?.at))compact.unshift(first);
+  item.graphHistory=compact;
+ }
 }
 function accrueRealtimeInterest(){
  const now=getDisplayedDateTime().getTime(), dayMs=86400000, annualNetRate=0.0325*0.8;
@@ -662,16 +678,9 @@ function accrueRealtimeInterest(){
    const newBalance=oldBalance*(1+annualNetRate*elapsed/dayMs/365);
    item.amount=newBalance;
    t.lastTickAt=now;
-   // Keep chart points reasonably light while still making the line appear to move in real time.
-   const hist=item.graphHistory;
-   const lastPoint=hist[hist.length-1];
-   if(!lastPoint || now-(Number(lastPoint.at)||0)>=5*60*1000){
-    hist.push({at:now,amount:newBalance});
-    if(hist.length>1500)hist.splice(1,hist.length-1500);
-   }else{
-    // Update the latest point so the plotted endpoint follows the live estimate.
-    lastPoint.amount=newBalance;
-   }
+   // Update the running estimate in the saved balance, but do not create graph
+   // points on every tick. The graph records one cumulative daily-interest point
+   // when the local calendar day rolls over, preventing a per-minute sawtooth.
    changed=true;
   }
   const today=interestLocalDate(now);
@@ -688,7 +697,13 @@ function accrueRealtimeInterest(){
      interestEarned:earned,interestDate:previousDate
     });
    }
-   item.graphHistory.push({at:now,amount:newDayBalance});
+   const lastGraphPoint=item.graphHistory[item.graphHistory.length-1];
+   if(!lastGraphPoint || interestLocalDate(Number(lastGraphPoint.at)||0)!==today){
+    item.graphHistory.push({at:now,amount:newDayBalance});
+   }else{
+    lastGraphPoint.amount=newDayBalance;
+    lastGraphPoint.at=now;
+   }
    t.dayStartBalance=newDayBalance;
    t.lastHistoryDate=today;
    changed=true;
