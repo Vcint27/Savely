@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Savely — Savings Manager</title>
+<title>Savely — Savings Manager | v2.8.7</title>
 <style>
 :root{--bg:#f5f7fb;--panel:#fff;--text:#172033;--muted:#758097;--line:#e8edf4;--green:#168765;--green2:#e6f7ef;--blue:#4569e8;--blue2:#edf1ff;--orange:#df8a2f;--red:#d94d5c;--shadow:0 10px 35px #2636550a}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);font:14px/1.5 Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;color:var(--text)}button,input,select,textarea{font:inherit}button{cursor:pointer}.app{display:grid;grid-template-columns:245px minmax(0,1fr);min-height:100vh}.sidebar{background:#fff;border-right:1px solid var(--line);padding:25px 16px;display:flex;flex-direction:column;gap:28px}.brand{display:flex;align-items:center;gap:11px;padding:0 10px;font-size:20px;font-weight:800;letter-spacing:-.6px}.brand-mark{display:grid;place-items:center;width:38px;height:38px;border-radius:13px;background:var(--green);color:#fff;font-size:21px}.nav-label{color:#a0a8b8;font-size:10px;font-weight:800;letter-spacing:1.5px;padding:0 12px;margin-bottom:8px}.nav{display:grid;gap:5px}.nav button{border:0;background:transparent;color:#667188;text-align:left;padding:12px;border-radius:11px;display:flex;align-items:center;gap:12px;font-weight:600}.nav button .ico{width:20px;text-align:center;font-size:17px}.nav button.active{background:var(--green2);color:var(--green)}.side-bottom{margin-top:auto;background:#f7f9fc;border:1px solid var(--line);padding:15px;border-radius:14px}.side-bottom strong{display:block;margin-bottom:5px}.side-bottom p{font-size:12px;color:var(--muted);margin:0 0 12px}.side-bottom button{border:0;background:#fff;border:1px solid var(--line);padding:8px 10px;border-radius:8px;font-weight:650;width:100%}.main{min-width:0;padding:28px clamp(18px,3vw,42px) 48px}.topbar{display:flex;justify-content:space-between;align-items:center;gap:16px;margin-bottom:28px}.eyebrow{font-size:12px;color:var(--muted);margin-bottom:4px}.page-title{font-size:27px;letter-spacing:-.8px;margin:0;font-weight:800}.top-actions{display:flex;gap:10px;align-items:center}.date-pill,.avatar{background:#fff;border:1px solid var(--line);border-radius:11px;padding:10px 13px;color:#5e687c}.avatar{background:#dff4e9;color:#197453;font-weight:800;border:0;border-radius:50%;width:40px;height:40px;padding:0;display:grid;place-items:center}.btn{border:0;border-radius:10px;padding:10px 14px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;gap:7px}.btn-primary{background:var(--green);color:#fff}.btn-light{background:#fff;border:1px solid var(--line);color:#4e5a70}.btn-danger{background:#fff0f1;color:var(--red)}.cards{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:15px;margin-bottom:20px}.stat,.panel{background:var(--panel);border:1px solid var(--line);border-radius:17px;box-shadow:var(--shadow)}.stat{padding:20px;min-width:0}.stat-top{display:flex;justify-content:space-between;align-items:center;color:var(--muted);font-size:12px;font-weight:650}.stat-icon{width:34px;height:34px;display:grid;place-items:center;border-radius:11px;background:var(--green2);color:var(--green);font-size:17px}.stat-value{font-size:25px;letter-spacing:-.7px;font-weight:800;margin:12px 0 4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.stat-foot{font-size:11px;color:var(--muted)}.positive{color:var(--green)}.layout{display:grid;grid-template-columns:minmax(0,1.45fr) minmax(280px,.85fr);gap:18px;margin-bottom:18px}.panel{padding:21px;min-width:0}.panel-head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:18px}.panel h2{font-size:16px;margin:0;letter-spacing:-.3px}.panel-sub{font-size:12px;color:var(--muted);margin-top:4px}.link-btn{border:0;background:transparent;color:var(--green);font-size:12px;font-weight:750}.goal-amount{font-size:25px;font-weight:800;letter-spacing:-.5px;margin:14px 0 2px}.progress{height:8px;background:#edf0f5;border-radius:99px;overflow:hidden;margin:15px 0 10px}.progress>span{display:block;height:100%;background:var(--green);border-radius:99px;transition:width .2s}.between{display:flex;justify-content:space-between;gap:10px;font-size:12px;color:var(--muted)}.goal-meta{display:flex;gap:10px;align-items:center;margin-top:20px;padding-top:16px;border-top:1px solid var(--line)}.goal-meta .mini{width:36px;height:36px;border-radius:11px;background:var(--blue2);display:grid;place-items:center;color:var(--blue)}.goal-meta strong{display:block;font-size:12px}.goal-meta small{color:var(--muted)}.chart{height:190px;display:flex;align-items:end;gap:clamp(6px,2vw,18px);padding:10px 4px 0;border-bottom:1px solid var(--line);position:relative}.bar-wrap{flex:1;height:100%;display:flex;flex-direction:column;justify-content:end;align-items:center;gap:8px;min-width:0}.bar{width:min(32px,75%);min-height:4px;background:#c9d6d2;border-radius:7px 7px 2px 2px;transition:height .25s}.bar.current{background:var(--green)}.bar-label{font-size:10px;color:var(--muted);padding-bottom:7px}.legend{display:flex;gap:8px;align-items:center;color:var(--muted);font-size:11px}.dot{width:7px;height:7px;border-radius:50%;background:var(--green)}.accounts{display:grid;gap:10px}.account{display:flex;align-items:center;gap:12px;border:1px solid var(--line);padding:13px;border-radius:13px}.account-icon{width:39px;height:39px;display:grid;place-items:center;background:#edf1ff;color:#536be0;border-radius:12px;font-size:18px}.account:nth-child(2) .account-icon{background:#fff3e5;color:var(--orange)}.account-info{flex:1;min-width:0}.account-info strong{display:block;font-size:13px}.account-info small{color:var(--muted);font-size:11px}.account-balance{font-weight:800;font-size:13px;text-align:right;white-space:nowrap}.table-wrap{overflow:auto}table{width:100%;border-collapse:collapse;white-space:nowrap}th{text-align:left;color:#96a0b2;font-size:10px;text-transform:uppercase;letter-spacing:.8px;font-weight:750;padding:10px 8px;border-bottom:1px solid var(--line)}td{padding:13px 8px;border-bottom:1px solid #f0f2f6;font-size:12px}tbody tr:last-child td{border-bottom:0}.tx-title{font-weight:750;font-size:12px}.tx-sub{color:var(--muted);font-size:10px;margin-top:3px}.pill{display:inline-flex;align-items:center;border-radius:99px;padding:4px 8px;font-size:10px;font-weight:750;background:#e7f7ef;color:var(--green)}.pill.expense{background:#fff0f1;color:var(--red)}.amount-in{color:var(--green);font-weight:800}.amount-out{color:var(--red);font-weight:800}.page{display:none}.page.active{display:block}.section-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}.empty{text-align:center;padding:30px;color:var(--muted)}.form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px}.field{display:grid;gap:6px}.field.full{grid-column:1/-1}.field label{font-size:12px;color:#647087;font-weight:700}.field input,.field select,.field textarea{width:100%;padding:11px 12px;border:1px solid #dfe5ed;border-radius:10px;background:#fff;outline:none;color:var(--text)}.field input:focus,.field select:focus{border-color:#75bba2;box-shadow:0 0 0 3px #16876512}.form-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:18px}.notice{background:#fff8e9;border:1px solid #f3e1b8;color:#82642c;border-radius:12px;padding:12px 14px;font-size:12px;margin-bottom:18px}.budget-row{padding:14px 0;border-bottom:1px solid var(--line)}.budget-row:last-child{border-bottom:0}.budget-top{display:flex;justify-content:space-between;gap:12px;margin-bottom:9px;font-size:12px}.budget-top strong{font-size:13px}.small-progress{height:6px;background:#edf0f5;border-radius:99px;overflow:hidden}.small-progress span{display:block;height:100%;background:var(--blue);border-radius:99px}.muted{color:var(--muted)}.financial-tabs{display:flex;gap:8px;border-bottom:1px solid var(--line);margin:0 0 20px;padding-bottom:12px;overflow-x:auto}
@@ -120,8 +120,8 @@
 
 
 <style id="savely-v206-remove-version-history">
-#versionHistoryPanel, #settingsVersionHistoryPanel, .version-history-panel,
-[id*="versionHistory"], [id*="version-history"] { display: none !important; }
+/* Version history is enabled in Settings in this version. */
+#versionHistoryPanel { display: block; }
 </style>
 
 <style id="savely-goal-validation-v218">
@@ -410,6 +410,36 @@
 @media(max-width:600px){.interest-bank-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.interest-bank-tab{flex:1}}
 </style>
 
+
+<!-- Savely v2.8.7: modern typography system -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style id="savely-modern-typography-v287">
+:root { --font-ui: 'DM Sans', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; --font-display: 'Manrope', 'DM Sans', ui-sans-serif, system-ui, sans-serif; }
+html { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; text-rendering: optimizeLegibility; }
+body, button, input, select, textarea { font-family: var(--font-ui) !important; font-kerning: normal; }
+.brand, .page-title, .panel h2, .modal h2, .goal-card h3 { font-family: var(--font-display) !important; letter-spacing: -0.035em; }
+.page-title { font-weight: 800; line-height: 1.2; }
+.panel h2, .modal h2 { font-weight: 750; line-height: 1.35; }
+.stat-value, .goal-amount, .account-balance, .amount-in, .amount-out { font-variant-numeric: tabular-nums; letter-spacing: -0.025em; }
+.nav button, .financial-subnav button, .financial-tab, .bank-option, .btn { letter-spacing: -0.01em; }
+.nav-label, th { letter-spacing: 0.09em; }
+input::placeholder, textarea::placeholder { color: #9aa4b5; }
+</style>
+
+
+<style id="savely-v289-google-version-history">
+.auth-divider{display:flex;align-items:center;gap:12px;color:#929bad;font-size:11px;margin:17px 0 12px}
+.auth-divider:before,.auth-divider:after{content:"";height:1px;background:#e7ebf0;flex:1}
+.auth-google-btn{width:100%;min-height:45px;border:1px solid #dfe5eb;border-radius:10px;background:#fff;color:#273244;display:flex;align-items:center;justify-content:center;gap:11px;font-weight:700;font-size:13px;cursor:pointer;transition:background .15s,border-color .15s}
+.auth-google-btn:hover{background:#f8fafc;border-color:#c7d0db}
+.auth-google-note{font-size:11px;line-height:1.5;color:#929bad;text-align:center;margin:9px 0 0}
+.settings-tabs{overflow-x:auto;flex-wrap:nowrap!important;white-space:nowrap;scrollbar-width:thin;scrollbar-color:#cbd5e1 transparent}
+.settings-tabs .financial-tab{flex:0 0 auto}
+#versionHistoryPanel{display:block}
+</style>
+
 </head>
 <body>
 
@@ -453,6 +483,9 @@
         </div>
         <button class="auth-submit" id="savely-auth-submit" type="submit">Log in to Savely</button>
       </form>
+      <div class="auth-divider" aria-hidden="true"><span>or continue with</span></div>
+      <button type="button" class="auth-google-btn" id="savely-google-signin"><svg aria-hidden="true" viewBox="0 0 48 48" width="19" height="19"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.73 7.18l7.65 5.94c4.47-4.13 7.12-10.2 7.12-17.59z"/><path fill="#FBBC05" d="M10.53 28.59A14.4 14.4 0 0 1 9.75 24c0-1.59.27-3.13.76-4.59l-7.98-6.19A23.9 23.9 0 0 0 0 24c0 3.87.93 7.52 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.9-5.81l-7.65-5.94c-2.12 1.42-4.83 2.25-8.25 2.25-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 43.62 14.62 48 24 48z"/></svg><span>Continue with Google</span></button>
+      <p class="auth-google-note" id="savely-google-note">Google sign-in requires Google provider setup in Supabase.</p>
       <p class="auth-privacy">Testing mode: no account details are required. Your session is saved only in this browser; no account is created and no data is uploaded.</p>
     </div>
   </section>
@@ -460,7 +493,7 @@
 
 <div class="app">
 <aside class="sidebar">
-  <div class="brand"><div class="brand-mark">₱</div><div><span>savely</span><div style="font-size:10px;font-weight:750;color:var(--muted);letter-spacing:.6px;margin-top:2px">VERSION 2.0.1</div></div></div>
+  <div class="brand"><div class="brand-mark">₱</div><div><span>savely</span><div style="font-size:10px;font-weight:750;color:var(--muted);letter-spacing:.6px;margin-top:2px">VERSION 2.8.10</div></div></div>
   <div><div class="nav-label">WORKSPACE</div><nav class="nav" id="nav">
     <button class="active" data-page="dashboard"><span class="ico">▦</span>Overview</button>
     <button data-page="financial-list"><span class="ico">☷</span>Financial List</button>
@@ -556,12 +589,12 @@
   <section class="page" id="page-settings"><div class="settings-tabs-wrap"><div class="settings-tabs" role="tablist" aria-label="Settings sections" style="display:flex;gap:8px;flex-wrap:wrap;margin:0 0 18px;padding-bottom:12px;border-bottom:1px solid var(--line)">
 <button type="button" class="financial-tab active" data-settings-tab="datetime">Date &amp; Time</button>
 <button type="button" class="financial-tab" data-settings-tab="backup">Data Backup</button>
-
-
+<button type="button" class="financial-tab" data-settings-tab="version">Version History</button>
 <button type="button" class="financial-tab" data-settings-tab="security">Local Security</button>
-</div><div class="section-grid"><div class="panel" id="settingsDateTimePanel" data-settings-panel="datetime"><div class="panel-head"><div><h2>Live date &amp; time</h2><div class="panel-sub">Current local time in the Philippines, updated every second.</div></div><button class="btn btn-secondary btn-sm" type="button" onclick="openDateTimeSettings()">✎ Edit</button><span class="pill">LIVE</span></div><div id="settingsLiveDateTime" aria-live="off" style="padding:18px 0 8px"><div style="font-size:30px;font-weight:800;font-variant-numeric:tabular-nums">Loading time…</div><div class="muted">Loading date…</div></div><div class="panel-sub" id="dateTimeZoneLabel">Timezone: Asia/Manila (UTC+8)</div></div><div class="panel" id="settingsBackupPanel" data-settings-panel="backup"><div class="panel-head"><div><h2>Data backup</h2><div class="panel-sub">Save a copy of your records or restore a backup.</div></div></div><p class="muted">This standalone HTML version stores data in this browser using local storage. Export a backup regularly, especially before clearing browser data.</p><div class="form-actions" style="justify-content:flex-start"><button class="btn btn-primary" onclick="backupJSON()">↓ Download backup</button><label class="btn btn-light">↑ Restore backup<input type="file" accept=".json,application/json" onchange="restoreJSON(event)" hidden></label></div></div><div class="panel" id="versionHistoryPanel" data-settings-panel="version"><div class="panel-head"><div><h2>Version history</h2><div class="panel-sub">Current version: <strong>v2.4.8</strong></div></div><span class="pill">CHANGELOG</span></div>
+<button type="button" class="financial-tab" data-settings-tab="account">Account</button>
+</div><div class="section-grid"><div class="panel" id="settingsDateTimePanel" data-settings-panel="datetime"><div class="panel-head"><div><h2>Live date &amp; time</h2><div class="panel-sub">Current local time in the Philippines, updated every second.</div></div><button class="btn btn-secondary btn-sm" type="button" onclick="openDateTimeSettings()">✎ Edit</button><span class="pill">LIVE</span></div><div id="settingsLiveDateTime" aria-live="off" style="padding:18px 0 8px"><div style="font-size:30px;font-weight:800;font-variant-numeric:tabular-nums">Loading time…</div><div class="muted">Loading date…</div></div><div class="panel-sub" id="dateTimeZoneLabel">Timezone: Asia/Manila (UTC+8)</div></div><div class="panel" id="settingsBackupPanel" data-settings-panel="backup"><div class="panel-head"><div><h2>Data backup</h2><div class="panel-sub">Save a copy of your records or restore a backup.</div></div></div><p class="muted">This standalone HTML version stores data in this browser using local storage. Export a backup regularly, especially before clearing browser data.</p><div class="form-actions" style="justify-content:flex-start"><button class="btn btn-primary" onclick="backupJSON()">↓ Download backup</button><label class="btn btn-light">↑ Restore backup<input type="file" accept=".json,application/json" onchange="restoreJSON(event)" hidden></label></div></div><div class="panel" id="versionHistoryPanel" data-settings-panel="version"><div class="panel-head"><div><h2>Version history</h2><div class="panel-sub">Current version: <strong>v2.8.10</strong></div></div><span class="pill">CHANGELOG</span></div>
       <div class="version-history-scroll" style="display:grid;gap:14px;max-height:360px;overflow-y:auto;overflow-x:hidden;padding:4px 12px 8px 2px;scrollbar-gutter:stable"> 
-<div style="border-left:3px solid var(--green);padding:2px 0 2px 14px"><div style="font-weight:800">v2.4.8 <span class="pill" style="margin-left:6px">Current</span></div><div class="panel-sub">Removed Version History from Settings</div><ul style="margin:8px 0 0;padding-left:18px;color:var(--muted)"><li>Added date and time labels along the Overall Financial Trend graph so balance changes can be matched to timestamps.</li><li>Added date and time labels to the Financial List savings trend graph.</li><li>Kept the graphs showing all recorded history without period filters.</li>
+<div style="border-left:3px solid var(--green);padding:2px 0 2px 14px"><div style="font-weight:800">v2.8.10 <span class="pill" style="margin-left:6px">Current</span></div><div class="panel-sub">Reliable in-page logout</div><ul style="margin:8px 0 0;padding-left:18px;color:var(--muted)"><li>Logout immediately returns to the Savely welcome/login screen without navigating away.</li><li>Clears the saved local session and attempts to sign out the Supabase session.</li><li>Shows a confirmation message after logout.</li></ul></div><div style="border-left:3px solid var(--line);padding:2px 0 2px 14px"><div style="font-weight:800">v2.8.9</div><div class="panel-sub">Google sign-in option and Settings version history</div><ul style="margin:8px 0 0;padding-left:18px;color:var(--muted)"><li>Added a Continue with Google button to the login screen.</li><li>Restored Version History as a horizontal Settings navigation tab.</li></ul></div><div style="border-left:3px solid var(--line);padding:2px 0 2px 14px"><div style="font-weight:800">v2.4.8</div><div class="panel-sub">Financial trend and dashboard updates</div><ul style="margin:8px 0 0;padding-left:18px;color:var(--muted)"><li>Added date and time labels along the Overall Financial Trend graph so balance changes can be matched to timestamps.</li><li>Added date and time labels to the Financial List savings trend graph.</li><li>Kept the graphs showing all recorded history without period filters.</li>
             <li>Hide Add Savings on Overview and move graph period filters above the Overall Financial Trend heading.</li>
             <li>Changed the first card to Savings + Salary / Income total only.</li>
             <li>Added numeric-only increase/decrease amounts to Overview cards and Overall Total.</li>
@@ -576,7 +609,7 @@
 <div style="border-left:3px solid var(--line);padding:2px 0 2px 14px"><div style="font-weight:800">v1.4.0</div><div class="panel-sub">Overall financial view</div><ul style="margin:8px 0 0;padding-left:18px;color:var(--muted)"><li>Added Overall navigation and Overall Total calculation (Savings + Salary − Debt).</li><li>Added four summary cards and Overall Financial Trend graph.</li><li>Removed duplicate large Overall Total panel.</li></ul></div>
 <div style="border-left:3px solid var(--line);padding:2px 0 2px 14px"><div style="font-weight:800">v1.3.0</div><div class="panel-sub">Savings tracking and Maya form fixes</div><ul style="margin:8px 0 0;padding-left:18px;color:var(--muted)"><li>Moved increase/decrease indicator to Savings Total and removed per-item indicators.</li><li>Adjusted Maya Add Savings layout and restored Apply button.</li><li>Removed Overall Financial Summary panel.</li></ul></div>
 <div style="border-left:3px solid var(--line);padding:2px 0 2px 14px"><div style="font-weight:800">v1.2.0</div><div class="panel-sub">Savings history, interest, and date settings</div><ul style="margin:8px 0 0;padding-left:18px;color:var(--muted)"><li>Added per-item and combined savings history.</li><li>Added interest estimates and bank-specific interest posting information.</li><li>Added editable date, time, and timezone settings.</li><li>Added bank favorites and category-aware Add Savings options.</li></ul></div></div>
-    </div><div class="panel" id="settingsRecurringPanel" data-settings-panel="recurring"><div class="panel-head"><div><h2>Recurring deposits</h2><div class="panel-sub">Track planned deposits. This file does not execute bank transfers.</div></div><button class="btn btn-primary" onclick="openModal('recurring')">＋ Add schedule</button></div><div id="recurringList"></div></div><div class="panel" id="settingsSecurityPanel" data-settings-panel="security"><div class="panel-head"><div><h2>Local security</h2></div></div><p class="muted">This HTML-only edition has no server login or encrypted multi-user database. Anyone with access to this browser profile may be able to access its saved data.</p><button class="btn btn-danger" onclick="resetData()">Reset all local data</button></div></div></div></section>
+    </div><div class="panel" id="settingsRecurringPanel" data-settings-panel="recurring"><div class="panel-head"><div><h2>Recurring deposits</h2><div class="panel-sub">Track planned deposits. This file does not execute bank transfers.</div></div><button class="btn btn-primary" onclick="openModal('recurring')">＋ Add schedule</button></div><div id="recurringList"></div></div><div class="panel" id="settingsSecurityPanel" data-settings-panel="security"><div class="panel-head"><div><h2>Local security</h2></div></div><p class="muted">This HTML-only edition has no server login or encrypted multi-user database. Anyone with access to this browser profile may be able to access its saved data.</p><button class="btn btn-danger" onclick="resetData()">Reset all local data</button></div><div class="panel" id="settingsAccountPanel" data-settings-panel="account"><div class="panel-head"><div><h2>Account &amp; session</h2><div class="panel-sub">Manage your current Savely session.</div></div><span class="pill">ACCOUNT</span></div><p class="muted">Log out to return to the Savely welcome screen. Your locally saved savings data will remain in this browser unless you reset or clear it.</p><div class="form-actions" style="justify-content:flex-start"><button class="btn btn-danger" type="button" id="settingsLogoutButton">↪ Log out</button></div></div></div></div></section>
 </main>
 </div>
 <div class="modal-backdrop" id="modalBackdrop" onclick="if(event.target===this)closeModal()"><div class="modal"><h2 id="modalTitle">Add transaction</h2><p id="modalDesc">Record a money movement.</p><form id="modalForm"></form></div></div>
@@ -1133,6 +1166,8 @@ function setSettingsTab(tab){
  document.querySelectorAll('[data-settings-panel]').forEach(panel=>panel.classList.toggle('settings-panel-active',panel.dataset.settingsPanel===tab));
 }
 document.querySelectorAll('[data-settings-tab]').forEach(btn=>btn.addEventListener('click',()=>setSettingsTab(btn.dataset.settingsTab)));
+const settingsLogoutButton=document.getElementById('settingsLogoutButton');
+if(settingsLogoutButton)settingsLogoutButton.addEventListener('click',()=>{const authLogout=document.getElementById('savely-auth-logout');if(authLogout)authLogout.click();});
 setSettingsTab('datetime');
 function renderSavingsList(){
  const items=Array.isArray(data.savingsList)?data.savingsList:[];
@@ -1777,6 +1812,8 @@ document.addEventListener('click',function(e){
   const userChip=document.getElementById('savely-auth-user-chip');
   const userEmail=document.getElementById('savely-auth-user-email');
   const logout=document.getElementById('savely-auth-logout');
+  const googleButton=document.getElementById('savely-google-signin');
+  const googleNote=document.getElementById('savely-google-note');
   let mode='login', session=null;
   function readSession(){try{return JSON.parse(localStorage.getItem(SESSION_KEY)||'null')}catch(_){return null}}
   function saveSession(s){session=s;if(s)localStorage.setItem(SESSION_KEY,JSON.stringify(s));else localStorage.removeItem(SESSION_KEY)}
@@ -1814,6 +1851,18 @@ document.addEventListener('click',function(e){
     return data;
   }
   async function restore(){
+    // Handle Supabase OAuth redirect tokens when Google provider is configured.
+    if(location.hash && /access_token=/.test(location.hash)){
+      const params=new URLSearchParams(location.hash.slice(1));
+      const access_token=params.get('access_token');
+      const refresh_token=params.get('refresh_token');
+      if(access_token){
+        try{
+          const response=await fetch(URL+'/auth/v1/user',{headers:{apikey:KEY,Authorization:'Bearer '+access_token}});
+          if(response.ok){const user=await response.json();saveSession({access_token,refresh_token, user});history.replaceState(null,'',location.pathname+location.search);showApp(user);return;}
+        }catch(e){console.warn('Google sign-in callback failed:',e)}
+      }
+    }
     const saved=readSession();
     if(!saved){showGate();return}
     // Local testing account is only a UI preview; it is not an authenticated Supabase session.
@@ -1831,6 +1880,12 @@ document.addEventListener('click',function(e){
   }
   loginTab.addEventListener('click',()=>setMode('login'));
   signupTab.addEventListener('click',()=>setMode('signup'));
+  googleButton?.addEventListener('click',()=>{
+    const redirectTo=location.origin+location.pathname;
+    const url=URL+'/auth/v1/authorize?provider=google&redirect_to='+encodeURIComponent(redirectTo)+'&apikey='+encodeURIComponent(KEY);
+    googleNote.textContent='Redirecting to Google…';
+    location.href=url;
+  });
   // TESTING MODE: no credentials are required. Clicking either action opens the app.
   // This creates a local-only preview session and does not create/authenticate a Supabase account.
   form.addEventListener('submit',e=>{
@@ -1849,8 +1904,30 @@ document.addEventListener('click',function(e){
   });
   logout.addEventListener('click',async()=>{
     const saved=readSession();
-    try{if(saved&&saved.access_token)await fetch(URL+'/auth/v1/logout',{method:'POST',headers:{apikey:KEY,Authorization:'Bearer '+saved.access_token}})}catch(_){}
-    saveSession(null);showGate();setMode('login');passwordInput.value='';
+    // Clear the browser session and return to the welcome screen immediately,
+    // without navigating away from the current Savely page.
+    saveSession(null);
+    showGate();
+    setMode('login');
+    passwordInput.value='';
+    emailInput.value='';
+    showMessage('You have been logged out.','success');
+    logout.disabled=true;
+    const settingsLogout=document.getElementById('settingsLogoutButton');
+    if(settingsLogout)settingsLogout.disabled=true;
+    try{
+      if(saved&&saved.access_token&&!saved.testingOnly){
+        const controller=new AbortController();
+        const timeout=setTimeout(()=>controller.abort(),5000);
+        try{
+          await fetch(URL+'/auth/v1/logout',{method:'POST',headers:{apikey:KEY,Authorization:'Bearer '+saved.access_token},signal:controller.signal});
+        }finally{clearTimeout(timeout)}
+      }
+    }catch(e){console.warn('Server sign-out could not be confirmed; local Savely session was cleared.',e)}
+    finally{
+      logout.disabled=false;
+      if(settingsLogout)settingsLogout.disabled=false;
+    }
   });
   setMode('login');restore();
   // Charts are custom canvas drawings; redraw when viewport dimensions change.
