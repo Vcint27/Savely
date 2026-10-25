@@ -502,11 +502,14 @@ input::placeholder, textarea::placeholder { color: #9aa4b5; }
           <label for="savely-auth-email">Email address</label>
           <input id="savely-auth-email" name="email" type="email" autocomplete="email" maxlength="254" placeholder="you@example.com">
         </div>
-        <div class="auth-field">
-          <label for="savely-auth-password">Password</label>
-          <input id="savely-auth-password" name="password" type="password" autocomplete="current-password" placeholder="At least 6 characters">
+        <div class="auth-field" id="savely-otp-wrap" hidden>
+          <label for="savely-auth-otp">Email verification code</label>
+          <input id="savely-auth-otp" name="otp" type="text" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6,8}" maxlength="8" placeholder="Enter the code from your email" aria-describedby="savely-otp-help">
+          <small id="savely-otp-help" style="color:#7a8495;line-height:1.5">Check your inbox and spam folder. The code expires after a limited time.</small>
         </div>
-        <button class="auth-submit" id="savely-auth-submit" type="submit">Log in to Savely</button>
+        <button class="auth-submit" id="savely-auth-submit" type="submit">Email me a login code</button>
+        <button type="button" id="savely-otp-resend" class="auth-google-btn" style="display:none;margin-top:8px">Send a new code</button>
+        <button type="button" id="savely-otp-back" class="auth-google-btn" style="display:none;margin-top:8px">Use a different email</button>
       </form>
       <div class="auth-divider" aria-hidden="true"><span>or continue with</span></div>
       <button type="button" class="auth-google-btn" id="savely-google-signin"><svg aria-hidden="true" viewBox="0 0 48 48" width="19" height="19"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.73 7.18l7.65 5.94c4.47-4.13 7.12-10.2 7.12-17.59z"/><path fill="#FBBC05" d="M10.53 28.59A14.4 14.4 0 0 1 9.75 24c0-1.59.27-3.13.76-4.59l-7.98-6.19A23.9 23.9 0 0 0 0 24c0 3.87.93 7.52 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.9-5.81l-7.65-5.94c-2.12 1.42-4.83 2.25-8.25 2.25-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 43.62 14.62 48 24 48z"/></svg><span>Continue with Google</span></button>
@@ -615,10 +618,10 @@ input::placeholder, textarea::placeholder { color: #9aa4b5; }
 <button type="button" class="financial-tab" data-settings-tab="backup">Data Backup</button>
 <button type="button" class="financial-tab" data-settings-tab="security">Local Security</button>
 <button type="button" class="financial-tab" data-settings-tab="account">Account</button><button type="button" class="financial-tab" data-settings-tab="version-history">Version History</button>
-</div><div class="section-grid"><div class="panel" id="settingsDateTimePanel" data-settings-panel="datetime"><div class="panel-head"><div><h2>Live date &amp; time</h2><div class="panel-sub">Current local time in the Philippines, updated every second.</div></div><button class="btn btn-secondary btn-sm" type="button" onclick="openDateTimeSettings()">✎ Edit</button><span class="pill">LIVE</span></div><div id="settingsLiveDateTime" aria-live="off" style="padding:18px 0 8px"><div style="font-size:30px;font-weight:800;font-variant-numeric:tabular-nums">Loading time…</div><div class="muted">Loading date…</div></div><div class="panel-sub" id="dateTimeZoneLabel">Timezone: Asia/Manila (UTC+8)</div></div><div class="panel" id="settingsBackupPanel" data-settings-panel="backup"><div class="panel-head"><div><h2>Data backup</h2><div class="panel-sub">Save a copy of your records or restore a backup.</div></div></div><p class="muted">Your data is stored locally and synced to your signed-in account when Supabase database setup is complete. Export a backup regularly.</p><div class="form-actions" style="justify-content:flex-start"><button class="btn btn-primary" onclick="backupJSON()">↓ Download backup</button><label class="btn btn-light">↑ Restore backup<input type="file" accept=".json,application/json" onchange="restoreJSON(event)" hidden></label><button class="btn btn-danger" type="button" onclick="deleteAllRecords()">Delete all your records</button></div></div><div class="panel" id="settingsRecurringPanel" data-settings-panel="recurring"><div class="panel-head"><div><h2>Recurring deposits</h2><div class="panel-sub">Track planned deposits. This file does not execute bank transfers.</div></div><button class="btn btn-primary" onclick="openModal('recurring')">＋ Add schedule</button></div><div id="recurringList"></div></div><div class="panel" id="settingsSecurityPanel" data-settings-panel="security"><div class="panel-head"><div><h2>Local security</h2></div></div><p class="muted">Savely uses Supabase email/password authentication. Cloud financial-data sync requires the savely_user_data table and row-level security policies to be configured.</p><button class="btn btn-danger" onclick="resetData()">Reset all local data</button></div><div class="panel" id="settingsVersionHistoryPanel" data-settings-panel="version-history"><div class="panel-head"><div><h2>Version history</h2><div class="panel-sub">Review Savely updates by version and importance.</div></div></div><div class="version-history-grid" style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px"><div style="padding:14px;border:1px solid var(--line);border-radius:12px"><div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><strong>v2.8.44</strong><span class="pill" style="background:#e5f7ef;color:#087f5b">MAJOR</span></div><ul style="line-height:1.8;padding-left:22px"><li>Set email confirmation redirects to the Savely GitHub Pages project URL.</li><li>Enabled real Supabase email/password sign-up and login instead of local testing-mode access.</li><li>New accounts are created in Supabase Auth; authenticated sessions are used for account-scoped savings sync.</li></ul></div><div style="padding:14px;border:1px solid var(--line);border-radius:12px"><div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><strong>v2.8.40</strong><span class="pill">MINOR</span></div><ul style="line-height:1.8;padding-left:22px"><li>Reorganized Version History into a side-by-side two-column layout for easier comparison of major and minor releases.</li><li>Updated the startup popup to show only the newest patch updates instead of repeating previous release notes.</li></ul></div><div style="padding:14px;border:1px solid var(--line);border-radius:12px"><div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><strong>v2.8.40</strong><strong>v2.8.38</strong><span class="pill">MINOR</span></div><ul style="line-height:1.8;padding-left:22px"><li>Added a warning confirmation before changing date, time, or timezone.</li><li>Added a confirmation dialog before logging out.</li></ul></div><div style="padding:14px;border:1px solid var(--line);border-radius:12px"><div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><strong>v2.8.37</strong><span class="pill">MINOR</span></div><ul style="line-height:1.8;padding-left:22px"><li>Restyled Sort by and placed it beside Overall History and Export list.</li><li>Improved responsive layout for narrow screens.</li></ul></div><div style="padding:14px;border:1px solid var(--line);border-radius:12px"><div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><strong>v2.8.36</strong><span class="pill" style="background:#e5f7ef;color:#087f5b">MAJOR</span></div><ul style="line-height:1.8;padding-left:22px"><li>Added Financial List sorting by amount and institution type.</li><li>Added a View savings graph control to expand the graph.</li><li>Removed the extra monthly/yearly interest estimate description under the rate.</li><li>Updated the startup updates popup with major and minor labels.</li><li>Added version history in Settings.</li></ul></div><div style="padding:14px;border:1px solid var(--line);border-radius:12px"><div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><strong>v2.8.35</strong><span class="pill">MINOR</span></div><p class="muted">Removed zoom behavior from candle endpoint clicks while preserving bank history selection.</p></div><div style="padding:14px;border:1px solid var(--line);border-radius:12px"><div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><strong>v2.8.34</strong><span class="pill">MINOR</span></div><p class="muted">Moved the graph timestamp to the right-most endpoint and refreshed the updates popup.</p></div></div></div><div class="panel" id="settingsAccountPanel" data-settings-panel="account"><div class="panel-head"><div><h2>Account &amp; session</h2><div class="panel-sub">Manage your current Savely session.</div></div><span class="pill">ACCOUNT</span></div><p class="muted">Log out to return to the Savely welcome screen. Your locally saved savings data will remain in this browser unless you reset or clear it.</p><div class="form-actions" style="justify-content:flex-start"><button class="btn btn-danger" type="button" id="settingsLogoutButton">↪ Log out</button></div></div></div></div></section>
+</div><div class="section-grid"><div class="panel" id="settingsDateTimePanel" data-settings-panel="datetime"><div class="panel-head"><div><h2>Live date &amp; time</h2><div class="panel-sub">Current local time in the Philippines, updated every second.</div></div><button class="btn btn-secondary btn-sm" type="button" onclick="openDateTimeSettings()">✎ Edit</button><span class="pill">LIVE</span></div><div id="settingsLiveDateTime" aria-live="off" style="padding:18px 0 8px"><div style="font-size:30px;font-weight:800;font-variant-numeric:tabular-nums">Loading time…</div><div class="muted">Loading date…</div></div><div class="panel-sub" id="dateTimeZoneLabel">Timezone: Asia/Manila (UTC+8)</div></div><div class="panel" id="settingsBackupPanel" data-settings-panel="backup"><div class="panel-head"><div><h2>Data backup</h2><div class="panel-sub">Save a copy of your records or restore a backup.</div></div></div><p class="muted">Your data is stored locally and synced to your signed-in account when Supabase database setup is complete. Export a backup regularly.</p><div class="form-actions" style="justify-content:flex-start"><button class="btn btn-primary" onclick="backupJSON()">↓ Download backup</button><label class="btn btn-light">↑ Restore backup<input type="file" accept=".json,application/json" onchange="restoreJSON(event)" hidden></label><button class="btn btn-danger" type="button" onclick="deleteAllRecords()">Delete all your records</button></div></div><div class="panel" id="settingsRecurringPanel" data-settings-panel="recurring"><div class="panel-head"><div><h2>Recurring deposits</h2><div class="panel-sub">Track planned deposits. This file does not execute bank transfers.</div></div><button class="btn btn-primary" onclick="openModal('recurring')">＋ Add schedule</button></div><div id="recurringList"></div></div><div class="panel" id="settingsSecurityPanel" data-settings-panel="security"><div class="panel-head"><div><h2>Local security</h2></div></div><p class="muted">Savely uses Supabase email one-time-code authentication. Cloud financial-data sync requires the savely_user_data table and row-level security policies to be configured.</p><button class="btn btn-danger" onclick="resetData()">Reset all local data</button></div><div class="panel" id="settingsVersionHistoryPanel" data-settings-panel="version-history"><div class="panel-head"><div><h2>Version history</h2><div class="panel-sub">Review Savely updates by version and importance.</div></div></div><div class="version-history-grid" style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px"><div style="padding:14px;border:1px solid var(--line);border-radius:12px"><div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><strong>v2.8.44</strong><span class="pill" style="background:#e5f7ef;color:#087f5b">MAJOR</span></div><ul style="line-height:1.8;padding-left:22px"><li>Set email confirmation redirects to the Savely GitHub Pages project URL.</li><li>Enabled real Supabase email/password sign-up and login instead of local testing-mode access.</li><li>New accounts are created in Supabase Auth; authenticated sessions are used for account-scoped savings sync.</li></ul></div><div style="padding:14px;border:1px solid var(--line);border-radius:12px"><div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><strong>v2.8.40</strong><span class="pill">MINOR</span></div><ul style="line-height:1.8;padding-left:22px"><li>Reorganized Version History into a side-by-side two-column layout for easier comparison of major and minor releases.</li><li>Updated the startup popup to show only the newest patch updates instead of repeating previous release notes.</li></ul></div><div style="padding:14px;border:1px solid var(--line);border-radius:12px"><div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><strong>v2.8.40</strong><strong>v2.8.38</strong><span class="pill">MINOR</span></div><ul style="line-height:1.8;padding-left:22px"><li>Added a warning confirmation before changing date, time, or timezone.</li><li>Added a confirmation dialog before logging out.</li></ul></div><div style="padding:14px;border:1px solid var(--line);border-radius:12px"><div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><strong>v2.8.37</strong><span class="pill">MINOR</span></div><ul style="line-height:1.8;padding-left:22px"><li>Restyled Sort by and placed it beside Overall History and Export list.</li><li>Improved responsive layout for narrow screens.</li></ul></div><div style="padding:14px;border:1px solid var(--line);border-radius:12px"><div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><strong>v2.8.36</strong><span class="pill" style="background:#e5f7ef;color:#087f5b">MAJOR</span></div><ul style="line-height:1.8;padding-left:22px"><li>Added Financial List sorting by amount and institution type.</li><li>Added a View savings graph control to expand the graph.</li><li>Removed the extra monthly/yearly interest estimate description under the rate.</li><li>Updated the startup updates popup with major and minor labels.</li><li>Added version history in Settings.</li></ul></div><div style="padding:14px;border:1px solid var(--line);border-radius:12px"><div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><strong>v2.8.35</strong><span class="pill">MINOR</span></div><p class="muted">Removed zoom behavior from candle endpoint clicks while preserving bank history selection.</p></div><div style="padding:14px;border:1px solid var(--line);border-radius:12px"><div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><strong>v2.8.34</strong><span class="pill">MINOR</span></div><p class="muted">Moved the graph timestamp to the right-most endpoint and refreshed the updates popup.</p></div></div></div><div class="panel" id="settingsAccountPanel" data-settings-panel="account"><div class="panel-head"><div><h2>Account &amp; session</h2><div class="panel-sub">Manage your current Savely session.</div></div><span class="pill">ACCOUNT</span></div><p class="muted">Log out to return to the Savely welcome screen. Your locally saved savings data will remain in this browser unless you reset or clear it.</p><div class="form-actions" style="justify-content:flex-start"><button class="btn btn-danger" type="button" id="settingsLogoutButton">↪ Log out</button></div></div></div></div></section>
 </main>
 </div>
-<div class="modal-backdrop" id="savelyUpdatesBackdrop" role="dialog" aria-modal="true" aria-labelledby="savelyUpdatesTitle" style="z-index:9999"><div class="modal" style="max-width:520px"><div class="panel-head"><div><div class="pill" style="display:inline-flex;margin-bottom:10px">SAVELY UPDATES</div><h2 id="savelyUpdatesTitle">What’s new in Savely</h2></div></div><p class="muted">Version 2.8.44 · Latest patch</p><div style="display:grid;gap:12px"><div><span class="pill" style="background:#e5f7ef;color:#087f5b">MAJOR UPDATE · v2.8.44</span><ul style="line-height:1.8;padding-left:22px;margin-top:8px"><li>Set sign-up email confirmation redirects to https://vcint27.github.io/Savely/.</li><li>Enabled real Supabase email/password sign-up and login; removed the testing-only login bypass.</li><li>New accounts are created in Supabase Authentication and sessions are used for account-scoped cloud sync.</li><li>Updated account and privacy messaging to explain authentication and cloud data setup.</li></ul></div></div><div class="form-actions" style="justify-content:flex-end"><button type="button" class="btn btn-primary" onclick="closeSavelyUpdates()">Okay</button></div></div></div>
+<div class="modal-backdrop" id="savelyUpdatesBackdrop" role="dialog" aria-modal="true" aria-labelledby="savelyUpdatesTitle" style="z-index:9999"><div class="modal" style="max-width:520px"><div class="panel-head"><div><div class="pill" style="display:inline-flex;margin-bottom:10px">SAVELY UPDATES</div><h2 id="savelyUpdatesTitle">What’s new in Savely</h2></div></div><p class="muted">Version 2.8.44 · Latest patch</p><div style="display:grid;gap:12px"><div><span class="pill" style="background:#e5f7ef;color:#087f5b">MAJOR UPDATE · v2.8.44</span><ul style="line-height:1.8;padding-left:22px;margin-top:8px"><li>Added email OTP authentication for sign-up and login.</li><li>Enabled Supabase email one-time-code sign-up and login.</li><li>Verified accounts use Supabase Authentication sessions for account-scoped cloud sync.</li><li>Updated account and privacy messaging to explain authentication and cloud data setup.</li></ul></div></div><div class="form-actions" style="justify-content:flex-end"><button type="button" class="btn btn-primary" onclick="closeSavelyUpdates()">Okay</button></div></div></div>
 <div class="modal-backdrop" id="modalBackdrop" onclick="if(event.target===this)closeModal()"><div class="modal"><h2 id="modalTitle">Add transaction</h2><p id="modalDesc">Record a money movement.</p><form id="modalForm"></form></div></div>
 <div class="modal-backdrop" id="financialAddBackdrop" onclick="if(event.target===this)closeFinancialAdd()"><div class="modal financial-edit-modal"><div class="panel-head"><div><h2 id="financialAddTitle">Add Savings</h2><p id="financialAddSubtitle">Track savings accounts, cash, and money set aside.</p></div><button type="button" class="btn btn-light" onclick="closeFinancialAdd()">✕ Close</button></div><form id="financialAddForm"><div class="field full" style="margin-bottom:16px"><label>Choose a bank or digital wallet</label><div class="bank-picker-tabs" id="bankPickerTabs" role="tablist" aria-label="Bank type"><button type="button" class="bank-picker-tab active" data-bank-filter="Traditional banks">Traditional Banks</button><button type="button" class="bank-picker-tab" data-bank-filter="Digital banks & wallets">Digital Banks</button><button type="button" class="bank-picker-tab" data-bank-filter="Favorites">★ Favorites</button><button type="button" class="bank-picker-tab" data-bank-filter="Other">Other</button></div><div class="bank-picker" id="bankPicker" aria-label="Banks and digital wallets"></div><div class="panel-sub">Select an option to fill in the name, or type a custom name below.</div></div><div class="form-grid"><div class="field"><label id="financialAddNameLabel">Savings name / source</label><input id="financialAddName" maxlength="80" placeholder="e.g. Maya savings" required></div><div class="field"><label>Amount (₱)</label><input id="financialAddAmount" type="number" min=".01" step=".01" placeholder="e.g. 5000" required></div></div><div id="mayaAddBonusWrap" class="field full" style="display:none;margin-top:12px"><label for="mayaAddBonusRate">Maya bonus interest rate</label><select id="mayaAddBonusRate"><option value="3">3% p.a. — base rate, no bonus</option><option value="5">5% p.a. — +2% bonus</option><option value="6">6% p.a. — +3% bonus</option><option value="7">7% p.a. — +4% bonus</option><option value="8">8% p.a. — +5% bonus</option><option value="10">10% p.a. — +7% bonus</option><option value="12">12% p.a. — +9% bonus</option><option value="13">13% p.a. — eligible users only</option><option value="15">15% p.a. — maximum / eligibility required</option></select><div class="panel-sub">Choose the bonus rate shown in your Maya app. This is used for Savely estimates only.</div></div><div class="form-actions"><button type="submit" class="btn btn-primary" id="financialAddSubmit">Apply</button></div></form></div></div>
 <div class="modal-backdrop" id="financialEditBackdrop" onclick="if(event.target===this)closeFinancialEdit()"><div class="modal financial-edit-modal"><h2>Edit Savings</h2><p>Update the name or amount, then apply your changes.</p><form id="financialEditForm"><input type="hidden" id="editFinancialId"><div class="form-grid"><div class="field"><label>Savings name / source</label><input id="editFinancialName" maxlength="80" placeholder="e.g. Maya savings" required></div><div class="field"><label>Amount (₱)</label><input id="editFinancialAmount" type="number" min="0" step=".01" placeholder="e.g. 5000" required></div></div><div class="form-actions"><button type="button" class="btn btn-primary" onclick="saveFinancialEdit()">Apply Changes</button></div></form></div></div>
@@ -1907,7 +1910,10 @@ document.addEventListener('click',function(e){
   const nameWrap=document.getElementById('savely-name-wrap');
   const nameInput=document.getElementById('savely-auth-name');
   const emailInput=document.getElementById('savely-auth-email');
-  const passwordInput=document.getElementById('savely-auth-password');
+  const otpWrap=document.getElementById('savely-otp-wrap');
+  const otpInput=document.getElementById('savely-auth-otp');
+  const resendButton=document.getElementById('savely-otp-resend');
+  const backButton=document.getElementById('savely-otp-back');
   const submit=document.getElementById('savely-auth-submit');
   const message=document.getElementById('savely-auth-message');
   const title=document.getElementById('savely-auth-title');
@@ -1917,21 +1923,38 @@ document.addEventListener('click',function(e){
   const logout=document.getElementById('savely-auth-logout');
   const googleButton=document.getElementById('savely-google-signin');
   const googleNote=document.getElementById('savely-google-note');
-  let mode='login', session=null;
+  let mode='login', session=null, otpStage=false, pendingEmail='', pendingName='', resendTimer=null;
   function readSession(){try{return JSON.parse(localStorage.getItem(SESSION_KEY)||'null')}catch(_){return null}}
   function saveSession(s){session=s;if(s)localStorage.setItem(SESSION_KEY,JSON.stringify(s));else localStorage.removeItem(SESSION_KEY)}
   function showMessage(text,type){message.textContent=text;message.className='auth-message show '+type}
   function clearMessage(){message.textContent='';message.className='auth-message'}
   function setMode(next){
-    mode=next;clearMessage();
+    mode=next;otpStage=false;pendingEmail='';pendingName='';clearMessage();
+    if(resendTimer){clearInterval(resendTimer);resendTimer=null;}
     const signup=mode==='signup';
     loginTab.classList.toggle('active',!signup);signupTab.classList.toggle('active',signup);
     loginTab.setAttribute('aria-selected',String(!signup));signupTab.setAttribute('aria-selected',String(signup));
     nameWrap.hidden=!signup;nameInput.required=signup;
+    emailInput.disabled=false;emailInput.required=true;emailInput.value='';otpInput.value='';otpWrap.hidden=true;
+    resendButton.style.display='none';backButton.style.display='none';
     title.textContent=signup?'Create your account':'Welcome back';
-    subtitle.textContent=signup?'Create your account. We’ll email you a confirmation link.':'Sign in to access your saved Savely account.';
-    submit.textContent=signup?'Create account':'Log in to Savely';
-    passwordInput.autocomplete=signup?'new-password':'current-password';
+    subtitle.textContent=signup?'Enter your name and email. We’ll send you a one-time verification code.':'Enter your email and we’ll send you a one-time login code.';
+    submit.textContent=signup?'Send sign-up code':'Email me a login code';
+    googleButton.style.display='';googleNote.style.display='';
+  }
+  function showOtpStage(){
+    otpStage=true;emailInput.disabled=true;nameInput.disabled=true;otpWrap.hidden=false;otpInput.required=true;otpInput.focus();
+    submit.textContent='Verify code and continue';resendButton.style.display='block';backButton.style.display='block';
+    googleButton.style.display='none';googleNote.style.display='none';
+    title.textContent='Check your email';
+    subtitle.textContent='We sent a one-time code to '+pendingEmail+'. Enter it below to continue.';
+  }
+  function resetOtpStage(){
+    otpStage=false;emailInput.disabled=false;nameInput.disabled=false;otpInput.required=false;otpInput.value='';otpWrap.hidden=true;
+    resendButton.style.display='none';backButton.style.display='none';googleButton.style.display='';googleNote.style.display='';
+    title.textContent=mode==='signup'?'Create your account':'Welcome back';
+    subtitle.textContent=mode==='signup'?'Enter your name and email. We’ll send you a one-time verification code.':'Enter your email and we’ll send you a one-time login code.';
+    submit.textContent=mode==='signup'?'Send sign-up code':'Email me a login code';
   }
   function showApp(user){
     gate.style.display='none';
@@ -1989,45 +2012,57 @@ document.addEventListener('click',function(e){
     googleNote.textContent='Redirecting to Google…';
     location.href=url;
   });
-  // Real Supabase email/password authentication. Auth users are stored in Supabase Auth;
-  // the financial records are synced separately by the savely-cloud-sync module.
-  form.addEventListener('submit',async e=>{
-    e.preventDefault();
-    const email=emailInput.value.trim().toLowerCase();
-    const password=passwordInput.value;
-    const fullName=nameInput.value.trim();
-    if(!email||!password){showMessage('Enter your email address and password.','error');return;}
-    if(mode==='signup'&&password.length<6){showMessage('Use a password with at least 6 characters.','error');return;}
-    submit.disabled=true;submit.textContent=mode==='signup'?'Creating account…':'Signing in…';
-    form.classList.add('auth-loading');
+  // Email OTP authentication: request a code, then verify it before creating a session.
+  async function requestOtp(){
+    const body={email:pendingEmail,create_user:mode==='signup'};
+    if(mode==='signup')body.data={full_name:pendingName};
+    await api('/auth/v1/otp',body);
+  }
+  async function sendOtp(isResend=false){
+    const email=(otpStage?pendingEmail:emailInput.value).trim().toLowerCase();
+    const fullName=(otpStage?pendingName:nameInput.value).trim();
+    if(!email){showMessage('Enter your email address.','error');return;}
+    if(mode==='signup'&&!fullName){showMessage('Enter your full name.','error');return;}
+    pendingEmail=email;pendingName=fullName;
+    submit.disabled=true;resendButton.disabled=true;form.classList.add('auth-loading');
+    const oldText=submit.textContent; if(!isResend)submit.textContent='Sending code…';
     try{
-      if(mode==='signup'){
-        const result=await api('/auth/v1/signup',{email,password,data:{full_name:fullName},options:{emailRedirectTo:'https://vcint27.github.io/Savely/'}});
-        if(result.access_token&&result.user){
-          saveSession(result);showApp(result.user);
-          showMessage('Account created successfully.','success');
-        }else{
-          showMessage('Account created. Check your email and open the confirmation link to finish signing up. If the link expired, request a new confirmation email.','success');
-          setMode('login');emailInput.value=email;passwordInput.value='';
-        }
-      }else{
-        const result=await api('/auth/v1/token?grant_type=password',{email,password});
-        if(!result.access_token||!result.user)throw new Error('Sign-in did not return a valid session. Please try again.');
-        saveSession(result);showApp(result.user);
-      }
+      await requestOtp();
+      if(!otpStage)showOtpStage();
+      showMessage('If this email can receive a code, a verification email has been sent. Check your inbox and spam folder.','success');
     }catch(err){
-      const msg=String(err.message||'Authentication failed.');
-      let friendly=msg;
-      if(/invalid login credentials/i.test(msg))friendly='Incorrect email or password.';
-      else if(/email not confirmed/i.test(msg))friendly='Please confirm your email address before logging in.';
-      else if(/user already registered/i.test(msg))friendly='An account with this email already exists. Try logging in.';
+      const msg=String(err.message||'Could not send a verification code.');let friendly=msg;
+      if(/rate limit|too many requests/i.test(msg))friendly='Too many code requests. Please wait a little before trying again.';
+      else if(/user not found|email not found/i.test(msg)&&mode==='login')friendly='No account was found for that email. Choose Sign up to create one.';
       else if(/fetch|network/i.test(msg))friendly='Could not connect to Savely authentication. Check your internet connection and Supabase settings.';
       showMessage(friendly,'error');
     }finally{
-      submit.disabled=false;form.classList.remove('auth-loading');
-      submit.textContent=mode==='signup'?'Create account':'Log in to Savely';
+      submit.disabled=false;resendButton.disabled=false;form.classList.remove('auth-loading');
+      if(!otpStage)submit.textContent=oldText;
+      else submit.textContent='Verify code and continue';
     }
+  }
+  form.addEventListener('submit',async e=>{
+    e.preventDefault();
+    if(!otpStage){await sendOtp(false);return;}
+    const token=otpInput.value.trim();
+    if(!/^\d{6,8}$/.test(token)){showMessage('Enter the numeric code from your email.','error');return;}
+    submit.disabled=true;form.classList.add('auth-loading');submit.textContent='Verifying code…';
+    try{
+      const result=await api('/auth/v1/verify',{type:'email',email:pendingEmail,token});
+      if(!result.access_token||!result.user)throw new Error('Verification did not return a valid session. Please request a new code.');
+      saveSession(result);showApp(result.user);
+      showMessage(mode==='signup'?'Email verified. Your Savely account is ready.':'You’re now signed in to Savely.','success');
+    }catch(err){
+      const msg=String(err.message||'Could not verify that code.');let friendly=msg;
+      if(/token has expired|expired/i.test(msg))friendly='That code has expired. Request a new code and try again.';
+      else if(/invalid.*token|token.*invalid|otp.*invalid/i.test(msg))friendly='That code is incorrect or expired. Check it and try again.';
+      else if(/already.*registered|user.*exists/i.test(msg)&&mode==='signup')friendly='An account may already exist for this email. Switch to Log in to request a login code.';
+      showMessage(friendly,'error');
+    }finally{submit.disabled=false;form.classList.remove('auth-loading');submit.textContent='Verify code and continue';}
   });
+  resendButton.addEventListener('click',()=>sendOtp(true));
+  backButton.addEventListener('click',()=>{resetOtpStage();clearMessage();emailInput.focus();});
   async function performLogout(){
     if(!window.confirm('Are you sure you want to log out?\n\nYour savings records will remain saved in this browser.'))return;
     const saved=readSession();
@@ -2036,7 +2071,7 @@ document.addEventListener('click',function(e){
     saveSession(null);
     showGate();
     setMode('login');
-    passwordInput.value='';
+    otpInput.value='';
     emailInput.value='';
     showMessage('You have been logged out.','success');
     const settingsLogout=document.getElementById('settingsLogoutButton');
