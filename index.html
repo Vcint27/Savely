@@ -1004,8 +1004,7 @@ function renderSavingsTrend(){
   else if(points[0].amount!==0) points=[{...points[0],at:points[0].at-1,amount:0},...points];
   // Use evenly spaced event positions so each recorded edit creates a visible diagonal segment.
   const coords=points.map((p,i)=>({x:pad.l+(points.length===1?0:(plotW*i/(points.length-1))),y:yForAmount(p.amount),amount:p.amount}));
-  // Render each balance change as a candlestick instead of a dot:
-  // green = balance increased, red = balance decreased, gray = unchanged.
+  // Draw each recorded balance segment and a color-coded candlestick marker at its endpoint.
   for(let k=1;k<coords.length;k++){
    const from=coords[k-1],to=coords[k];
    // Default aggregate is green; focused bank view uses that bank's own brand color.
@@ -1013,7 +1012,21 @@ function renderSavingsTrend(){
    ctx.beginPath();ctx.moveTo(from.x,from.y);ctx.lineTo(to.x,to.y);ctx.stroke();
    const x=to.x,y=to.y;
    savingsTrendHitTargets.push({x,y,amount:to.amount});
-   ctx.fillStyle=color;ctx.beginPath();ctx.arc(x,y,3,0,Math.PI*2);ctx.fill();
+   // Candlestick endpoint marker: classify the change from the previous point.
+   // Strong increase = green, mild increase = yellow, mild decrease = orange,
+   // and a larger decrease = red. Threshold is relative to the previous balance.
+   const delta=Number(to.amount)-Number(from.amount);
+   const base=Math.max(Math.abs(Number(from.amount)||0),1);
+   const pct=Math.abs(delta)/base;
+   let candleColor='#94a3b8';
+   if(delta>0)candleColor=pct>=0.01?'#16a34a':'#eab308';
+   else if(delta<0)candleColor=pct>=0.01?'#dc2626':'#f97316';
+   // Draw a small wick and candle body at each recorded endpoint.
+   ctx.strokeStyle=candleColor;ctx.lineWidth=1.7;
+   ctx.beginPath();ctx.moveTo(x,y-7);ctx.lineTo(x,y+7);ctx.stroke();
+   ctx.fillStyle=candleColor;
+   const bodyH=Math.max(4,Math.min(10,Math.abs(y-from.y)||4));
+   ctx.fillRect(x-3,y-bodyH/2,6,bodyH);
   }
   const last=coords[coords.length-1];ctx.fillStyle=textColor;ctx.textAlign='right';ctx.fillText(entry.name.length>18?entry.name.slice(0,17)+'…':entry.name,Math.min(width-pad.r,last.x),height-pad.b+14);
  });
