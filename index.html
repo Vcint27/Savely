@@ -967,6 +967,10 @@ function renderSavingsTrend(){
     const pointX=(hit.x-76)/Math.max(1,chartRect.width-96);
     savingsTrendPan=Math.max(0,Math.min(savingsTrendZoom-1,pointX*savingsTrendZoom-pointX));
     savingsTrendSelectedAmount=hit.amount;
+    // Clicking a bank endpoint should activate that bank's own history line.
+    const endpointBank=String(hit.bankName||'').trim();
+    if(endpointBank && endpointBank!=='Total Savings') savingsTrendSelectedBank=endpointBank;
+    else if(!savingsTrendSelectedBank && allSavingsItems.length===1) savingsTrendSelectedBank=String(allSavingsItems[0].bankName||allSavingsItems[0].name||'').trim();
     renderSavingsTrend();
    }
    event.stopPropagation();
@@ -1018,7 +1022,7 @@ function renderSavingsTrend(){
    ctx.strokeStyle=color;ctx.lineWidth=2.5;ctx.lineJoin='round';ctx.lineCap='round';
    ctx.beginPath();ctx.moveTo(from.x,from.y);ctx.lineTo(to.x,to.y);ctx.stroke();
    const x=to.x,y=to.y;
-   savingsTrendHitTargets.push({x,y,amount:to.amount});
+   savingsTrendHitTargets.push({x,y,amount:to.amount,bankName:entry.name});
    // Candlestick endpoint marker: classify the change from the previous point.
    // Strong increase = green, mild increase = yellow, mild decrease = orange,
    // and a larger decrease = red. Threshold is relative to the previous balance.
