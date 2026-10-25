@@ -897,6 +897,7 @@ function closeMariBankInterest(){document.getElementById('mariBankInterestBackdr
 
 let savingsTrendHitTargets=[];
 let savingsTrendSelectedAmount=null;
+let savingsTrendSelectedBank=null;
 let savingsTrendClickHandlersReady=false;
 function renderSavingsTrend(){
  const panel=document.getElementById('savingsTrendPanel');
@@ -904,12 +905,13 @@ function renderSavingsTrend(){
  const legend=document.getElementById('savingsTrendLegend');
  const meta=document.getElementById('savingsTrendMeta');
  if(!panel||!canvas||!legend)return;
- const items=(data.savingsList||[]).filter(x=>(x.category||'Savings')==='Savings');
+ const allSavingsItems=(data.savingsList||[]).filter(x=>(x.category||'Savings')==='Savings');
+ const items=savingsTrendSelectedBank?allSavingsItems.filter(x=>String(x.name||'').trim()===savingsTrendSelectedBank):allSavingsItems;
  panel.style.display=activeFinancialCategory==='Savings'?'block':'none';
  if(activeFinancialCategory!=='Savings')return;
  const bankColor=name=>{
   const key=String(name||'').trim().toLowerCase();
-  const known={'bdo':'#0757a6','bpi':'#b21f2d','metrobank':'#0067a5','unionbank':'#e1262f','rcbc':'#7b2b83','pnb':'#16478e','landbank':'#16834a','security bank':'#c21f32','china bank':'#b8202e','eastwest bank':'#007b83','psbank':'#0097d7','aub':'#17468b','maya':'#00a878','gotyme bank':'#00a6a6','seabank':'#0b65c2','seabank (legacy)':'#0b65c2','maribank':'#168a68','cimb bank':'#e53935','tonik bank':'#6f42c1','uno digital bank':'#ec407a','ownbank':'#2e7d32','netbank':'#2455a4','diskartech':'#00a4a6','komo':'#5b8e3e','other':'#64748b'};
+  const known={'bdo':'#0757a6','bpi':'#b21f2d','metrobank':'#0067a5','unionbank':'#e1262f','rcbc':'#7b2b83','pnb':'#16478e','landbank':'#16834a','security bank':'#c21f32','china bank':'#b8202e','eastwest bank':'#007b83','psbank':'#0097d7','aub':'#17468b','maya':'#00a878','gotyme bank':'#00a6a6','seabank':'#0b65c2','seabank (legacy)':'#0b65c2','maribank':'#f58220','cimb bank':'#e53935','tonik bank':'#6f42c1','uno digital bank':'#ec407a','ownbank':'#2e7d32','netbank':'#2455a4','diskartech':'#00a4a6','komo':'#5b8e3e','other':'#64748b'};
   return known[key]||'#64748b';
  };
  const groups=new Map();
@@ -940,7 +942,7 @@ function renderSavingsTrend(){
  // Include balances allocated to Savings Goals as their own connected graph series.
  // These are separate from Financial List account balances so goal allocations are not double-counted.
  const goalSeries=[];
- (Array.isArray(data.goals)?data.goals:[]).forEach(goal=>{
+ (savingsTrendSelectedBank?[]:(Array.isArray(data.goals)?data.goals:[])).forEach(goal=>{
   (Array.isArray(goal.banks)?goal.banks:[]).forEach(bank=>{
    const amount=Math.max(0,Number(bank.amount)||0);
    const name=`${goal.name||'Savings Goal'} · ${bank.name}`;
@@ -955,7 +957,7 @@ function renderSavingsTrend(){
    existing.history=series.history;
   }else entries.push(series);
  });
- meta.textContent=`${entries.length} bank/goal line${entries.length===1?'':'s'} · balance history`;
+ meta.textContent=savingsTrendSelectedBank?`${savingsTrendSelectedBank} · focused view (click item again to show all)`:`${entries.length} bank/goal line${entries.length===1?'':'s'} · balance history`;
  legend.innerHTML=entries.map(e=>`<span style="display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--muted)"><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${bankColor(e.name)}"></span>${esc(e.name)}: ${peso(e.value)}</span>`).join('');
  const ctx=canvas.getContext('2d');
  if(!ctx){if(meta)meta.textContent='Your browser does not support canvas charts.';return;}
@@ -1218,16 +1220,31 @@ function renderSavingsList(){
  renderSavingsTrend();
  renderOverallTrend();
  const target=document.getElementById('savingsListTable');
- target.innerHTML=selected.length?`<table><thead><tr><th style="width:42px">Move</th><th>Item / source</th><th>Date added</th><th style="text-align:right">Amount</th>${activeFinancialCategory==='Savings'?'<th>Interest estimate</th>':''}<th></th></tr></thead><tbody>${selected.map(item=>`<tr data-financial-item-id="${esc(item.id)}" draggable="${item.isGoalAllocation?'false':'true'}" class="financial-draggable-row"><td>${item.isGoalAllocation?'<span class="muted">—</span>':`<span class="drag-handle" title="Drag to reorder" aria-label="Drag to reorder">⠿</span>`}</td><td><div class="tx-title" style="display:flex;align-items:center;min-width:180px">${financialBankLogo(item.bankName||item.name)}<span>${item.isGoalAllocation?`<span class="goal-linked-item">${esc(item.name)}</span><div class="footer-note">Linked from Savings Goals</div>`:item.category==='Savings'&&!/^(cash|coins?|coins?\s*\(.*\)|₱1 coin.*|1 coin.*)$/i.test(String(item.name||'').trim())?`<button class="link-btn" onclick="openSavingsInterest('${item.id}')">${esc(item.name)} · View interest</button>`:esc(item.name)}</span></div></td><td>${fmtDate(item.date)}</td><td style="text-align:right;font-weight:800;color:${item.category==='Debt'?'var(--red)':'var(--text)'}">${item.category==='Debt'?'−':'+'}${peso(item.amount)}</td>${activeFinancialCategory==='Savings'?`<td>${item.isGoalAllocation?'<span class="muted">Goal allocation</span>':(/^maya$/i.test(String(item.name||'').trim())||/maya savings/i.test(String(item.name||'')))?mayaInterestEstimate(item.amount,item.mayaBonusRate||3):(interestEstimate(item.amount,getInterestRate(item.name,item.category))||'<span class="muted">Rate unavailable</span>')}</td>`:''}<td style="text-align:right">${item.isGoalAllocation?`<button class="link-btn" onclick="editGoal('${item.goalId}')">Edit goal</button>`:`<button class="link-btn" onclick="openSavingsHistory('${item.id}')">History</button> <button class="link-btn" onclick="editFinancialItem('${item.id}')">Edit</button> <button class="delete-btn" onclick="deleteSavingsItem('${item.id}')">Remove</button>`}</td></tr>`).join('')}</tbody></table><div class="between" style="margin-top:14px"><span>Selected category total</span><strong>${peso(selected.reduce((sum,item)=>sum+Number(item.amount||0),0))}</strong></div><div class="footer-note">Interest estimates use listed base rates and assume the balance stays unchanged. Net estimates deduct 20% withholding tax; actual rates and eligibility may vary.</div>`:`<div class="empty">No ${activeFinancialCategory.toLowerCase()} items yet. Click Add to create one.</div>`;
- // Enable drag-and-drop reordering for real Financial List items. Goal allocations stay linked to their goal.
+ target.innerHTML=selected.length?`<table><thead><tr><th style="width:42px">Move</th><th>Item / source</th><th>Date added</th><th style="text-align:right">Amount</th>${activeFinancialCategory==='Savings'?'<th>Interest estimate</th>':''}<th></th></tr></thead><tbody>${selected.map(item=>`<tr data-financial-item-id="${esc(item.id)}" data-trend-bank="${esc(item.bankName||item.name)}" title="Click to focus this bank on the graph" draggable="${item.isGoalAllocation?'false':'true'}" class="financial-draggable-row" style="cursor:pointer"><td>${item.isGoalAllocation?'<span class="muted">—</span>':`<span class="drag-handle" title="Drag to reorder" aria-label="Drag to reorder">⠿</span>`}</td><td><div class="tx-title" style="display:flex;align-items:center;min-width:180px">${financialBankLogo(item.bankName||item.name)}<span>${item.isGoalAllocation?`<span class="goal-linked-item">${esc(item.name)}</span><div class="footer-note">Linked from Savings Goals</div>`:item.category==='Savings'&&!/^(cash|coins?|coins?\s*\(.*\)|₱1 coin.*|1 coin.*)$/i.test(String(item.name||'').trim())?`<button class="link-btn" onclick="openSavingsInterest('${item.id}')">${esc(item.name)} · View interest</button>`:esc(item.name)}</span></div></td><td>${fmtDate(item.date)}</td><td style="text-align:right;font-weight:800;color:${item.category==='Debt'?'var(--red)':'var(--text)'}">${item.category==='Debt'?'−':'+'}${peso(item.amount)}</td>${activeFinancialCategory==='Savings'?`<td>${item.isGoalAllocation?'<span class="muted">Goal allocation</span>':(/^maya$/i.test(String(item.name||'').trim())||/maya savings/i.test(String(item.name||'')))?mayaInterestEstimate(item.amount,item.mayaBonusRate||3):(interestEstimate(item.amount,getInterestRate(item.name,item.category))||'<span class="muted">Rate unavailable</span>')}</td>`:''}<td style="text-align:right">${item.isGoalAllocation?`<button class="link-btn" onclick="editGoal('${item.goalId}')">Edit goal</button>`:`<button class="link-btn" onclick="openSavingsHistory('${item.id}')">History</button> <button class="link-btn" onclick="editFinancialItem('${item.id}')">Edit</button> <button class="delete-btn" onclick="deleteSavingsItem('${item.id}')">Remove</button>`}</td></tr>`).join('')}</tbody></table><div class="between" style="margin-top:14px"><span>Selected category total</span><strong>${peso(selected.reduce((sum,item)=>sum+Number(item.amount||0),0))}</strong></div><div class="footer-note">Interest estimates use listed base rates and assume the balance stays unchanged. Net estimates deduct 20% withholding tax; actual rates and eligibility may vary.</div>`:`<div class="empty">No ${activeFinancialCategory.toLowerCase()} items yet. Click Add to create one.</div>`;
+ // Clicking a savings row focuses the growth graph on that bank; clicking it again restores all banks.
  const tbody=target.querySelector('tbody');
  if(tbody){
+  tbody.querySelectorAll('tr[data-financial-item-id]').forEach(row=>{
+   row.addEventListener('click',event=>{
+    if(event.target.closest('button,a,input,select,textarea,.drag-handle'))return;
+    const name=String(row.dataset.trendBank||'').trim();
+    if(!name)return;
+    savingsTrendSelectedBank=savingsTrendSelectedBank===name?null:name;
+    renderSavingsTrend();
+    tbody.querySelectorAll('tr[data-financial-item-id]').forEach(r=>{r.style.background=(savingsTrendSelectedBank&&r.dataset.trendBank===savingsTrendSelectedBank)?'var(--green2)':'';});
+   });
+   if(savingsTrendSelectedBank&&row.dataset.trendBank===savingsTrendSelectedBank)row.style.background='var(--green2)';
+  });
+ }
+ // Enable drag-and-drop reordering for real Financial List items. Goal allocations stay linked to their goal.
+ const tbodyForDrag=target.querySelector('tbody');
+ if(tbodyForDrag){
   let draggedRow=null;
-  tbody.querySelectorAll('tr[data-financial-item-id][draggable="true"]').forEach(row=>{
+  tbodyForDrag.querySelectorAll('tr[data-financial-item-id][draggable="true"]').forEach(row=>{
    row.addEventListener('dragstart',event=>{draggedRow=row;row.classList.add('dragging');if(event.dataTransfer){event.dataTransfer.effectAllowed='move';event.dataTransfer.setData('text/plain',row.dataset.financialItemId||'');}});
-   row.addEventListener('dragover',event=>{if(!draggedRow||draggedRow===row)return;event.preventDefault();if(event.dataTransfer)event.dataTransfer.dropEffect='move';const rect=row.getBoundingClientRect();const after=event.clientY>rect.top+rect.height/2;tbody.insertBefore(draggedRow,after?row.nextSibling:row);});
+   row.addEventListener('dragover',event=>{if(!draggedRow||draggedRow===row)return;event.preventDefault();if(event.dataTransfer)event.dataTransfer.dropEffect='move';const rect=row.getBoundingClientRect();const after=event.clientY>rect.top+rect.height/2;tbodyForDrag.insertBefore(draggedRow,after?row.nextSibling:row);});
    row.addEventListener('drop',event=>event.preventDefault());
-   row.addEventListener('dragend',()=>{if(draggedRow)draggedRow.classList.remove('dragging');draggedRow=null;const order=[...tbody.querySelectorAll('tr[data-financial-item-id][draggable="true"]')].map(r=>String(r.dataset.financialItemId));try{localStorage.setItem(selectedOrderKey,JSON.stringify(order));}catch(e){toast('Could not save item order in this browser.');} });
+   row.addEventListener('dragend',()=>{if(draggedRow)draggedRow.classList.remove('dragging');draggedRow=null;const order=[...tbodyForDrag.querySelectorAll('tr[data-financial-item-id][draggable="true"]')].map(r=>String(r.dataset.financialItemId));try{localStorage.setItem(selectedOrderKey,JSON.stringify(order));}catch(e){toast('Could not save item order in this browser.');} });
   });
  }
  renderDashboard();
