@@ -970,8 +970,11 @@ function renderSavingsTrend(){
      savingsTrendSelectedBank=endpointBank;
      savingsTrendSelectedAmount=Number(hit.amount)||0;
      savingsTrendSelectedAt=Number(hit.at)||Date.now();
-     savingsTrendZoom=1;
-     savingsTrendPan=0;
+     // Clicking a candle endpoint zooms into the selected bank's history.
+     savingsTrendZoom=Math.min(6,Math.max(2,savingsTrendZoom*1.8));
+     const plotWidth=Math.max(1,canvas.getBoundingClientRect().width-96);
+     const pointX=Math.max(0,Math.min(1,(hit.x-76)/plotWidth));
+     savingsTrendPan=Math.max(0,Math.min(savingsTrendZoom-1,pointX*savingsTrendZoom-pointX));
      renderSavingsTrend();
     }
    }
@@ -981,8 +984,8 @@ function renderSavingsTrend(){
   canvas.addEventListener('pointermove',event=>{if(!savingsTrendDrag)return;const dx=(event.clientX-savingsTrendDrag.x)/Math.max(1,canvas.getBoundingClientRect().width);if(Math.abs(dx)>3/Math.max(1,canvas.getBoundingClientRect().width))canvas.dataset.dragged='1';savingsTrendPan=Math.max(0,Math.min(savingsTrendZoom-1,savingsTrendDrag.pan-dx*savingsTrendZoom));renderSavingsTrend();});
   const endPan=()=>{savingsTrendDrag=null;};canvas.addEventListener('pointerup',endPan);canvas.addEventListener('pointercancel',endPan);
   panel.addEventListener('click',event=>{
-   // Clicking the graph container restores the normal full-history zoom/pan.
-   // Endpoint clicks are handled above and intentionally do not zoom.
+   // Clicking the graph background restores the normal full-history zoom/pan.
+   // Endpoint clicks stop propagation and zoom into the selected bank.
    savingsTrendZoom=1;savingsTrendPan=0;savingsTrendSelectedAmount=null;savingsTrendSelectedAt=null;
    renderSavingsTrend();
   });
