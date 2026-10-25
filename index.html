@@ -899,6 +899,9 @@ let savingsTrendHitTargets=[];
 let savingsTrendSelectedAmount=null;
 let savingsTrendSelectedBank=null;
 let savingsTrendClickHandlersReady=false;
+let savingsTrendZoom=1;
+let savingsTrendPan=0;
+let savingsTrendDrag=null;
 function renderSavingsTrend(){
  const panel=document.getElementById('savingsTrendPanel');
  const canvas=document.getElementById('savingsTrendChart');
@@ -951,22 +954,20 @@ function renderSavingsTrend(){
  const pad={l:76,r:20,t:18,b:58},plotW=width-pad.l-pad.r,plotH=height-pad.t-pad.b;
  savingsTrendHitTargets=[];
  if(!savingsTrendClickHandlersReady){
+  canvas.style.cursor='crosshair';
   canvas.addEventListener('click',event=>{
+   if(canvas.dataset.dragged==='1'){canvas.dataset.dragged='0';return;}
    const r=canvas.getBoundingClientRect(),x=event.clientX-r.left,y=event.clientY-r.top;
    let hit=null,bestDistance=Infinity;
-   for(const p of savingsTrendHitTargets){
-    const distance=Math.hypot(p.x-x,p.y-y);
-    if(distance<bestDistance){bestDistance=distance;hit=p;}
-   }
-   // Generous hit radius makes the small endpoint marker easy to select.
-   if(hit&&bestDistance<=28){
-    savingsTrendSelectedAmount=hit.amount;
-   }else{
-    savingsTrendSelectedAmount=null;
-   }
-   event.stopPropagation();
-   renderSavingsTrend();
+   for(const p of savingsTrendHitTargets){const distance=Math.hypot(p.x-x,p.y-y);if(distance<bestDistance){bestDistance=distance;hit=p;}}
+   // Clicking an endpoint zooms toward that point; scroll down to zoom out.
+   if(hit&&bestDistance<=28){savingsTrendZoom=Math.min(6,savingsTrendZoom*1.5);savingsTrendPan=Math.max(0,Math.min(savingsTrendZoom-1,(hit.x/(r.width||1))*savingsTrendZoom-.5));}
+   event.stopPropagation();renderSavingsTrend();
   });
+  canvas.addEventListener('wheel',event=>{event.preventDefault();const r=canvas.getBoundingClientRect(),mouseX=(event.clientX-r.left)/Math.max(1,r.width);const old=savingsTrendZoom;const next=Math.max(1,Math.min(6,old*(event.deltaY<0?1.2:1/1.2)));const dataAtPointer=(savingsTrendPan+mouseX)/old;savingsTrendZoom=next;savingsTrendPan=Math.max(0,Math.min(next-1,dataAtPointer*next-mouseX));renderSavingsTrend();},{passive:false});
+  canvas.addEventListener('pointerdown',event=>{if(event.button!==0)return;savingsTrendDrag={x:event.clientX,pan:savingsTrendPan};canvas.setPointerCapture?.(event.pointerId);});
+  canvas.addEventListener('pointermove',event=>{if(!savingsTrendDrag)return;const dx=(event.clientX-savingsTrendDrag.x)/Math.max(1,canvas.getBoundingClientRect().width);if(Math.abs(dx)>3/Math.max(1,canvas.getBoundingClientRect().width))canvas.dataset.dragged='1';savingsTrendPan=Math.max(0,Math.min(savingsTrendZoom-1,savingsTrendDrag.pan-dx*savingsTrendZoom));renderSavingsTrend();});
+  const endPan=()=>{savingsTrendDrag=null;};canvas.addEventListener('pointerup',endPan);canvas.addEventListener('pointercancel',endPan);
   panel.addEventListener('click',event=>{
    // Only clicks outside the canvas reset the focused graph scale.
    if(event.target===canvas||canvas.contains(event.target))return;
@@ -978,7 +979,6 @@ function renderSavingsTrend(){
  const allAmounts=entries.flatMap(e=>[Number(e.value),...(e.history||[]).map(p=>Number(p.amount))]).filter(Number.isFinite);
  // Keep the graph fitted to the full history; selecting or opening this page must not zoom the chart.
  const focusedAmount=null;
- savingsTrendSelectedAmount=null;
  // Fit the Y-axis to the full recorded range, not just the current balance.
  // This preserves the earlier high points when a balance drops sharply.
  const dataLow=Math.min(0,...allAmounts);
@@ -1003,7 +1003,7 @@ function renderSavingsTrend(){
   if(points.length===1) points=[{...points[0],at:points[0].at-1,amount:0},{...points[0]}];
   else if(points[0].amount!==0) points=[{...points[0],at:points[0].at-1,amount:0},...points];
   // Use evenly spaced event positions so each recorded edit creates a visible diagonal segment.
-  const coords=points.map((p,i)=>({x:pad.l+(points.length===1?0:(plotW*i/(points.length-1))),y:yForAmount(p.amount),amount:p.amount}));
+  const coords=points.map((p,i)=>({x:pad.l+(((points.length===1?0:i/(points.length-1))*savingsTrendZoom-savingsTrendPan)*plotW),y:yForAmount(p.amount),amount:p.amount})).filter(p=>p.x>=pad.l-12&&p.x<=width-pad.r+12);
   // Draw each recorded balance segment and a color-coded candlestick marker at its endpoint.
   for(let k=1;k<coords.length;k++){
    const from=coords[k-1],to=coords[k];
@@ -1038,7 +1038,8 @@ function renderSavingsTrend(){
   for(let i=0;i<count;i++){
    const idx=count===1?timeline.length-1:Math.round(i*(timeline.length-1)/(count-1));
    const point=timeline[idx];
-   const x=pad.l+(timeline.length===1?plotW:plotW*idx/(timeline.length-1));
+   const x=pad.l+((((timeline.length===1?1:idx/(timeline.length-1))*savingsTrendZoom-savingsTrendPan)*plotW));
+   if(x<pad.l||x>width-pad.r)continue;
    const dateLabel=new Date(point.at).toLocaleString('en-PH',{day:'2-digit',month:'short',year:'2-digit',hour:'2-digit',minute:'2-digit',hour12:true});
    ctx.textAlign=i===0?'left':i===count-1?'right':'center';
    ctx.fillText(dateLabel,Math.max(pad.l,Math.min(width-pad.r,x)),height-pad.b+31);
@@ -1131,7 +1132,8 @@ function renderOverallTrend(){
   for(let i=0;i<count;i++){
    const idx=count===1?timeline.length-1:Math.round(i*(timeline.length-1)/(count-1));
    const event=timeline[idx];
-   const x=pad.l+(timeline.length===1?plotW:plotW*idx/(timeline.length-1));
+   const x=pad.l+((((timeline.length===1?1:idx/(timeline.length-1))*savingsTrendZoom-savingsTrendPan)*plotW));
+   if(x<pad.l||x>width-pad.r)continue;
    const dateLabel=new Date(event.at).toLocaleString('en-PH',{day:'2-digit',month:'short',year:'2-digit',hour:'2-digit',minute:'2-digit',hour12:true});
    ctx.textAlign=i===0?'left':i===count-1?'right':'center';
    ctx.fillText(dateLabel,Math.max(pad.l,Math.min(width-pad.r,x)),height-pad.b+31);
