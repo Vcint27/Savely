@@ -906,7 +906,8 @@ function renderSavingsTrend(){
  const meta=document.getElementById('savingsTrendMeta');
  if(!panel||!canvas||!legend)return;
  const allSavingsItems=(data.savingsList||[]).filter(x=>(x.category||'Savings')==='Savings');
- const items=savingsTrendSelectedBank?allSavingsItems.filter(x=>String(x.name||'').trim()===savingsTrendSelectedBank):allSavingsItems;
+ // Financial List defaults to one clean aggregate Savings line instead of overlapping bank lines.
+ const items=allSavingsItems;
  panel.style.display=activeFinancialCategory==='Savings'?'block':'none';
  if(activeFinancialCategory!=='Savings')return;
  const bankColor=name=>{
@@ -914,51 +915,27 @@ function renderSavingsTrend(){
   const known={'bdo':'#0757a6','bpi':'#b21f2d','metrobank':'#0067a5','unionbank':'#e1262f','rcbc':'#7b2b83','pnb':'#16478e','landbank':'#16834a','security bank':'#c21f32','china bank':'#b8202e','eastwest bank':'#007b83','psbank':'#0097d7','aub':'#17468b','maya':'#00a878','gotyme bank':'#00a6a6','seabank':'#0b65c2','seabank (legacy)':'#0b65c2','maribank':'#f58220','cimb bank':'#e53935','tonik bank':'#6f42c1','uno digital bank':'#ec407a','ownbank':'#2e7d32','netbank':'#2455a4','diskartech':'#00a4a6','komo':'#5b8e3e','other':'#64748b'};
   return known[key]||'#64748b';
  };
- const groups=new Map();
- items.forEach(item=>{
-  const name=(item.name||'Savings').trim();
-  const group=groups.get(name)||{value:0,history:[]};
-  group.value+=Math.max(0,Number(item.amount)||0);
-  let history=Array.isArray(item.graphHistory)&&item.graphHistory.length?item.graphHistory:[{at:Date.parse(item.date)||Date.now(),amount:Number(item.amount)||0}];
-  if(/mari\s?bank/i.test(name)){
-   // The live minute-by-minute estimate belongs in the History modal, not the trend graph.
-   // Plot a daily endpoint for each date so the graph communicates 24-hour growth.
-   const byDay=new Map();
-   history.forEach(point=>{
-    if(point&&point.liveMinute)return;
-    const at=Number(point.at)||Date.now();
-    const day=interestLocalDate(at);
-    const prior=byDay.get(day);
-    const next={at,amount:Math.max(0,Number(point.amount)||0),id:item.id};
-    if(!prior)byDay.set(day,{first:next,last:next}); else if(at>=prior.last.at)prior.last=next;
-   });
-   [...byDay.values()].forEach(v=>group.history.push(v.last));
-  }else{
-   history.forEach(point=>group.history.push({at:Number(point.at)||Date.now(),amount:Math.max(0,Number(point.amount)||0),id:item.id}));
-  }
-  groups.set(name,group);
- });
- const entries=[...groups.entries()].map(([name,g])=>({name,value:g.value,history:g.history.sort((a,b)=>a.at-b.at)}));
- // Include balances allocated to Savings Goals as their own connected graph series.
- // These are separate from Financial List account balances so goal allocations are not double-counted.
- const goalSeries=[];
- (savingsTrendSelectedBank?[]:(Array.isArray(data.goals)?data.goals:[])).forEach(goal=>{
-  (Array.isArray(goal.banks)?goal.banks:[]).forEach(bank=>{
-   const amount=Math.max(0,Number(bank.amount)||0);
-   const name=`${goal.name||'Savings Goal'} · ${bank.name}`;
-   const at=Date.now();
-   goalSeries.push({name,value:amount,history:[{at:at-1,amount:0,id:`goal-${goal.id}-${bank.name}-start`},{at,amount,id:`goal-${goal.id}-${bank.name}-current`}]});
+ // Reconstruct the total savings balance over time from each item's recorded balance snapshots.
+ // Minute-by-minute MariBank live estimates are deliberately excluded from the graph.
+ const events=[];
+ allSavingsItems.forEach(item=>{
+  const history=Array.isArray(item.graphHistory)&&item.graphHistory.length?item.graphHistory:[{at:Date.parse(item.date)||Date.now(),amount:Number(item.amount)||0}];
+  history.forEach(point=>{
+   if(!point || (/mari\s?bank/i.test(item.name||'') && point.liveMinute))return;
+   events.push({at:Number(point.at)||Date.now(),itemId:String(item.id),amount:Math.max(0,Number(point.amount)||0)});
   });
  });
- goalSeries.forEach(series=>{
-  const existing=entries.find(entry=>entry.name===series.name);
-  if(existing){
-   existing.value=series.value;
-   existing.history=series.history;
-  }else entries.push(series);
+ events.sort((a,b)=>a.at-b.at);
+ const runningBalances=new Map();
+ const totalHistory=[];
+ events.forEach(event=>{
+  runningBalances.set(event.itemId,event.amount);
+  totalHistory.push({at:event.at,amount:[...runningBalances.values()].reduce((sum,value)=>sum+value,0)});
  });
+ const totalSavings=allSavingsItems.reduce((sum,item)=>sum+Math.max(0,Number(item.amount)||0),0);
+ const entries=allSavingsItems.length?[{name:'Total Savings',value:totalSavings,history:totalHistory.length?totalHistory:[{at:Date.now(),amount:totalSavings}]}]:[];
  meta.textContent=savingsTrendSelectedBank?`${savingsTrendSelectedBank} · focused view (click item again to show all)`:`${entries.length} bank/goal line${entries.length===1?'':'s'} · balance history`;
- legend.innerHTML=entries.map(e=>`<span style="display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--muted)"><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${bankColor(e.name)}"></span>${esc(e.name)}: ${peso(e.value)}</span>`).join('');
+ legend.innerHTML=entries.map(e=>`<span style="display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--muted)"><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#15966d"></span>${esc(e.name)}: ${peso(e.value)}</span>`).join('');
  const ctx=canvas.getContext('2d');
  if(!ctx){if(meta)meta.textContent='Your browser does not support canvas charts.';return;}
  const rect=canvas.getBoundingClientRect();
@@ -1015,7 +992,7 @@ function renderSavingsTrend(){
  // Plot actual recorded balance changes. Editing 100 -> 90 -> 100 creates a visible dip and rise.
  entries.forEach(entry=>{
   const baseBankName=entry.name.includes(' · ')?entry.name.split(' · ').slice(-1)[0]:entry.name;
-  const color=bankColor(baseBankName);
+  const color='#15966d';
   let points=entry.history;
   if(points.length===1) points=[{...points[0],at:points[0].at-1,amount:0},{...points[0]}];
   else if(points[0].amount!==0) points=[{...points[0],at:points[0].at-1,amount:0},...points];
@@ -1025,28 +1002,12 @@ function renderSavingsTrend(){
   // green = balance increased, red = balance decreased, gray = unchanged.
   for(let k=1;k<coords.length;k++){
    const from=coords[k-1],to=coords[k];
-   const delta=to.amount-from.amount;
-   const rising=delta>0;
-   const falling=delta<0;
-   const magnitude=Math.abs(delta);
-   const candleColor=rising?(magnitude<=100?'#f4cf38':'#65bd2a'):falling?(magnitude<=100?'#f28c28':'#df2f4b'):color;
-   // Keep the diagonal trend line connecting each recorded balance point.
+   // One clean green total-savings line; no per-bank candles/markers.
    ctx.strokeStyle=color;ctx.lineWidth=2.5;ctx.lineJoin='round';ctx.lineCap='round';
    ctx.beginPath();ctx.moveTo(from.x,from.y);ctx.lineTo(to.x,to.y);ctx.stroke();
-   // Place the candle at the segment endpoint, centered on the endpoint itself.
-   const x=to.x;
-   const y=to.y;
+   const x=to.x,y=to.y;
    savingsTrendHitTargets.push({x,y,amount:to.amount});
-   const actualBody=Math.abs(to.y-from.y);
-   const bodyHeight=Math.max(5,Math.min(24,actualBody));
-   const bodyTop=y-bodyHeight/2;
-   ctx.strokeStyle=candleColor;ctx.lineWidth=2;
-   ctx.beginPath();
-   ctx.moveTo(x,y-10);
-   ctx.lineTo(x,y+10);
-   ctx.stroke();
-   ctx.fillStyle=candleColor;
-   ctx.fillRect(x-7,bodyTop,14,bodyHeight);
+   ctx.fillStyle=color;ctx.beginPath();ctx.arc(x,y,3,0,Math.PI*2);ctx.fill();
   }
   const last=coords[coords.length-1];ctx.fillStyle=textColor;ctx.textAlign='right';ctx.fillText(entry.name.length>18?entry.name.slice(0,17)+'…':entry.name,Math.min(width-pad.r,last.x),height-pad.b+14);
  });
@@ -1665,7 +1626,7 @@ function clearSavingsList(){if(confirm('Clear every item from your financial lis
 function renderRecurring(){let el=document.getElementById('recurringList');if(!data.recurring.length){el.innerHTML='<div class="empty">No recurring deposit schedules yet.</div>';return}el.innerHTML=data.recurring.map(r=>`<div class="account"><div class="account-icon">↻</div><div class="account-info"><strong>${peso(r.amount)} · ${esc(r.frequency)}</strong><small>${esc(r.name)} · Next: ${fmtDate(r.next)}</small></div><button class="delete-btn" onclick="deleteRecurring('${r.id}')">Delete</button></div>`).join('')}
 function openFinancialList(){showPage('financial-list') }
 function closeFinancialList(){showPage('dashboard')}
-function showPage(p){const addSavingsBtn=document.getElementById('topbarAddSavingsButton');if(addSavingsBtn)addSavingsBtn.style.display=p==='financial-list'?'':'none';if(p==='dashboard')setTimeout(renderOverallTrend,50);document.querySelectorAll('.page').forEach(e=>e.classList.remove('active'));document.getElementById('page-'+p).classList.add('active');if(p==='financial-list'){savingsTrendSelectedAmount=null;requestAnimationFrame(()=>requestAnimationFrame(()=>{try{renderSavingsTrend()}catch(e){console.error('Savings trend redraw failed:',e)}}));}document.querySelectorAll('#nav button').forEach(b=>b.classList.toggle('active',b.dataset.page===p));const titles={interest:['MAKE YOUR MONEY WORK','Interest Calculator'],dashboard:['YOUR MONEY, IN FOCUS','Good afternoon 👋'],transactions:['MONEY MOVEMENT','Transactions'],accounts:['YOUR SAVINGS, ORGANIZED','Accounts'],goals:['MAKE IT HAPPEN','Savings goals'],budget:['SPEND WITH INTENTION','Budget & expenses'],interest:['LET YOUR MONEY GROW','Interest calculator'],reports:['YOUR FINANCIAL SNAPSHOT','Reports'],settings:['YOUR DATA, YOUR CONTROL','Settings & backup'],'financial-list':['YOUR FINANCES, ORGANIZED','Financial List'],'live-map':['ROADS & CONDITIONS','Live Map']};document.getElementById('eyebrow').textContent=titles[p][0];document.getElementById('pageTitle').textContent=titles[p][1];if(p==='reports')renderReports();window.scrollTo({top:0,behavior:'smooth'})}
+function showPage(p){const addSavingsBtn=document.getElementById('topbarAddSavingsButton');if(addSavingsBtn)addSavingsBtn.style.display=p==='financial-list'?'':'none';if(p==='dashboard')setTimeout(renderOverallTrend,50);document.querySelectorAll('.page').forEach(e=>e.classList.remove('active'));document.getElementById('page-'+p).classList.add('active');if(p==='financial-list'){savingsTrendSelectedAmount=null;savingsTrendSelectedBank=null;requestAnimationFrame(()=>requestAnimationFrame(()=>{try{renderSavingsTrend()}catch(e){console.error('Savings trend redraw failed:',e)}}));}document.querySelectorAll('#nav button').forEach(b=>b.classList.toggle('active',b.dataset.page===p));const titles={interest:['MAKE YOUR MONEY WORK','Interest Calculator'],dashboard:['YOUR MONEY, IN FOCUS','Good afternoon 👋'],transactions:['MONEY MOVEMENT','Transactions'],accounts:['YOUR SAVINGS, ORGANIZED','Accounts'],goals:['MAKE IT HAPPEN','Savings goals'],budget:['SPEND WITH INTENTION','Budget & expenses'],interest:['LET YOUR MONEY GROW','Interest calculator'],reports:['YOUR FINANCIAL SNAPSHOT','Reports'],settings:['YOUR DATA, YOUR CONTROL','Settings & backup'],'financial-list':['YOUR FINANCES, ORGANIZED','Financial List'],'live-map':['ROADS & CONDITIONS','Live Map']};document.getElementById('eyebrow').textContent=titles[p][0];document.getElementById('pageTitle').textContent=titles[p][1];if(p==='reports')renderReports();window.scrollTo({top:0,behavior:'smooth'})}
 document.getElementById('nav').addEventListener('click',e=>{let b=e.target.closest('button[data-page]');if(b)showPage(b.dataset.page)});
 function openModal(kind,goalToEdit=null){const form=document.getElementById('modalForm'),title=document.getElementById('modalTitle'),desc=document.getElementById('modalDesc');let accountOptions=data.accounts.map(a=>`<option value="${a.id}">${esc(a.name)}</option>`).join('');let field=(label,name,type='text',value='',extra='')=>`<div class="field"><label>${label}</label><input name="${name}" type="${type}" value="${esc(value)}" ${extra}></div>`;let select=(label,name,opts)=>`<div class="field"><label>${label}</label><select name="${name}">${opts}</select></div>`;let fullfield=(label,name,type='text',value='',extra='')=>`<div class="field full"><label>${label}</label><input name="${name}" type="${type}" value="${esc(value)}" ${extra}></div>`;let body='';
 if(kind==='transaction'){title.textContent='Add transaction';desc.textContent='Record a deposit, withdrawal, interest credit, or expense.';body=`<div class="form-grid">${fullfield('Description','description','text','','required maxlength="100"')}${select('Transaction type','type','<option value="deposit">Deposit</option><option value="withdrawal">Withdrawal</option><option value="expense">Expense</option><option value="interest">Interest credit</option>')}${select('Account','accountId',accountOptions)}${field('Amount (₱)','amount','number','','required min=".01" step=".01"')}${field('Date','date','date',todayISO(),'required')}${field('Category','category','text','General','maxlength="60"')}</div>`}
