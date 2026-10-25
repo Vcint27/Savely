@@ -933,9 +933,15 @@ function renderSavingsTrend(){
   totalHistory.push({at:event.at,amount:[...runningBalances.values()].reduce((sum,value)=>sum+value,0)});
  });
  const totalSavings=allSavingsItems.reduce((sum,item)=>sum+Math.max(0,Number(item.amount)||0),0);
- const entries=allSavingsItems.length?[{name:'Total Savings',value:totalSavings,history:totalHistory.length?totalHistory:[{at:Date.now(),amount:totalSavings}]}]:[];
- meta.textContent=savingsTrendSelectedBank?`${savingsTrendSelectedBank} · focused view (click item again to show all)`:`${entries.length} bank/goal line${entries.length===1?'':'s'} · balance history`;
- legend.innerHTML=entries.map(e=>`<span style="display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--muted)"><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#15966d"></span>${esc(e.name)}: ${peso(e.value)}</span>`).join('');
+ const aggregateEntry={name:'Total Savings',value:totalSavings,history:totalHistory.length?totalHistory:[{at:Date.now(),amount:totalSavings}],color:'#15966d'};
+ // Default: one clean green total-savings line. When a Savings item is clicked, show only that bank's own balance history/diagonal line(s).
+ const selectedItems=savingsTrendSelectedBank?allSavingsItems.filter(item=>String(item.name||'').trim()===savingsTrendSelectedBank || String(item.bankName||'').trim()===savingsTrendSelectedBank):[];
+ const entries=savingsTrendSelectedBank?selectedItems.map(item=>{
+  const history=(Array.isArray(item.graphHistory)&&item.graphHistory.length?item.graphHistory:[{at:Date.parse(item.date)||Date.now(),amount:Number(item.amount)||0}]).filter(point=>point&&!point.liveMinute).map(point=>({at:Number(point.at)||Date.now(),amount:Math.max(0,Number(point.amount)||0)})).sort((a,b)=>a.at-b.at);
+  return {name:item.name||savingsTrendSelectedBank,value:Math.max(0,Number(item.amount)||0),history:history.length?history:[{at:Date.now(),amount:Math.max(0,Number(item.amount)||0)}],color:bankColor(item.name||savingsTrendSelectedBank)};
+ }):(allSavingsItems.length?[aggregateEntry]:[]);
+ meta.textContent=savingsTrendSelectedBank?`${savingsTrendSelectedBank} · individual bank balance history`:`Total Savings · combined balance history`;
+ legend.innerHTML=entries.map(e=>`<span style="display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--muted)"><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${e.color||'#15966d'}"></span>${esc(e.name)}: ${peso(e.value)}</span>`).join('');
  const ctx=canvas.getContext('2d');
  if(!ctx){if(meta)meta.textContent='Your browser does not support canvas charts.';return;}
  const rect=canvas.getBoundingClientRect();
@@ -992,7 +998,7 @@ function renderSavingsTrend(){
  // Plot actual recorded balance changes. Editing 100 -> 90 -> 100 creates a visible dip and rise.
  entries.forEach(entry=>{
   const baseBankName=entry.name.includes(' · ')?entry.name.split(' · ').slice(-1)[0]:entry.name;
-  const color='#15966d';
+  const color=entry.color||'#15966d';
   let points=entry.history;
   if(points.length===1) points=[{...points[0],at:points[0].at-1,amount:0},{...points[0]}];
   else if(points[0].amount!==0) points=[{...points[0],at:points[0].at-1,amount:0},...points];
@@ -1002,7 +1008,7 @@ function renderSavingsTrend(){
   // green = balance increased, red = balance decreased, gray = unchanged.
   for(let k=1;k<coords.length;k++){
    const from=coords[k-1],to=coords[k];
-   // One clean green total-savings line; no per-bank candles/markers.
+   // Default aggregate is green; focused bank view uses that bank's own brand color.
    ctx.strokeStyle=color;ctx.lineWidth=2.5;ctx.lineJoin='round';ctx.lineCap='round';
    ctx.beginPath();ctx.moveTo(from.x,from.y);ctx.lineTo(to.x,to.y);ctx.stroke();
    const x=to.x,y=to.y;
