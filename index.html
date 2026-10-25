@@ -961,20 +961,19 @@ function renderSavingsTrend(){
    if(canvas.dataset.dragged==='1'){canvas.dataset.dragged='0';return;}
    const r=canvas.getBoundingClientRect(),x=event.clientX-r.left,y=event.clientY-r.top;
    let hit=null,bestDistance=Infinity;
-   for(const p of savingsTrendHitTargets){const distance=Math.hypot(p.x-x,p.y-y);if(distance<bestDistance){bestDistance=distance;hit=p;}}
-   // Only a candlestick endpoint click zooms in; there are no wheel/buttons for zoom.
-   if(hit && bestDistance<=24){
-    savingsTrendZoom=Math.min(6,Math.max(2,savingsTrendZoom*1.8));
-    const chartRect=canvas.getBoundingClientRect();
-    const pointX=(hit.x-76)/Math.max(1,chartRect.width-96);
-    savingsTrendPan=Math.max(0,Math.min(savingsTrendZoom-1,pointX*savingsTrendZoom-pointX));
-    savingsTrendSelectedAmount=hit.amount;
-    savingsTrendSelectedAt=Number(hit.at)||Date.now();
-    // Clicking a bank endpoint should activate that bank's own history line.
+   // Prefer a real bank endpoint over the aggregate endpoint when markers overlap.
+   for(const p of savingsTrendHitTargets){const distance=Math.hypot(p.x-x,p.y-y);const isBank=p.bankName&&p.bankName!=='Total Savings';const hitIsBank=hit&&hit.bankName&&hit.bankName!=='Total Savings';if(distance<bestDistance || (Math.abs(distance-bestDistance)<0.01&&isBank&&!hitIsBank)){bestDistance=distance;hit=p;}}
+   // Endpoint click selects the corresponding bank history; never zoom into an empty region.
+   if(hit && bestDistance<=28){
     const endpointBank=String(hit.bankName||'').trim();
-    if(endpointBank && endpointBank!=='Total Savings') savingsTrendSelectedBank=endpointBank;
-    else if(!savingsTrendSelectedBank && allSavingsItems.length===1) savingsTrendSelectedBank=String(allSavingsItems[0].bankName||allSavingsItems[0].name||'').trim();
-    renderSavingsTrend();
+    if(endpointBank && endpointBank!=='Total Savings'){
+     savingsTrendSelectedBank=endpointBank;
+     savingsTrendSelectedAmount=Number(hit.amount)||0;
+     savingsTrendSelectedAt=Number(hit.at)||Date.now();
+     savingsTrendZoom=1;
+     savingsTrendPan=0;
+     renderSavingsTrend();
+    }
    }
    event.stopPropagation();
   });
@@ -1047,7 +1046,7 @@ function renderSavingsTrend(){
   const last=coords[coords.length-1];ctx.fillStyle=textColor;ctx.textAlign='right';ctx.fillText(entry.name.length>18?entry.name.slice(0,17)+'…':entry.name,Math.min(width-pad.r,last.x),height-pad.b+14);
  });
  // Show the updated timestamp only after the endpoint candle is selected.
- if(savingsTrendSelectedAt){const target=savingsTrendHitTargets.reduce((best,p)=>!best||Math.abs(p.amount-(savingsTrendSelectedAmount||0))<Math.abs(best.amount-(savingsTrendSelectedAmount||0))?p:best,null);if(target){ctx.fillStyle='#111827';ctx.font='11px system-ui,sans-serif';ctx.textAlign='center';ctx.textBaseline='bottom';ctx.fillText(new Date(savingsTrendSelectedAt).toLocaleString('en-PH',{dateStyle:'medium',timeStyle:'short'}),Math.max(pad.l+70,Math.min(width-pad.r-70,target.x)),Math.max(12,target.y-17));}}
+ if(savingsTrendSelectedAt){const target=savingsTrendHitTargets.find(p=>String(p.bankName||'').trim()===String(savingsTrendSelectedBank||'').trim())||savingsTrendHitTargets.find(p=>Math.abs(p.amount-(savingsTrendSelectedAmount||0))<0.01);if(target){ctx.fillStyle='#111827';ctx.font='11px system-ui,sans-serif';ctx.textAlign='center';ctx.textBaseline='bottom';ctx.fillText(new Date(savingsTrendSelectedAt).toLocaleString('en-PH',{dateStyle:'medium',timeStyle:'short'}),Math.max(pad.l+70,Math.min(width-pad.r-70,target.x)),Math.max(12,target.y-17));}}
  // Date axis: show the recorded dates at evenly spaced points across the timeline.
  const timeline=entries.flatMap(e=>e.history).sort((a,b)=>a.at-b.at);
  if(timeline.length){
