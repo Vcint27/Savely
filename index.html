@@ -960,18 +960,18 @@ function renderSavingsTrend(){
    const r=canvas.getBoundingClientRect(),x=event.clientX-r.left,y=event.clientY-r.top;
    let hit=null,bestDistance=Infinity;
    for(const p of savingsTrendHitTargets){const distance=Math.hypot(p.x-x,p.y-y);if(distance<bestDistance){bestDistance=distance;hit=p;}}
-   // Clicking an endpoint zooms toward that point; scroll down to zoom out.
-   if(hit&&bestDistance<=28){savingsTrendZoom=Math.min(6,savingsTrendZoom*1.5);savingsTrendPan=Math.max(0,Math.min(savingsTrendZoom-1,(hit.x/(r.width||1))*savingsTrendZoom-.5));}
-   event.stopPropagation();renderSavingsTrend();
+   // Endpoint clicks do not zoom. The graph container resets the view instead.
+   event.stopPropagation();
   });
   canvas.addEventListener('wheel',event=>{event.preventDefault();const r=canvas.getBoundingClientRect(),mouseX=(event.clientX-r.left)/Math.max(1,r.width);const old=savingsTrendZoom;const next=Math.max(1,Math.min(6,old*(event.deltaY<0?1.2:1/1.2)));const dataAtPointer=(savingsTrendPan+mouseX)/old;savingsTrendZoom=next;savingsTrendPan=Math.max(0,Math.min(next-1,dataAtPointer*next-mouseX));renderSavingsTrend();},{passive:false});
   canvas.addEventListener('pointerdown',event=>{if(event.button!==0)return;savingsTrendDrag={x:event.clientX,pan:savingsTrendPan};canvas.setPointerCapture?.(event.pointerId);});
   canvas.addEventListener('pointermove',event=>{if(!savingsTrendDrag)return;const dx=(event.clientX-savingsTrendDrag.x)/Math.max(1,canvas.getBoundingClientRect().width);if(Math.abs(dx)>3/Math.max(1,canvas.getBoundingClientRect().width))canvas.dataset.dragged='1';savingsTrendPan=Math.max(0,Math.min(savingsTrendZoom-1,savingsTrendDrag.pan-dx*savingsTrendZoom));renderSavingsTrend();});
   const endPan=()=>{savingsTrendDrag=null;};canvas.addEventListener('pointerup',endPan);canvas.addEventListener('pointercancel',endPan);
   panel.addEventListener('click',event=>{
-   // Only clicks outside the canvas reset the focused graph scale.
-   if(event.target===canvas||canvas.contains(event.target))return;
-   savingsTrendSelectedAmount=null;renderSavingsTrend();
+   // Clicking the graph container restores the normal full-history zoom/pan.
+   // Endpoint clicks are handled above and intentionally do not zoom.
+   savingsTrendZoom=1;savingsTrendPan=0;savingsTrendSelectedAmount=null;
+   renderSavingsTrend();
   });
   savingsTrendClickHandlersReady=true;
  }
@@ -1021,12 +1021,12 @@ function renderSavingsTrend(){
    let candleColor='#94a3b8';
    if(delta>0)candleColor=pct>=0.01?'#16a34a':'#eab308';
    else if(delta<0)candleColor=pct>=0.01?'#dc2626':'#f97316';
-   // Draw a small wick and candle body at each recorded endpoint.
-   ctx.strokeStyle=candleColor;ctx.lineWidth=1.7;
-   ctx.beginPath();ctx.moveTo(x,y-7);ctx.lineTo(x,y+7);ctx.stroke();
+   // Larger, easier-to-see candlestick endpoint marker.
+   ctx.strokeStyle=candleColor;ctx.lineWidth=2.4;
+   ctx.beginPath();ctx.moveTo(x,y-11);ctx.lineTo(x,y+11);ctx.stroke();
    ctx.fillStyle=candleColor;
-   const bodyH=Math.max(4,Math.min(10,Math.abs(y-from.y)||4));
-   ctx.fillRect(x-3,y-bodyH/2,6,bodyH);
+   const bodyH=Math.max(7,Math.min(16,Math.abs(y-from.y)||7));
+   ctx.fillRect(x-5,y-bodyH/2,10,bodyH);
   }
   const last=coords[coords.length-1];ctx.fillStyle=textColor;ctx.textAlign='right';ctx.fillText(entry.name.length>18?entry.name.slice(0,17)+'…':entry.name,Math.min(width-pad.r,last.x),height-pad.b+14);
  });
