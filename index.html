@@ -1952,10 +1952,10 @@ document.addEventListener('click',function(e){
     loginTab.classList.toggle('active',!signup);signupTab.classList.toggle('active',signup);
     loginTab.setAttribute('aria-selected',String(!signup));signupTab.setAttribute('aria-selected',String(signup));
     nameWrap.hidden=!signup;nameInput.required=signup;
-    emailLabel.textContent=signup?'Email address':'Username';
+    emailLabel.textContent=signup?'Email address':'Username or email address';
     emailInput.type=signup?'email':'text';
     emailInput.autocomplete=signup?'email':'username';
-    emailInput.placeholder=signup?'you@example.com':'Enter your username';
+    emailInput.placeholder=signup?'you@example.com':'Enter username or email';
     passwordWrap.hidden=false;passwordInput.required=true;passwordInput.disabled=false;passwordInput.value='';
     passwordInput.autocomplete=signup?'new-password':'current-password';
     passwordInput.placeholder=signup?'Create a password (at least 8 characters)':'Enter your password';
@@ -1964,7 +1964,7 @@ document.addEventListener('click',function(e){
     emailInput.disabled=false;emailInput.required=true;emailInput.value='';otpInput.value='';otpWrap.hidden=true;
     resendButton.style.display='none';backButton.style.display='none';
     title.textContent=signup?'Create your account':'Welcome back';
-    subtitle.textContent=signup?'Create your account with a username, email, and password. We’ll email you a verification code.':'Enter your email and password to sign in.';
+    subtitle.textContent=signup?'Create your account with a username, email, and password. We’ll email you a verification code.':'Sign in with your username or email address and password.';
     submit.textContent=signup?'Create account':'Log in';
     googleButton.style.display='';googleNote.style.display='';
   }
@@ -1979,7 +1979,7 @@ document.addEventListener('click',function(e){
     otpStage=false;emailInput.disabled=false;nameInput.disabled=false;passwordInput.disabled=false;passwordWrap.hidden=false;confirmPasswordWrap.hidden=(mode!=='signup');otpInput.required=false;otpInput.value='';otpWrap.hidden=true;
     resendButton.style.display='none';backButton.style.display='none';googleButton.style.display='';googleNote.style.display='';
     title.textContent=mode==='signup'?'Create your account':'Welcome back';
-    subtitle.textContent=mode==='signup'?'Create your account with your name, email, and password. We’ll email you a verification code.':'Enter your email and password to sign in.';
+    subtitle.textContent=mode==='signup'?'Create your account with your username, email, and password. We’ll email you a verification code.':'Sign in with your username or email address and password.';
     submit.textContent=mode==='signup'?'Create account':'Log in';
   }
   function showApp(user){
@@ -2047,7 +2047,7 @@ document.addEventListener('click',function(e){
     const email=emailInput.value.trim().toLowerCase();
     const fullName=nameInput.value.trim();
     const enteredPassword=passwordInput.value;
-    if(mode==='login'&&!/^[A-Za-z0-9_.-]{3,30}$/.test(email)){showMessage('Enter your username (3–30 letters, numbers, dots, underscores, or hyphens).','error');return;}
+    if(mode==='login'&&!email){showMessage('Enter your username or email address.','error');return;}
     const confirmPassword=confirmPasswordInput.value;
     if(mode==='signup'&&!email){showMessage('Enter your email address.','error');return;}
     if(mode==='signup'&&!fullName){showMessage('Enter a username.','error');return;}
@@ -2060,8 +2060,11 @@ document.addEventListener('click',function(e){
     const oldText=submit.textContent;submit.textContent=mode==='signup'?'Creating account…':'Logging in…';
     try{
       if(mode==='login'){
-        const username=emailInput.value.trim().toLowerCase();
-        const result=await api('/functions/v1/username-login',{username,password:enteredPassword});
+        const loginId=emailInput.value.trim();
+        // Emails use Supabase's password grant directly; usernames are resolved securely by the Edge Function.
+        const result=loginId.includes('@')
+          ? await api('/auth/v1/token?grant_type=password',{email:loginId.toLowerCase(),password:enteredPassword})
+          : await api('/functions/v1/username-login',{username:loginId.toLowerCase(),password:enteredPassword});
         if(!result.access_token||!result.user)throw new Error('Login did not return a valid session.');
         saveSession(result);passwordInput.value='';showApp(result.user);
       }else{
@@ -2098,7 +2101,7 @@ document.addEventListener('click',function(e){
       }
     }catch(err){
       const msg=String(err.message||'Authentication failed. Please try again.');let friendly=msg;
-      if(/invalid login credentials/i.test(msg)||/invalid.*credentials/i.test(msg))friendly='Incorrect email or password. Please try again.';
+      if(/invalid login credentials/i.test(msg)||/invalid.*credentials/i.test(msg))friendly='Incorrect username/email or password. Please try again.';
       else if(/email not confirmed/i.test(msg))friendly='Please verify your email first. If you just signed up, enter the 6-digit code sent to your inbox.';
       else if(/rate limit|too many requests/i.test(msg))friendly='Too many requests. Please wait a little before trying again.';
       else if(/already registered|already exists|user.*exists|email.*taken/i.test(msg)){
@@ -2133,7 +2136,7 @@ document.addEventListener('click',function(e){
         pendingSignupPassword='';passwordInput.value='';confirmPasswordInput.value='';
         setMode('login');
         emailInput.value=verifiedEmail;
-        showMessage('Email verified successfully! Your account is ready. Please log in with your email and password.','success');
+        showMessage('Email verified successfully! Your account is ready. Please log in with your username or email address and password.','success');
       }else{
         if(!result.access_token)throw new Error('Login verification did not return a valid session. Please try again.');
         saveSession(result);pendingSignupPassword='';passwordInput.value='';confirmPasswordInput.value='';
