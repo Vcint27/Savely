@@ -2119,10 +2119,32 @@ document.addEventListener('click',function(e){
       showMessage(mode==='signup'?'Email verified. Your Savely account is ready.':'You’re now signed in to Savely.','success');
     }catch(err){
       const msg=String(err.message||'Could not verify that code.');let friendly=msg;
-      if(/token has expired|expired/i.test(msg))friendly='That code has expired. Request a new code and try again.';
-      else if(/invalid.*token|token.*invalid|otp.*invalid/i.test(msg))friendly='That code is incorrect or expired. Check it and try again.';
-      else if(/already.*registered|user.*exists/i.test(msg)&&mode==='signup')friendly='An account already exists with this email. Switch to Log in and request a login code.';
-      showMessage(friendly,'error');
+      if(/token has expired|expired/i.test(msg)){
+        // A signup record can exist before its email is confirmed. If the code
+        // has expired, request a fresh signup OTP once instead of making the
+        // user re-register. They must enter the newest email's code.
+        try{
+          await api('/auth/v1/resend',{type:'signup',email:pendingEmail});
+          friendly='That code expired. Savely requested a fresh verification email. Use the newest 6-digit code in your inbox (check Spam too); older codes may no longer work.';
+          showMessage(friendly,'error');
+        }catch(resendErr){
+          const resendMsg=String(resendErr.message||'');
+          friendly=/rate limit|too many requests/i.test(resendMsg)
+            ? 'That code expired and Supabase is limiting new code requests. Wait a little, then click “Send a new code” and use the newest email.'
+            : 'That code expired. Click “Send a new code”, then enter the newest 6-digit code from your inbox. You do not need to register again.';
+          showMessage(friendly,'error');
+        }
+      }else if(/invalid.*token|token.*invalid|otp.*invalid/i.test(msg)){
+        friendly='That code is incorrect or no longer valid. Use the newest code from the latest verification email, or click “Send a new code”.';
+        showMessage(friendly,'error');
+      }else if(/already.*registered|user.*exists/i.test(msg)&&mode==='signup'){
+        friendly='An account already exists with this email. Switch to Log in.';
+        const signupEmail=pendingEmail;
+        setMode('login');emailInput.value=signupEmail;
+        showMessage(friendly,'error');
+      }else{
+        showMessage(friendly,'error');
+      }
     }finally{submit.disabled=false;form.classList.remove('auth-loading');submit.textContent='Verify code and continue';}
   });
   resendButton.addEventListener('click',async()=>{
