@@ -2044,7 +2044,8 @@ document.addEventListener('click',function(e){
     const enteredPassword=passwordInput.value;
     const confirmPassword=confirmPasswordInput.value;
     if(!email){showMessage('Enter your email address.','error');return;}
-    if(mode==='signup'&&!fullName){showMessage('Enter a username.','error');return;}\n    if(mode==='signup'&&!/^[A-Za-z0-9_.-]{3,30}$/.test(fullName)){showMessage('Username must be 3–30 characters and use only letters, numbers, dots, underscores, or hyphens.','error');return;}
+    if(mode==='signup'&&!fullName){showMessage('Enter a username.','error');return;}
+    if(mode==='signup'&&!/^[A-Za-z0-9_.-]{3,30}$/.test(fullName)){showMessage('Username must be 3–30 characters and use only letters, numbers, dots, underscores, or hyphens.','error');return;}
     if(!enteredPassword){showMessage('Enter your password.','error');return;}
     if(mode==='signup'&&enteredPassword.length<8){showMessage('Create a password with at least 8 characters.','error');return;}
     if(mode==='signup'&&enteredPassword!==confirmPassword){showMessage('The passwords do not match.','error');return;}
