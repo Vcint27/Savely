@@ -497,8 +497,8 @@ input::placeholder, textarea::placeholder { color: #9aa4b5; }
       </div>
       <form id="savely-auth-form" class="auth-fields">
         <div class="auth-field" id="savely-name-wrap" hidden>
-          <label for="savely-auth-name">Full name</label>
-          <input id="savely-auth-name" name="name" type="text" autocomplete="name" maxlength="100" placeholder="Your full name">
+          <label for="savely-auth-name">Username</label>
+          <input id="savely-auth-name" name="username" type="text" autocomplete="username" maxlength="30" pattern="[A-Za-z0-9_.-]{3,30}" placeholder="Choose a username">
         </div>
         <div class="auth-field" id="savely-password-wrap">
           <label for="savely-auth-password">Password</label>
@@ -1959,7 +1959,7 @@ document.addEventListener('click',function(e){
     emailInput.disabled=false;emailInput.required=true;emailInput.value='';otpInput.value='';otpWrap.hidden=true;
     resendButton.style.display='none';backButton.style.display='none';
     title.textContent=signup?'Create your account':'Welcome back';
-    subtitle.textContent=signup?'Create your account with your name, email, and password. We’ll email you a verification code.':'Enter your email and password to sign in.';
+    subtitle.textContent=signup?'Create your account with a username, email, and password. We’ll email you a verification code.':'Enter your email and password to sign in.';
     submit.textContent=signup?'Create account':'Log in';
     googleButton.style.display='';googleNote.style.display='';
   }
@@ -1982,7 +1982,7 @@ document.addEventListener('click',function(e){
     userChip.hidden=false;
     userEmail.textContent=(user&&user.email)||'Testing account';
     const avatar=document.querySelector('.avatar');
-    const fullName=user&&(user.user_metadata?.full_name||user.full_name);
+    const fullName=user&&(user.user_metadata?.username||user.user_metadata?.full_name||user.username||user.full_name);
     if(avatar && fullName){
       avatar.textContent=String(fullName).trim().split(/\s+/).map(p=>p[0]).join('').slice(0,2).toUpperCase();
       avatar.title=fullName;
@@ -2036,7 +2036,7 @@ document.addEventListener('click',function(e){
   // Sign up creates a password-based account and verifies the email.
   // Login uses Supabase's email/password grant; OTP is only for confirming sign-up.
   async function requestSignup(){
-    return await api('/auth/v1/signup',{email:pendingEmail,password:pendingSignupPassword,data:{full_name:pendingName}});
+    return await api('/auth/v1/signup',{email:pendingEmail,password:pendingSignupPassword,data:{username:pendingName}});
   }
   async function sendOtp(){
     const email=emailInput.value.trim().toLowerCase();
@@ -2044,7 +2044,7 @@ document.addEventListener('click',function(e){
     const enteredPassword=passwordInput.value;
     const confirmPassword=confirmPasswordInput.value;
     if(!email){showMessage('Enter your email address.','error');return;}
-    if(mode==='signup'&&!fullName){showMessage('Enter your full name.','error');return;}
+    if(mode==='signup'&&!fullName){showMessage('Enter a username.','error');return;}\n    if(mode==='signup'&&!/^[A-Za-z0-9_.-]{3,30}$/.test(fullName)){showMessage('Username must be 3–30 characters and use only letters, numbers, dots, underscores, or hyphens.','error');return;}
     if(!enteredPassword){showMessage('Enter your password.','error');return;}
     if(mode==='signup'&&enteredPassword.length<8){showMessage('Create a password with at least 8 characters.','error');return;}
     if(mode==='signup'&&enteredPassword!==confirmPassword){showMessage('The passwords do not match.','error');return;}
