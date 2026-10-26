@@ -2061,9 +2061,16 @@ document.addEventListener('click',function(e){
         const result=await requestSignup();
         if(result.access_token&&result.user){
           saveSession(result);pendingSignupPassword='';passwordInput.value='';confirmPasswordInput.value='';showApp(result.user);
-        }else{
+        }else if(result.user && Array.isArray(result.user.identities) && result.user.identities.length===0){
+          // Supabase may return an empty identities array for an already-registered email
+          // to avoid revealing account existence through a distinct HTTP error.
+          pendingEmail='';pendingName='';pendingSignupPassword='';
+          showMessage('An account may already exist with this email. Please switch to Log in or use Continue with Google if you registered with Google. No verification code was requested by Savely.','error');
+        }else if(result.user){
           showOtpStage();
-          showMessage('A verification code has been requested. Check your inbox and spam folder.','success');
+          showMessage('Signup was accepted by Supabase, but this does not confirm email delivery. Check your inbox and spam folder. If no code arrives, check the Supabase email template and Brevo delivery logs before requesting another code.','success');
+        }else{
+          showMessage('Supabase did not return a user record, so Savely cannot confirm that signup started or that a code was sent. Please try again later.','error');
         }
       }
     }catch(err){
