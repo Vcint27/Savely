@@ -510,7 +510,7 @@ input::placeholder, textarea::placeholder { color: #9aa4b5; }
           <input id="savely-confirm-password" name="confirm_password" type="password" autocomplete="new-password" minlength="8" maxlength="128" placeholder="Re-enter your password">
         </div>
         <div class="auth-field">
-          <label for="savely-auth-email">Email address</label>
+          <label for="savely-auth-email" id="savely-auth-email-label">Email address</label>
           <input id="savely-auth-email" name="email" type="email" autocomplete="email" maxlength="254" placeholder="you@example.com">
         </div>
         <div class="auth-field" id="savely-otp-wrap" hidden>
@@ -1921,6 +1921,7 @@ document.addEventListener('click',function(e){
   const nameWrap=document.getElementById('savely-name-wrap');
   const nameInput=document.getElementById('savely-auth-name');
   const emailInput=document.getElementById('savely-auth-email');
+  const emailLabel=document.getElementById('savely-auth-email-label');
   const passwordWrap=document.getElementById('savely-password-wrap');
   const passwordInput=document.getElementById('savely-auth-password');
   const confirmPasswordWrap=document.getElementById('savely-confirm-password-wrap');
@@ -1951,6 +1952,10 @@ document.addEventListener('click',function(e){
     loginTab.classList.toggle('active',!signup);signupTab.classList.toggle('active',signup);
     loginTab.setAttribute('aria-selected',String(!signup));signupTab.setAttribute('aria-selected',String(signup));
     nameWrap.hidden=!signup;nameInput.required=signup;
+    emailLabel.textContent=signup?'Email address':'Username';
+    emailInput.type=signup?'email':'text';
+    emailInput.autocomplete=signup?'email':'username';
+    emailInput.placeholder=signup?'you@example.com':'Enter your username';
     passwordWrap.hidden=false;passwordInput.required=true;passwordInput.disabled=false;passwordInput.value='';
     passwordInput.autocomplete=signup?'new-password':'current-password';
     passwordInput.placeholder=signup?'Create a password (at least 8 characters)':'Enter your password';
@@ -2042,8 +2047,9 @@ document.addEventListener('click',function(e){
     const email=emailInput.value.trim().toLowerCase();
     const fullName=nameInput.value.trim();
     const enteredPassword=passwordInput.value;
+    if(mode==='login'&&!/^[A-Za-z0-9_.-]{3,30}$/.test(email)){showMessage('Enter your username (3–30 letters, numbers, dots, underscores, or hyphens).','error');return;}
     const confirmPassword=confirmPasswordInput.value;
-    if(!email){showMessage('Enter your email address.','error');return;}
+    if(mode==='signup'&&!email){showMessage('Enter your email address.','error');return;}
     if(mode==='signup'&&!fullName){showMessage('Enter a username.','error');return;}
     if(mode==='signup'&&!/^[A-Za-z0-9_.-]{3,30}$/.test(fullName)){showMessage('Username must be 3–30 characters and use only letters, numbers, dots, underscores, or hyphens.','error');return;}
     if(!enteredPassword){showMessage('Enter your password.','error');return;}
@@ -2054,7 +2060,8 @@ document.addEventListener('click',function(e){
     const oldText=submit.textContent;submit.textContent=mode==='signup'?'Creating account…':'Logging in…';
     try{
       if(mode==='login'){
-        const result=await api('/auth/v1/token?grant_type=password',{email,password:enteredPassword});
+        const username=emailInput.value.trim().toLowerCase();
+        const result=await api('/functions/v1/username-login',{username,password:enteredPassword});
         if(!result.access_token||!result.user)throw new Error('Login did not return a valid session.');
         saveSession(result);passwordInput.value='';showApp(result.user);
       }else{
