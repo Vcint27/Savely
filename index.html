@@ -2070,11 +2070,12 @@ document.addEventListener('click',function(e){
           showOtpStage();
           showMessage('Signup was accepted by Supabase, but this does not confirm email delivery. Check your inbox and spam folder. If no code arrives, check the Supabase email template and Brevo delivery logs before requesting another code.','success');
         }else{
-          // With email confirmations enabled, Supabase may intentionally return no user
-          // details for a repeated signup to avoid revealing whether an email exists.
-          // Do not advance to OTP unless Supabase returns a user record.
+          // Supabase may return no user for a repeated signup to avoid exposing
+          // whether an email is registered. Route the user directly to Log in.
           pendingEmail='';pendingName='';pendingSignupPassword='';
-          showMessage('This email may already be registered, or Supabase could not start the signup. If you already have a Savely account, switch to Log in or use Continue with Google if you registered with Google. If this is a new email, wait a moment and try again. No verification code has been confirmed as sent.','error');
+          setMode('login');
+          emailInput.value=email;
+          showMessage('This email may already have a Savely account. Please log in instead. If you registered with Google, choose Continue with Google. If this is definitely a new email, switch back to Sign up and try again later.','error');
         }
       }
     }catch(err){
@@ -2082,7 +2083,12 @@ document.addEventListener('click',function(e){
       if(/invalid login credentials/i.test(msg)||/invalid.*credentials/i.test(msg))friendly='Incorrect email or password. Please try again.';
       else if(/email not confirmed/i.test(msg))friendly='Please verify your email first. If you just signed up, enter the 6-digit code sent to your inbox.';
       else if(/rate limit|too many requests/i.test(msg))friendly='Too many requests. Please wait a little before trying again.';
-      else if(/already registered|already exists|user.*exists|email.*taken/i.test(msg))friendly='An account already exists with this email. Switch to Log in.';
+      else if(/already registered|already exists|user.*exists|email.*taken/i.test(msg)){
+        friendly='An account already exists with this email. Switching to Log in.';
+        const signupEmail=email;
+        setMode('login');
+        emailInput.value=signupEmail;
+      }
       else if(/fetch|network/i.test(msg))friendly='Could not connect to Savely authentication. Check your internet connection and Supabase settings.';
       showMessage(friendly,'error');
     }finally{
