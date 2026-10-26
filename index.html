@@ -2070,7 +2070,11 @@ document.addEventListener('click',function(e){
           showOtpStage();
           showMessage('Signup was accepted by Supabase, but this does not confirm email delivery. Check your inbox and spam folder. If no code arrives, check the Supabase email template and Brevo delivery logs before requesting another code.','success');
         }else{
-          showMessage('Supabase did not return a user record, so Savely cannot confirm that signup started or that a code was sent. Please try again later.','error');
+          // With email confirmations enabled, Supabase may intentionally return no user
+          // details for a repeated signup to avoid revealing whether an email exists.
+          // Do not advance to OTP unless Supabase returns a user record.
+          pendingEmail='';pendingName='';pendingSignupPassword='';
+          showMessage('This email may already be registered, or Supabase could not start the signup. If you already have a Savely account, switch to Log in or use Continue with Google if you registered with Google. If this is a new email, wait a moment and try again. No verification code has been confirmed as sent.','error');
         }
       }
     }catch(err){
@@ -2109,8 +2113,12 @@ document.addEventListener('click',function(e){
     if(mode!=='signup'||!pendingEmail){showMessage('Return to sign up and request a new verification code.','error');return;}
     resendButton.disabled=true;
     try{
-      await api('/auth/v1/resend',{type:'signup',email:pendingEmail});
-      showMessage('If this email can receive a code, a new verification email has been requested.','success');
+      const resendResult=await api('/auth/v1/resend',{type:'signup',email:pendingEmail});
+      if(resendResult && resendResult.user){
+        showMessage('Supabase accepted the resend request. Check your inbox and spam folder; delivery is not guaranteed by this response.','success');
+      }else{
+        showMessage('Supabase completed the resend request but did not return a user record. A new code may not have been sent. If this email is already registered, use Log in or Continue with Google.','error');
+      }
     }catch(err){showMessage(/rate limit|too many requests/i.test(err.message)?'Too many code requests. Please wait before trying again.':String(err.message||'Could not resend the code.'),'error');}
     finally{resendButton.disabled=false;}
   });
