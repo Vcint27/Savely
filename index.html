@@ -2059,23 +2059,33 @@ document.addEventListener('click',function(e){
       }else{
         pendingSignupPassword=enteredPassword;
         const result=await requestSignup();
-        if(result.access_token&&result.user){
-          saveSession(result);pendingSignupPassword='';passwordInput.value='';confirmPasswordInput.value='';showApp(result.user);
-        }else if(result.user && Array.isArray(result.user.identities) && result.user.identities.length===0){
-          // Supabase may return an empty identities array for an already-registered email
-          // to avoid revealing account existence through a distinct HTTP error.
-          pendingEmail='';pendingName='';pendingSignupPassword='';
-          showMessage('An account may already exist with this email. Please switch to Log in or use Continue with Google if you registered with Google. No verification code was requested by Savely.','error');
-        }else if(result.user){
-          showOtpStage();
-          showMessage('Signup was accepted by Supabase, but this does not confirm email delivery. Check your inbox and spam folder. If no code arrives, check the Supabase email template and Brevo delivery logs before requesting another code.','success');
-        }else{
-          // Supabase may return no user for a repeated signup to avoid exposing
-          // whether an email is registered. Route the user directly to Log in.
+
+        // The raw Supabase REST /signup endpoint returns the user object at the
+        // top level (unlike supabase-js, which wraps it as { data: { user } }).
+        // Normalize both shapes before deciding what the UI should do.
+        const signupUser=result?.user || result?.data?.user || (result?.id ? result : null);
+        const signupSession=result?.session || (result?.access_token ? result : null);
+
+        if(signupSession?.access_token && signupUser){
+          saveSession({...signupSession,user:signupUser});
+          pendingSignupPassword='';passwordInput.value='';confirmPasswordInput.value='';
+          showApp(signupUser);
+        }else if(signupUser && Array.isArray(signupUser.identities) && signupUser.identities.length===0){
+          // Supabase's empty identities array is its common anti-enumeration
+          // signal for a repeated signup. Route to login, preserving the email.
           pendingEmail='';pendingName='';pendingSignupPassword='';
           setMode('login');
           emailInput.value=email;
-          showMessage('This email may already have a Savely account. Please log in instead. If you registered with Google, choose Continue with Google. If this is definitely a new email, switch back to Sign up and try again later.','error');
+          showMessage('An account may already exist with this email. Please log in instead. If you registered with Google, choose Continue with Google.','error');
+        }else if(signupUser){
+          // A confirmation-enabled signup normally returns the user directly,
+          // without a session. This is sufficient to display the OTP step.
+          showOtpStage();
+          showMessage('Your signup request was accepted. Check your inbox and spam folder for the 6-digit code. If it does not arrive, check Supabase and Brevo email logs.','success');
+        }else{
+          // Do not falsely label an unrecognized response as an existing account.
+          pendingEmail='';pendingName='';pendingSignupPassword='';
+          showMessage('Supabase returned an unexpected signup response, so Savely could not safely determine the next step. Please check the signup request in Supabase Auth Logs before trying again.','error');
         }
       }
     }catch(err){
