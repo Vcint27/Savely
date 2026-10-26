@@ -2113,10 +2113,25 @@ document.addEventListener('click',function(e){
     if(!/^\d{6}$/.test(token)){showMessage('Enter the 6-digit code from your email.','error');return;}
     submit.disabled=true;form.classList.add('auth-loading');submit.textContent='Verifying code…';
     try{
-      const result=await api('/auth/v1/verify',{type:mode==='signup'?'signup':'email',email:pendingEmail,token});
-      if(!result.access_token||!result.user)throw new Error('Verification did not return a valid session. Please request a new code.');
-      saveSession(result);pendingSignupPassword='';passwordInput.value='';confirmPasswordInput.value='';showApp(result.user);
-      showMessage(mode==='signup'?'Email verified. Your Savely account is ready.':'You’re now signed in to Savely.','success');
+      const verifyingSignup = mode === 'signup';
+      const verifiedEmail = pendingEmail;
+      const result=await api('/auth/v1/verify',{type:verifyingSignup?'signup':'email',email:verifiedEmail,token});
+      if(!result.user)throw new Error('Verification did not return a valid user. Please request a new code.');
+
+      if(verifyingSignup){
+        // Signup OTP verifies the email only. Do not persist the session or
+        // open the app: user explicitly wants to sign in on the Login screen.
+        saveSession(null);
+        pendingSignupPassword='';passwordInput.value='';confirmPasswordInput.value='';
+        setMode('login');
+        emailInput.value=verifiedEmail;
+        showMessage('Email verified successfully! Your account is ready. Please log in with your email and password.','success');
+      }else{
+        if(!result.access_token)throw new Error('Login verification did not return a valid session. Please try again.');
+        saveSession(result);pendingSignupPassword='';passwordInput.value='';confirmPasswordInput.value='';
+        showApp(result.user);
+        showMessage('You’re now signed in to Savely.','success');
+      }
     }catch(err){
       const msg=String(err.message||'Could not verify that code.');let friendly=msg;
       if(/token has expired|expired/i.test(msg)){
