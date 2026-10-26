@@ -1925,13 +1925,13 @@ document.addEventListener('click',function(e){
   const logout=document.getElementById('savely-auth-logout');
   const googleButton=document.getElementById('savely-google-signin');
   const googleNote=document.getElementById('savely-google-note');
-  let mode='login', session=null, otpStage=false, pendingEmail='', pendingName='', resendTimer=null;
+  let mode='login', session=null, otpStage=false, pendingEmail='', pendingName='', pendingSignupPassword='', resendTimer=null;
   function readSession(){try{return JSON.parse(localStorage.getItem(SESSION_KEY)||'null')}catch(_){return null}}
   function saveSession(s){session=s;if(s)localStorage.setItem(SESSION_KEY,JSON.stringify(s));else localStorage.removeItem(SESSION_KEY)}
   function showMessage(text,type){message.textContent=text;message.className='auth-message show '+type}
   function clearMessage(){message.textContent='';message.className='auth-message'}
   function setMode(next){
-    mode=next;otpStage=false;pendingEmail='';pendingName='';clearMessage();
+    mode=next;otpStage=false;pendingEmail='';pendingName='';pendingSignupPassword='';clearMessage();
     if(resendTimer){clearInterval(resendTimer);resendTimer=null;}
     const signup=mode==='signup';
     loginTab.classList.toggle('active',!signup);signupTab.classList.toggle('active',signup);
@@ -2014,12 +2014,25 @@ document.addEventListener('click',function(e){
     googleNote.textContent='Redirecting to Google…';
     location.href=url;
   });
-  // Email OTP authentication: request a numeric code, then verify it before creating a session.
-  // Supabase Authentication > Emails > Magic link or OTP template must render {{ .Token }} (not {{ .ConfirmationURL }}).
-  async function requestOtp(){
-    const body={email:pendingEmail,create_user:mode==='signup'};
-    if(mode==='signup')body.data={full_name:pendingName};
-    await api('/auth/v1/otp',body);
+  // Signup uses Supabase's signup endpoint so an already-registered email is rejected
+  // instead of being treated as a login. Login uses the OTP endpoint for existing users.
+  // For six-digit signup codes, Authentication > Emails > Confirm signup must contain {{ .Token }}.
+  // The generated password is random and kept only for this signup attempt; returning users use email OTP.
+  function makeTemporaryPassword(){
+    const bytes=new Uint8Array(32);crypto.getRandomValues(bytes);
+    return Array.from(bytes,b=>b.toString(16).padStart(2,'0')).join('')+'Aa!9';
+  }
+  async function requestOtp(isResend=false){
+    if(mode==='signup'){
+      if(!pendingSignupPassword)pendingSignupPassword=makeTemporaryPassword();
+      if(isResend){
+        await api('/auth/v1/resend',{type:'signup',email:pendingEmail});
+      }else{
+        await api('/auth/v1/signup',{email:pendingEmail,password:pendingSignupPassword,data:{full_name:pendingName}});
+      }
+    }else{
+      await api('/auth/v1/otp',{email:pendingEmail,create_user:false});
+    }
   }
   async function sendOtp(isResend=false){
     const email=(otpStage?pendingEmail:emailInput.value).trim().toLowerCase();
@@ -2030,13 +2043,14 @@ document.addEventListener('click',function(e){
     submit.disabled=true;resendButton.disabled=true;form.classList.add('auth-loading');
     const oldText=submit.textContent; if(!isResend)submit.textContent='Sending code…';
     try{
-      await requestOtp();
+      await requestOtp(isResend);
       if(!otpStage)showOtpStage();
       showMessage('If this email can receive a code, a verification email has been sent. Check your inbox and spam folder. If the email contains only a sign-in link instead of a 6-digit code, check that the saved Supabase Magic link or OTP template uses {{ .Token }} and send a fresh request.','success');
     }catch(err){
       const msg=String(err.message||'Could not send a verification code.');let friendly=msg;
       if(/rate limit|too many requests/i.test(msg))friendly='Too many code requests. Please wait a little before trying again.';
       else if(/user not found|email not found/i.test(msg)&&mode==='login')friendly='No account was found for that email. Choose Sign up to create one.';
+      else if(mode==='signup'&&(/already registered|already exists|user.*exists|email.*taken/i.test(msg))){friendly='An account already exists with this email. Switch to Log in and request a login code.';resetOtpStage();}
       else if(/fetch|network/i.test(msg))friendly='Could not connect to Savely authentication. Check your internet connection and Supabase settings.';
       showMessage(friendly,'error');
     }finally{
@@ -2052,7 +2066,7 @@ document.addEventListener('click',function(e){
     if(!/^\d{6}$/.test(token)){showMessage('Enter the 6-digit code from your email.','error');return;}
     submit.disabled=true;form.classList.add('auth-loading');submit.textContent='Verifying code…';
     try{
-      const result=await api('/auth/v1/verify',{type:'email',email:pendingEmail,token});
+      const result=await api('/auth/v1/verify',{type:mode==='signup'?'signup':'email',email:pendingEmail,token});
       if(!result.access_token||!result.user)throw new Error('Verification did not return a valid session. Please request a new code.');
       saveSession(result);showApp(result.user);
       showMessage(mode==='signup'?'Email verified. Your Savely account is ready.':'You’re now signed in to Savely.','success');
@@ -2060,7 +2074,7 @@ document.addEventListener('click',function(e){
       const msg=String(err.message||'Could not verify that code.');let friendly=msg;
       if(/token has expired|expired/i.test(msg))friendly='That code has expired. Request a new code and try again.';
       else if(/invalid.*token|token.*invalid|otp.*invalid/i.test(msg))friendly='That code is incorrect or expired. Check it and try again.';
-      else if(/already.*registered|user.*exists/i.test(msg)&&mode==='signup')friendly='An account may already exist for this email. Switch to Log in to request a login code.';
+      else if(/already.*registered|user.*exists/i.test(msg)&&mode==='signup')friendly='An account already exists with this email. Switch to Log in and request a login code.';
       showMessage(friendly,'error');
     }finally{submit.disabled=false;form.classList.remove('auth-loading');submit.textContent='Verify code and continue';}
   });
