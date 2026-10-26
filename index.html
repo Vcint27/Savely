@@ -500,6 +500,11 @@ input::placeholder, textarea::placeholder { color: #9aa4b5; }
           <label for="savely-auth-name">Full name</label>
           <input id="savely-auth-name" name="name" type="text" autocomplete="name" maxlength="100" placeholder="Your full name">
         </div>
+        <div class="auth-field" id="savely-password-wrap" hidden>
+          <label for="savely-auth-password">Password</label>
+          <input id="savely-auth-password" name="password" type="password" autocomplete="new-password" minlength="8" maxlength="128" placeholder="Create a password (at least 8 characters)">
+          <small style="color:#7a8495;line-height:1.5">Use at least 8 characters. Keep it private.</small>
+        </div>
         <div class="auth-field">
           <label for="savely-auth-email">Email address</label>
           <input id="savely-auth-email" name="email" type="email" autocomplete="email" maxlength="254" placeholder="you@example.com">
@@ -1912,6 +1917,8 @@ document.addEventListener('click',function(e){
   const nameWrap=document.getElementById('savely-name-wrap');
   const nameInput=document.getElementById('savely-auth-name');
   const emailInput=document.getElementById('savely-auth-email');
+  const passwordWrap=document.getElementById('savely-password-wrap');
+  const passwordInput=document.getElementById('savely-auth-password');
   const otpWrap=document.getElementById('savely-otp-wrap');
   const otpInput=document.getElementById('savely-auth-otp');
   const resendButton=document.getElementById('savely-otp-resend');
@@ -1937,25 +1944,26 @@ document.addEventListener('click',function(e){
     loginTab.classList.toggle('active',!signup);signupTab.classList.toggle('active',signup);
     loginTab.setAttribute('aria-selected',String(!signup));signupTab.setAttribute('aria-selected',String(signup));
     nameWrap.hidden=!signup;nameInput.required=signup;
+    passwordWrap.hidden=!signup;passwordInput.required=signup;passwordInput.disabled=false;passwordInput.value='';
     emailInput.disabled=false;emailInput.required=true;emailInput.value='';otpInput.value='';otpWrap.hidden=true;
     resendButton.style.display='none';backButton.style.display='none';
     title.textContent=signup?'Create your account':'Welcome back';
-    subtitle.textContent=signup?'Enter your name and email. We’ll send you a one-time verification code.':'Enter your email and we’ll send you a one-time login code.';
+    subtitle.textContent=signup?'Enter your name, email, and password. We’ll email you a verification code.':'Enter your email and we’ll send you a one-time login code.';
     submit.textContent=signup?'Send sign-up code':'Email me a login code';
     googleButton.style.display='';googleNote.style.display='';
   }
   function showOtpStage(){
-    otpStage=true;emailInput.disabled=true;nameInput.disabled=true;otpWrap.hidden=false;otpInput.required=true;otpInput.focus();
+    otpStage=true;emailInput.disabled=true;nameInput.disabled=true;passwordInput.disabled=true;passwordWrap.hidden=true;otpWrap.hidden=false;otpInput.required=true;otpInput.focus();
     submit.textContent='Verify code and continue';resendButton.style.display='block';backButton.style.display='block';
     googleButton.style.display='none';googleNote.style.display='none';
     title.textContent='Check your email';
     subtitle.textContent='If Supabase is configured for email OTP, a 6-digit code was sent to '+pendingEmail+'. Enter it below to continue.';
   }
   function resetOtpStage(){
-    otpStage=false;emailInput.disabled=false;nameInput.disabled=false;otpInput.required=false;otpInput.value='';otpWrap.hidden=true;
+    otpStage=false;emailInput.disabled=false;nameInput.disabled=false;passwordInput.disabled=false;passwordWrap.hidden=(mode!=='signup');otpInput.required=false;otpInput.value='';otpWrap.hidden=true;
     resendButton.style.display='none';backButton.style.display='none';googleButton.style.display='';googleNote.style.display='';
     title.textContent=mode==='signup'?'Create your account':'Welcome back';
-    subtitle.textContent=mode==='signup'?'Enter your name and email. We’ll send you a one-time verification code.':'Enter your email and we’ll send you a one-time login code.';
+    subtitle.textContent=mode==='signup'?'Enter your name, email, and password. We’ll email you a verification code.':'Enter your email and we’ll send you a one-time login code.';
     submit.textContent=mode==='signup'?'Send sign-up code':'Email me a login code';
   }
   function showApp(user){
@@ -2014,17 +2022,9 @@ document.addEventListener('click',function(e){
     googleNote.textContent='Redirecting to Google…';
     location.href=url;
   });
-  // Signup uses Supabase's signup endpoint so an already-registered email is rejected
-  // instead of being treated as a login. Login uses the OTP endpoint for existing users.
-  // For six-digit signup codes, Authentication > Emails > Confirm signup must contain {{ .Token }}.
-  // The generated password is random and kept only for this signup attempt; returning users use email OTP.
-  function makeTemporaryPassword(){
-    const bytes=new Uint8Array(32);crypto.getRandomValues(bytes);
-    return Array.from(bytes,b=>b.toString(16).padStart(2,'0')).join('')+'Aa!9';
-  }
+  // Signup uses the password supplied by the user; login remains email-OTP based.
   async function requestOtp(isResend=false){
     if(mode==='signup'){
-      if(!pendingSignupPassword)pendingSignupPassword=makeTemporaryPassword();
       if(isResend){
         await api('/auth/v1/resend',{type:'signup',email:pendingEmail});
       }else{
@@ -2039,13 +2039,16 @@ document.addEventListener('click',function(e){
     const fullName=(otpStage?pendingName:nameInput.value).trim();
     if(!email){showMessage('Enter your email address.','error');return;}
     if(mode==='signup'&&!fullName){showMessage('Enter your full name.','error');return;}
+    const enteredPassword=passwordInput.value;
+    if(mode==='signup'&&!otpStage&&enteredPassword.length<8){showMessage('Create a password with at least 8 characters.','error');return;}
+    if(mode==='signup'&&!otpStage)pendingSignupPassword=enteredPassword;
     pendingEmail=email;pendingName=fullName;
     submit.disabled=true;resendButton.disabled=true;form.classList.add('auth-loading');
     const oldText=submit.textContent; if(!isResend)submit.textContent='Sending code…';
     try{
       await requestOtp(isResend);
       if(!otpStage)showOtpStage();
-      showMessage('If this email can receive a code, a verification email has been sent. Check your inbox and spam folder. If the email contains only a sign-in link instead of a 6-digit code, check that the saved Supabase Magic link or OTP template uses {{ .Token }} and send a fresh request.','success');
+      showMessage('If this email can receive a code, a verification email has been sent. Check your inbox and spam folder.','success');
     }catch(err){
       const msg=String(err.message||'Could not send a verification code.');let friendly=msg;
       if(/rate limit|too many requests/i.test(msg))friendly='Too many code requests. Please wait a little before trying again.';
@@ -2068,7 +2071,7 @@ document.addEventListener('click',function(e){
     try{
       const result=await api('/auth/v1/verify',{type:mode==='signup'?'signup':'email',email:pendingEmail,token});
       if(!result.access_token||!result.user)throw new Error('Verification did not return a valid session. Please request a new code.');
-      saveSession(result);showApp(result.user);
+      saveSession(result);pendingSignupPassword='';passwordInput.value='';showApp(result.user);
       showMessage(mode==='signup'?'Email verified. Your Savely account is ready.':'You’re now signed in to Savely.','success');
     }catch(err){
       const msg=String(err.message||'Could not verify that code.');let friendly=msg;
