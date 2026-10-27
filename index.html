@@ -1952,7 +1952,7 @@ document.addEventListener('click',function(e){
     loginTab.classList.toggle('active',!signup);signupTab.classList.toggle('active',signup);
     loginTab.setAttribute('aria-selected',String(!signup));signupTab.setAttribute('aria-selected',String(signup));
     nameWrap.hidden=!signup;nameInput.required=signup;
-    emailLabel.textContent=signup?'Email address':'Username or email address';
+    emailLabel.textContent=signup?'Email address':'Username';
     emailInput.type=signup?'email':'text';
     emailInput.name=signup?'email':'login_identifier';
     emailInput.autocomplete=signup?'email':'off';
@@ -1968,7 +1968,7 @@ document.addEventListener('click',function(e){
     emailInput.disabled=false;emailInput.required=true;emailInput.value='';emailInput.readOnly=false;otpInput.value='';otpWrap.hidden=true;
     resendButton.style.display='none';backButton.style.display='none';
     title.textContent=signup?'Create your account':'Welcome back';
-    subtitle.textContent=signup?'Create your account with a username, email, and password. We’ll email you a verification code.':'Sign in with your username or email address and password.';
+    subtitle.textContent=signup?'Create your account with a username, email, and password. We’ll email you a verification code.':'Sign in with your username and password.';
     submit.textContent=signup?'Create account':'Log in';
     googleButton.style.display='';googleNote.style.display='';
   }
@@ -1984,7 +1984,7 @@ document.addEventListener('click',function(e){
     otpStage=false;emailInput.disabled=false;nameInput.disabled=false;passwordInput.disabled=false;passwordWrap.hidden=false;confirmPasswordWrap.hidden=(mode!=='signup');otpInput.required=false;otpInput.value='';otpWrap.hidden=true;
     resendButton.style.display='none';backButton.style.display='none';googleButton.style.display='';googleNote.style.display='';
     title.textContent=mode==='signup'?'Create your account':'Welcome back';
-    subtitle.textContent=mode==='signup'?'Create your account with your username, email, and password. We’ll email you a verification code.':'Sign in with your username or email address and password.';
+    subtitle.textContent=mode==='signup'?'Create your account with your username, email, and password. We’ll email you a verification code.':'Sign in with your username and password.';
     submit.textContent=mode==='signup'?'Create account':'Log in';
   }
   function showApp(user){
@@ -2052,7 +2052,7 @@ document.addEventListener('click',function(e){
     const email=emailInput.value.trim().toLowerCase();
     const fullName=nameInput.value.trim();
     const enteredPassword=passwordInput.value;
-    if(mode==='login'&&!email){showMessage('Enter your username or email address.','error');return;}
+    if(mode==='login'&&!email){showMessage('Enter your username.','error');return;}
     const confirmPassword=confirmPasswordInput.value;
     if(mode==='signup'&&!email){showMessage('Enter your email address.','error');return;}
     if(mode==='signup'&&!fullName){showMessage('Enter a username.','error');return;}
@@ -2066,22 +2066,15 @@ document.addEventListener('click',function(e){
     try{
       if(mode==='login'){
         const loginId=emailInput.value.trim();
-        if(!loginId){showMessage('Enter your username or email address.','error');return;}
+        if(!loginId){showMessage('Enter your username.','error');return;}
         if(!enteredPassword){showMessage('Enter your password.','error');return;}
         let result;
-        if(loginId.includes('@')){
-          // Supabase email/password sign-in. Use the exact email entered, normalized for case.
-          result=await api('/auth/v1/token?grant_type=password',{
-            email:loginId.toLowerCase(),
-            password:enteredPassword
-          });
-        }else{
-          // Username sign-in is resolved by the deployed username-login Edge Function.
-          result=await api('/functions/v1/username-login',{
-            username:loginId.toLowerCase(),
-            password:enteredPassword
-          });
-        }
+        // Username-only login: the Edge Function securely resolves username to the account email,
+        // then asks Supabase Auth to verify the password. Never use the email password grant here.
+        result=await api('/functions/v1/username-login',{
+          username:loginId.trim().toLowerCase(),
+          password:enteredPassword
+        });
         if(!result || !result.access_token || !result.user){
           console.error('Savely login returned an unexpected response:', result);
           throw new Error('Sign-in did not return a valid session. Check the Supabase Auth logs and username-login Edge Function deployment.');
@@ -2123,9 +2116,9 @@ document.addEventListener('click',function(e){
       }
     }catch(err){
       const msg=String(err.message||'Authentication failed. Please try again.');let friendly=msg;
-      if(/invalid login credentials/i.test(msg)||/invalid.*credentials/i.test(msg))friendly='Incorrect username/email or password. Check that you are using the password for this exact account.';
+      if(/invalid login credentials/i.test(msg)||/invalid.*credentials/i.test(msg))friendly='Incorrect username or password. Check that you are using the password for this exact account.';
       else if(/email not confirmed/i.test(msg))friendly='Your email is not confirmed yet. Switch to Sign up only if you have not registered; otherwise request a new verification code for the existing account.';
-      else if(/function.*not found|404|username-login/i.test(msg))friendly='Username login service is unavailable. If you entered a username, check that the username-login Edge Function is deployed. You can try your registered email address instead.';
+      else if(/function.*not found|404|username-login/i.test(msg))friendly='Username login service is unavailable. Check that the username-login Edge Function is deployed and that the username exists in savely_profiles.';
       else if(/rate limit|too many requests/i.test(msg))friendly='Too many requests. Please wait a little before trying again.';
       else if(/already registered|already exists|user.*exists|email.*taken/i.test(msg)){
         friendly='An account already exists with this email. Switching to Log in.';
