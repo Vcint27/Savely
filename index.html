@@ -2235,10 +2235,18 @@ document.addEventListener('click',function(e){
   const KEY='sb_publishable_FuNJsGStp6BNdI0QCpLwWg_zQ22VmgE';
   const STORE='savely_html_v1';
   const SESSION_KEY='savely_auth_session_v1';
+  const OWNER_KEY='savely_local_owner_v1';
   const nativeSetItem=Storage.prototype.setItem;
   let syncedUserId=null, syncing=false, cloudReady=false, pushTimer=null, lastToken=null;
   let lastLocalSnapshot='';
   function getSession(){try{return JSON.parse(localStorage.getItem(SESSION_KEY)||'null')}catch(_){return null}}
+  function freshAccountData(){
+    // Never seed a brand-new account with another account's browser-local financial data.
+    const fresh=(typeof seed==='function')?seed():{accounts:[],goals:[],transactions:[],budgets:[],recurring:[],savingsList:[]};
+    if(Array.isArray(fresh.accounts))fresh.accounts=fresh.accounts.map(a=>({...a,opening:0}));
+    fresh.goals=[];fresh.transactions=[];fresh.savingsList=[];
+    return fresh;
+  }
   function showStatus(msg){try{if(typeof toast==='function')toast(msg)}catch(_){}}
   async function request(path, options, token){
     const response=await fetch(URL+path,{...options,headers:{apikey:KEY,Authorization:'Bearer '+token,'Content-Type':'application/json',...(options&&options.headers||{})}});
@@ -2262,11 +2270,19 @@ document.addEventListener('click',function(e){
         if(typeof render==='function')render();
         showStatus('Savely synced with your account.');
       }else{
-        const local=localData()||data;
-        await request('/rest/v1/savely_user_data',{method:'POST',headers:{Prefer:'resolution=merge-duplicates,return=minimal'},body:JSON.stringify({user_id:uid,data:local,updated_at:new Date().toISOString()})},session.access_token);
-        lastLocalSnapshot=JSON.stringify(local);
-        showStatus('This device’s Savely data was backed up to your account.');
+        const local=localData();
+        const localOwner=localStorage.getItem(OWNER_KEY);
+        // Reuse local data only if this browser explicitly associates it with this same auth user.
+        // Otherwise initialize an empty account, so a new user cannot inherit the previous user's balance.
+        const initial=(local && localOwner===uid)?local:freshAccountData();
+        data=initial;
+        nativeSetItem.call(localStorage,STORE,JSON.stringify(initial));
+        await request('/rest/v1/savely_user_data',{method:'POST',headers:{Prefer:'resolution=merge-duplicates,return=minimal'},body:JSON.stringify({user_id:uid,data:initial,updated_at:new Date().toISOString()})},session.access_token);
+        lastLocalSnapshot=JSON.stringify(initial);
+        if(typeof render==='function')render();
+        showStatus((local && localOwner===uid)?'This device’s Savely data was backed up to your account.':'New account ready. Your savings start separately from other accounts.');
       }
+      nativeSetItem.call(localStorage,OWNER_KEY,uid);
       syncedUserId=uid;lastToken=session.access_token;cloudReady=true;
     }catch(err){
       console.error('Savely cloud sync setup failed:',err);
