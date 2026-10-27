@@ -2171,7 +2171,13 @@ document.addEventListener('click',function(e){
       }else{
         showMessage(friendly,'error');
       }
-    }finally{submit.disabled=false;form.classList.remove('auth-loading');submit.textContent='Verify code and continue';}
+    }finally{
+      submit.disabled=false;
+      form.classList.remove('auth-loading');
+      // Restore the correct label after OTP verification, including when
+      // successful signup verification switches the user back to Login.
+      submit.textContent=otpStage?'Verify code and continue':(mode==='signup'?'Create account':'Log in');
+    }
   });
   resendButton.addEventListener('click',async()=>{
     if(mode!=='signup'||!pendingEmail){showMessage('Return to sign up and request a new verification code.','error');return;}
