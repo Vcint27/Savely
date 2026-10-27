@@ -500,6 +500,10 @@ input::placeholder, textarea::placeholder { color: #9aa4b5; }
           <label for="savely-auth-name">Username</label>
           <input id="savely-auth-name" name="username" type="text" autocomplete="username" maxlength="30" pattern="[A-Za-z0-9_.-]{3,30}" placeholder="Choose a username">
         </div>
+        <div class="auth-field">
+          <label for="savely-auth-email" id="savely-auth-email-label">Email address</label>
+          <input id="savely-auth-email" name="login_identifier" type="text" autocomplete="off" autocapitalize="none" spellcheck="false" maxlength="254" placeholder="Enter username or email" readonly>
+        </div>
         <div class="auth-field" id="savely-password-wrap">
           <label for="savely-auth-password">Password</label>
           <input id="savely-auth-password" name="password" type="password" autocomplete="current-password" minlength="8" maxlength="128" placeholder="Enter your password">
@@ -508,10 +512,6 @@ input::placeholder, textarea::placeholder { color: #9aa4b5; }
         <div class="auth-field" id="savely-confirm-password-wrap" hidden>
           <label for="savely-confirm-password">Confirm password</label>
           <input id="savely-confirm-password" name="confirm_password" type="password" autocomplete="new-password" minlength="8" maxlength="128" placeholder="Re-enter your password">
-        </div>
-        <div class="auth-field">
-          <label for="savely-auth-email" id="savely-auth-email-label">Email address</label>
-          <input id="savely-auth-email" name="login_identifier" type="text" autocomplete="off" autocapitalize="none" spellcheck="false" maxlength="254" placeholder="Enter username or email" readonly>
         </div>
         <div class="auth-field" id="savely-otp-wrap" hidden>
           <label for="savely-auth-otp">Email verification code</label>
@@ -1958,22 +1958,21 @@ document.addEventListener('click',function(e){
     emailInput.autocomplete=signup?'email':'off';
     emailInput.autocapitalize='none';
     emailInput.spellcheck=false;
-    emailInput.readOnly=!signup;
+    emailInput.readOnly=false;
     emailInput.placeholder=signup?'you@example.com':'Enter username or email';
     passwordWrap.hidden=false;passwordInput.required=true;passwordInput.disabled=false;passwordInput.value='';
     passwordInput.autocomplete=signup?'new-password':'current-password';
     passwordInput.placeholder=signup?'Create a password (at least 8 characters)':'Enter your password';
     passwordHelp.textContent=signup?'Use at least 8 characters. Keep it private.':'Enter your account password.';
     confirmPasswordWrap.hidden=!signup;confirmPasswordInput.required=signup;confirmPasswordInput.value='';
-    emailInput.disabled=false;emailInput.required=true;emailInput.value='';emailInput.readOnly=!signup;otpInput.value='';otpWrap.hidden=true;
+    emailInput.disabled=false;emailInput.required=true;emailInput.value='';emailInput.readOnly=false;otpInput.value='';otpWrap.hidden=true;
     resendButton.style.display='none';backButton.style.display='none';
     title.textContent=signup?'Create your account':'Welcome back';
     subtitle.textContent=signup?'Create your account with a username, email, and password. We’ll email you a verification code.':'Sign in with your username or email address and password.';
     submit.textContent=signup?'Create account':'Log in';
     googleButton.style.display='';googleNote.style.display='';
   }
-  // Prevent browsers from automatically inserting a saved email into the login identifier.
-  emailInput.addEventListener('focus',()=>{ if(mode==='login' && !otpStage) emailInput.readOnly=false; });
+  // Login identifier is editable; autocomplete is disabled in login mode to reduce unwanted saved-email autofill.
   function showOtpStage(){
     otpStage=true;emailInput.disabled=true;nameInput.disabled=true;passwordInput.disabled=true;passwordWrap.hidden=true;confirmPasswordWrap.hidden=true;otpWrap.hidden=false;otpInput.required=true;otpInput.focus();
     submit.textContent='Verify code and continue';resendButton.style.display='block';backButton.style.display='block';
