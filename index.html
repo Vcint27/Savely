@@ -1912,7 +1912,7 @@ document.addEventListener('click',function(e){
 <script id="savely-auth">
 (function(){
   const URL='https://gqgwfjsoxvdqhvixpeyq.supabase.co';
-  const KEY='sb_publishable_FuNJsGStp6BNdI0QCpLwWgoh';
+  const KEY='sb_publishable_FuNJsGStp6BNdI0QCpLwWg_zQ22VmgE';
   const SESSION_KEY='savely_auth_session_v1';
   const gate=document.getElementById('savely-auth-gate');
   const form=document.getElementById('savely-auth-form');
@@ -2232,7 +2232,7 @@ document.addEventListener('click',function(e){
 (function(){
   // Cross-device financial sync requires the SQL table and RLS policies supplied with this file.
   const URL='https://gqgwfjsoxvdqhvixpeyq.supabase.co';
-  const KEY='sb_publishable_FuNJsGStp6BNdI0QCpLwWgoh';
+  const KEY='sb_publishable_FuNJsGStp6BNdI0QCpLwWg_zQ22VmgE';
   const STORE='savely_html_v1';
   const SESSION_KEY='savely_auth_session_v1';
   const OWNER_KEY='savely_local_owner_v1';
@@ -2328,7 +2328,7 @@ document.addEventListener('click',function(e){
 (function () {
   // Anonymous, browser-level analytics. No names, emails, or financial data are sent.
   const SUPABASE_URL = 'https://gqgwfjsoxvdqhvixpeyq.supabase.co';
-  const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_FuNJsGStp6BNdI0QCpLwWgoh';
+  const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_FuNJsGStp6BNdI0QCpLwWg_zQ22VmgE';
   const VISITOR_KEY = 'savely_anon_visitor_id_v1';
 
   function makeUuid() {
@@ -2401,34 +2401,6 @@ document.addEventListener('click',function(e){
     wrap('renderOverallTrend','overallTrendChart','overallTrendMeta');
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install,{once:true});else install();
-})();
-</script>
-
-
-<script id="savely-google-button-fallback">
-(function () {
-  function bindSavelyGoogleButton() {
-    var button = document.getElementById('savely-google-signin');
-    if (!button || button.dataset.googleFallbackBound === '1') return;
-    button.dataset.googleFallbackBound = '1';
-    button.addEventListener('click', function (event) {
-      event.preventDefault();
-      event.stopImmediatePropagation();
-      var note = document.getElementById('savely-google-note');
-      if (note) note.textContent = 'Opening Google sign-in…';
-      var projectUrl = 'https://gqgwfjsoxvdqhvixpeyq.supabase.co';
-      var publishableKey = 'sb_publishable_FuNJsGStp6BNdI0QCpLwWgoh';
-      var redirectTo = 'https://savelymanage.github.io/Savely/';
-      var authUrl = projectUrl + '/auth/v1/authorize?provider=google&redirect_to=' +
-        encodeURIComponent(redirectTo) + '&apikey=' + encodeURIComponent(publishableKey);
-      window.location.assign(authUrl);
-    }, true);
-  }
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', bindSavelyGoogleButton, { once: true });
-  } else {
-    bindSavelyGoogleButton();
-  }
 })();
 </script>
 
