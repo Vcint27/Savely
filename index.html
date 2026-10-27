@@ -511,7 +511,7 @@ input::placeholder, textarea::placeholder { color: #9aa4b5; }
         </div>
         <div class="auth-field">
           <label for="savely-auth-email" id="savely-auth-email-label">Email address</label>
-          <input id="savely-auth-email" name="email" type="email" autocomplete="email" maxlength="254" placeholder="you@example.com">
+          <input id="savely-auth-email" name="login_identifier" type="text" autocomplete="off" autocapitalize="none" spellcheck="false" maxlength="254" placeholder="Enter username or email" readonly>
         </div>
         <div class="auth-field" id="savely-otp-wrap" hidden>
           <label for="savely-auth-otp">Email verification code</label>
@@ -1954,20 +1954,26 @@ document.addEventListener('click',function(e){
     nameWrap.hidden=!signup;nameInput.required=signup;
     emailLabel.textContent=signup?'Email address':'Username or email address';
     emailInput.type=signup?'email':'text';
-    emailInput.autocomplete=signup?'email':'username';
+    emailInput.name=signup?'email':'login_identifier';
+    emailInput.autocomplete=signup?'email':'off';
+    emailInput.autocapitalize='none';
+    emailInput.spellcheck=false;
+    emailInput.readOnly=!signup;
     emailInput.placeholder=signup?'you@example.com':'Enter username or email';
     passwordWrap.hidden=false;passwordInput.required=true;passwordInput.disabled=false;passwordInput.value='';
     passwordInput.autocomplete=signup?'new-password':'current-password';
     passwordInput.placeholder=signup?'Create a password (at least 8 characters)':'Enter your password';
     passwordHelp.textContent=signup?'Use at least 8 characters. Keep it private.':'Enter your account password.';
     confirmPasswordWrap.hidden=!signup;confirmPasswordInput.required=signup;confirmPasswordInput.value='';
-    emailInput.disabled=false;emailInput.required=true;emailInput.value='';otpInput.value='';otpWrap.hidden=true;
+    emailInput.disabled=false;emailInput.required=true;emailInput.value='';emailInput.readOnly=!signup;otpInput.value='';otpWrap.hidden=true;
     resendButton.style.display='none';backButton.style.display='none';
     title.textContent=signup?'Create your account':'Welcome back';
     subtitle.textContent=signup?'Create your account with a username, email, and password. We’ll email you a verification code.':'Sign in with your username or email address and password.';
     submit.textContent=signup?'Create account':'Log in';
     googleButton.style.display='';googleNote.style.display='';
   }
+  // Prevent browsers from automatically inserting a saved email into the login identifier.
+  emailInput.addEventListener('focus',()=>{ if(mode==='login' && !otpStage) emailInput.readOnly=false; });
   function showOtpStage(){
     otpStage=true;emailInput.disabled=true;nameInput.disabled=true;passwordInput.disabled=true;passwordWrap.hidden=true;confirmPasswordWrap.hidden=true;otpWrap.hidden=false;otpInput.required=true;otpInput.focus();
     submit.textContent='Verify code and continue';resendButton.style.display='block';backButton.style.display='block';
@@ -2041,7 +2047,7 @@ document.addEventListener('click',function(e){
   // Sign up creates a password-based account and verifies the email.
   // Login uses Supabase's email/password grant; OTP is only for confirming sign-up.
   async function requestSignup(){
-    return await api('/auth/v1/signup',{email:pendingEmail,password:pendingSignupPassword,data:{username:pendingName}});
+    return await api('/auth/v1/signup',{email:pendingEmail,password:pendingSignupPassword,data:{username:pendingName,display_name:pendingName,full_name:pendingName}});
   }
   async function sendOtp(){
     const email=emailInput.value.trim().toLowerCase();
