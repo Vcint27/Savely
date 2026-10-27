@@ -2041,7 +2041,7 @@ document.addEventListener('click',function(e){
   // Sign up creates a password-based account and verifies the email.
   // Login uses Supabase's email/password grant; OTP is only for confirming sign-up.
   async function requestSignup(){
-    return await api('/auth/v1/signup',{email:pendingEmail,password:pendingSignupPassword,data:{username:pendingName}});
+    return await api('/auth/v1/signup',{email:pendingEmail,password:pendingSignupPassword,data:{username:pendingName,full_name:pendingName,display_name:pendingName}});
   }
   async function sendOtp(){
     const email=emailInput.value.trim().toLowerCase();
@@ -2130,12 +2130,13 @@ document.addEventListener('click',function(e){
       if(!result.user)throw new Error('Verification did not return a valid user. Please request a new code.');
 
       if(verifyingSignup){
-        // Signup OTP verifies the email only. Do not persist the session or
-        // open the app: user explicitly wants to sign in on the Login screen.
+        // Preserve the chosen username before setMode clears pending signup state.
+        // Supabase Auth's Display name column uses full_name metadata.
+        const verifiedUsername = pendingName || result.user.user_metadata?.username || '';
         saveSession(null);
         pendingSignupPassword='';passwordInput.value='';confirmPasswordInput.value='';
         setMode('login');
-        emailInput.value=verifiedEmail;
+        emailInput.value=verifiedUsername;
         showMessage('Email verified successfully! Your account is ready. Please log in with your username and password.','success');
       }else{
         if(!result.access_token)throw new Error('Login verification did not return a valid session. Please try again.');
