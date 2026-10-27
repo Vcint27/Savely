@@ -2064,7 +2064,7 @@ document.addEventListener('click',function(e){
         // Emails use Supabase's password grant directly; usernames are resolved securely by the Edge Function.
         const result=loginId.includes('@')
           ? await api('/auth/v1/token?grant_type=password',{email:loginId.toLowerCase(),password:enteredPassword})
-          : await api('/functions/v1/username-login',{username:loginId.toLowerCase(),password:enteredPassword});
+          : await api('/functions/v1/swift-processor',{username:loginId.toLowerCase(),password:enteredPassword});
         if(!result.access_token||!result.user)throw new Error('Login did not return a valid session.');
         saveSession(result);passwordInput.value='';showApp(result.user);
       }else{
