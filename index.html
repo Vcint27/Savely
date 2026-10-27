@@ -2002,9 +2002,26 @@ document.addEventListener('click',function(e){
   async function api(path,body,token){
     const headers={'Content-Type':'application/json','apikey':KEY};
     if(token)headers.Authorization='Bearer '+token;
-    const response=await fetch(URL+path,{method:'POST',headers,body:JSON.stringify(body)});
+    let response;
+    try{
+      response=await fetch(URL+path,{method:'POST',headers,body:JSON.stringify(body)});
+    }catch(networkError){
+      console.error('Savely auth network request failed:',{
+        endpoint:URL+path,
+        error:networkError instanceof Error?networkError.message:String(networkError)
+      });
+      const e=new Error('Could not reach the authentication endpoint. Check the Supabase project URL, publishable key, and Edge Function CORS/deployment settings.');
+      e.networkError=true;
+      throw e;
+    }
     let data={};try{data=await response.json()}catch(_){}
-    if(!response.ok){const e=new Error(data.msg||data.message||data.error_description||data.error||'Request failed. Please try again.');e.status=response.status;e.data=data;throw e}
+    if(!response.ok){
+      console.error('Savely auth request returned an HTTP error:',{
+        endpoint:URL+path,status:response.status,body:data
+      });
+      const e=new Error(data.msg||data.message||data.error_description||data.error||'Request failed. Please try again.');
+      e.status=response.status;e.data=data;throw e;
+    }
     return data;
   }
   async function restore(){
@@ -2120,13 +2137,13 @@ document.addEventListener('click',function(e){
       else if(/email not confirmed/i.test(msg))friendly='Your email is not confirmed yet. Switch to Sign up only if you have not registered; otherwise request a new verification code for the existing account.';
       else if(/function.*not found|404|username-login/i.test(msg))friendly='Savely could not reach the login service. Check the deployed swift-processor Edge Function and its logs.';
       else if(/rate limit|too many requests/i.test(msg))friendly='Too many requests. Please wait a little before trying again.';
-      else if(/already registered|already exists|user.*exists|email.*taken/i.test(msg)){
-        friendly='An account already exists with this email. Switching to Log in.';
+      else if(/already registered|already exists|user.*exists|email.*taken|email_exists|user_already_exists/i.test(msg)){
+        friendly='An account may already exist with this email. Switching to Log in. If you deleted the old Auth user, check for an orphaned profile row in savely_profiles.';
         const signupEmail=email;
         setMode('login');
         emailInput.value=signupEmail;
       }
-      else if(/fetch|network/i.test(msg))friendly='Could not connect to Savely authentication. Check your internet connection and Supabase settings.';
+      else if(err.networkError||/failed to fetch|fetch|network/i.test(msg))friendly='Could not reach Supabase authentication. Check the project URL and publishable key. If this happens on login, check the swift-processor Edge Function deployment and CORS settings. Details are available in the browser console.';
       showMessage(friendly,'error');
     }finally{
       submit.disabled=false;form.classList.remove('auth-loading');
