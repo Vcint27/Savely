@@ -1911,7 +1911,7 @@ document.addEventListener('click',function(e){
 
 <script id="savely-auth">
 (function(){
-  const URL='https://gqgwfjsoxvdqhvixpeyq.supabase.co';
+  const URL='https://gqgwfjsxovdqhvixpeyq.supabase.co';
   const KEY='sb_publishable_FuNJsGStp6BNdI0QCpLwWg_zQ22VmgE';
   const SESSION_KEY='savely_auth_session_v1';
   const gate=document.getElementById('savely-auth-gate');
@@ -2071,13 +2071,13 @@ document.addEventListener('click',function(e){
         let result;
         // Username-only login: the Edge Function securely resolves username to the account email,
         // then asks Supabase Auth to verify the password. Never use the email password grant here.
-        result=await api('/functions/v1/username-login',{
+        result=await api('/functions/v1/swift-processor',{
           username:loginId.trim().toLowerCase(),
           password:enteredPassword
         });
         if(!result || !result.access_token || !result.user){
           console.error('Savely login returned an unexpected response:', result);
-          throw new Error('Sign-in did not return a valid session. Check the Supabase Auth logs and username-login Edge Function deployment.');
+          throw new Error('Sign-in did not return a valid session. Check the Supabase Auth logs and deployed username-login Edge Function.');
         }
         saveSession(result);
         passwordInput.value='';
@@ -2118,7 +2118,7 @@ document.addEventListener('click',function(e){
       const msg=String(err.message||'Authentication failed. Please try again.');let friendly=msg;
       if(/invalid login credentials/i.test(msg)||/invalid.*credentials/i.test(msg))friendly='Incorrect username or password. Check that you are using the password for this exact account.';
       else if(/email not confirmed/i.test(msg))friendly='Your email is not confirmed yet. Switch to Sign up only if you have not registered; otherwise request a new verification code for the existing account.';
-      else if(/function.*not found|404|username-login/i.test(msg))friendly='Username login service is unavailable. Check that the username-login Edge Function is deployed and that the username exists in savely_profiles.';
+      else if(/function.*not found|404|username-login/i.test(msg))friendly='Username login service is unavailable. Check that the deployed login Edge Function is available and that the username exists in savely_profiles.';
       else if(/rate limit|too many requests/i.test(msg))friendly='Too many requests. Please wait a little before trying again.';
       else if(/already registered|already exists|user.*exists|email.*taken/i.test(msg)){
         friendly='An account already exists with this email. Switching to Log in.';
@@ -2253,7 +2253,7 @@ document.addEventListener('click',function(e){
 <script id="savely-cloud-sync">
 (function(){
   // Cross-device financial sync requires the SQL table and RLS policies supplied with this file.
-  const URL='https://gqgwfjsoxvdqhvixpeyq.supabase.co';
+  const URL='https://gqgwfjsxovdqhvixpeyq.supabase.co';
   const KEY='sb_publishable_FuNJsGStp6BNdI0QCpLwWg_zQ22VmgE';
   const STORE='savely_html_v1';
   const SESSION_KEY='savely_auth_session_v1';
@@ -2349,7 +2349,7 @@ document.addEventListener('click',function(e){
 <script id="savely-anonymous-analytics">
 (function () {
   // Anonymous, browser-level analytics. No names, emails, or financial data are sent.
-  const SUPABASE_URL = 'https://gqgwfjsoxvdqhvixpeyq.supabase.co';
+  const SUPABASE_URL = 'https://gqgwfjsxovdqhvixpeyq.supabase.co';
   const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_FuNJsGStp6BNdI0QCpLwWg_zQ22VmgE';
   const VISITOR_KEY = 'savely_anon_visitor_id_v1';
 
