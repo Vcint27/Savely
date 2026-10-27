@@ -2077,7 +2077,7 @@ document.addEventListener('click',function(e){
         });
         if(!result || !result.access_token || !result.user){
           console.error('Savely login returned an unexpected response:', result);
-          throw new Error('Sign-in did not return a valid session. Check the Supabase Auth logs and deployed username-login Edge Function.');
+          throw new Error('Sign-in did not return a valid session. Check the deployed login Edge Function and Supabase Auth logs.');
         }
         saveSession(result);
         passwordInput.value='';
@@ -2118,7 +2118,7 @@ document.addEventListener('click',function(e){
       const msg=String(err.message||'Authentication failed. Please try again.');let friendly=msg;
       if(/invalid login credentials/i.test(msg)||/invalid.*credentials/i.test(msg))friendly='Incorrect username or password. Check that you are using the password for this exact account.';
       else if(/email not confirmed/i.test(msg))friendly='Your email is not confirmed yet. Switch to Sign up only if you have not registered; otherwise request a new verification code for the existing account.';
-      else if(/function.*not found|404|username-login/i.test(msg))friendly='Username login service is unavailable. Check that the deployed login Edge Function is available and that the username exists in savely_profiles.';
+      else if(/function.*not found|404|username-login/i.test(msg))friendly='Savely could not reach the login service. Check the deployed swift-processor Edge Function and its logs.';
       else if(/rate limit|too many requests/i.test(msg))friendly='Too many requests. Please wait a little before trying again.';
       else if(/already registered|already exists|user.*exists|email.*taken/i.test(msg)){
         friendly='An account already exists with this email. Switching to Log in.';
