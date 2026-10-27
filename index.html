@@ -498,7 +498,7 @@ input::placeholder, textarea::placeholder { color: #9aa4b5; }
       <form id="savely-auth-form" class="auth-fields">
         <div class="auth-field" id="savely-name-wrap" hidden>
           <label for="savely-auth-name">Username</label>
-          <input id="savely-auth-name" name="username" type="text" autocomplete="username" maxlength="30" pattern="[A-Za-z0-9_.-]{3,30}" placeholder="Choose a username">
+          <input id="savely-auth-name" name="username" type="text" autocomplete="username" maxlength="30" pattern="[A-Za-z0-9_.\-]{3,30}" placeholder="Choose a username">
         </div>
         <div class="auth-field">
           <label for="savely-auth-email" id="savely-auth-email-label">Username</label>
@@ -2051,7 +2051,7 @@ document.addEventListener('click',function(e){
     const confirmPassword=confirmPasswordInput.value;
     if(mode==='signup'&&!email){showMessage('Enter your email address.','error');return;}
     if(mode==='signup'&&!fullName){showMessage('Enter a username.','error');return;}
-    if(mode==='signup'&&!/^[A-Za-z0-9_.-]{3,30}$/.test(fullName)){showMessage('Username must be 3–30 characters and use only letters, numbers, dots, underscores, or hyphens.','error');return;}
+    if(mode==='signup'&&!/^[A-Za-z0-9_.\-]{3,30}$/.test(fullName)){showMessage('Username must be 3–30 characters and use only letters, numbers, dots, underscores, or hyphens.','error');return;}
     if(!enteredPassword){showMessage('Enter your password.','error');return;}
     if(mode==='signup'&&enteredPassword.length<8){showMessage('Create a password with at least 8 characters.','error');return;}
     if(mode==='signup'&&enteredPassword!==confirmPassword){showMessage('The passwords do not match.','error');return;}
@@ -2064,7 +2064,7 @@ document.addEventListener('click',function(e){
         // Emails use Supabase's password grant directly; usernames are resolved securely by the Edge Function.
         const result=loginId.includes('@')
           ? await api('/auth/v1/token?grant_type=password',{email:loginId.toLowerCase(),password:enteredPassword})
-          : await api('/functions/v1/swift-processor',{username:loginId.toLowerCase(),password:enteredPassword});
+          : await api('/functions/v1/username-login',{username:loginId.toLowerCase(),password:enteredPassword});
         if(!result.access_token||!result.user)throw new Error('Login did not return a valid session.');
         saveSession(result);passwordInput.value='';showApp(result.user);
       }else{
