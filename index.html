@@ -501,8 +501,8 @@ input::placeholder, textarea::placeholder { color: #9aa4b5; }
           <input id="savely-auth-name" name="username" type="text" autocomplete="username" maxlength="30" pattern="[A-Za-z0-9_.-]{3,30}" placeholder="Choose a username">
         </div>
         <div class="auth-field">
-          <label for="savely-auth-email" id="savely-auth-email-label">Email address</label>
-          <input id="savely-auth-email" name="email" type="email" autocomplete="email" maxlength="254" placeholder="you@example.com">
+          <label for="savely-auth-email" id="savely-auth-email-label">Username</label>
+          <input id="savely-auth-email" name="login_username" type="text" autocomplete="username" maxlength="254" placeholder="Enter your username">
         </div>
         <div class="auth-field" id="savely-password-wrap">
           <label for="savely-auth-password">Password</label>
@@ -2047,7 +2047,7 @@ document.addEventListener('click',function(e){
     const email=emailInput.value.trim().toLowerCase();
     const fullName=nameInput.value.trim();
     const enteredPassword=passwordInput.value;
-    if(mode==='login'&&!email){showMessage('Enter your username.','error');return;}
+    if(mode==='login'&&!emailInput.value.trim()){showMessage('Enter your username.','error');return;}
     const confirmPassword=confirmPasswordInput.value;
     if(mode==='signup'&&!email){showMessage('Enter your email address.','error');return;}
     if(mode==='signup'&&!fullName){showMessage('Enter a username.','error');return;}
@@ -2101,7 +2101,7 @@ document.addEventListener('click',function(e){
       }
     }catch(err){
       const msg=String(err.message||'Authentication failed. Please try again.');let friendly=msg;
-      if(/invalid login credentials/i.test(msg)||/invalid.*credentials/i.test(msg))friendly='Incorrect username/email or password. Please try again.';
+      if(/invalid login credentials/i.test(msg)||/invalid.*credentials/i.test(msg))friendly='Incorrect username or password. Please try again.';
       else if(/email not confirmed/i.test(msg))friendly='Please verify your email first. If you just signed up, enter the 6-digit code sent to your inbox.';
       else if(/rate limit|too many requests/i.test(msg))friendly='Too many requests. Please wait a little before trying again.';
       else if(/already registered|already exists|user.*exists|email.*taken/i.test(msg)){
@@ -2136,7 +2136,7 @@ document.addEventListener('click',function(e){
         pendingSignupPassword='';passwordInput.value='';confirmPasswordInput.value='';
         setMode('login');
         emailInput.value=verifiedEmail;
-        showMessage('Email verified successfully! Your account is ready. Please log in with your username or email address and password.','success');
+        showMessage('Email verified successfully! Your account is ready. Please log in with your username and password.','success');
       }else{
         if(!result.access_token)throw new Error('Login verification did not return a valid session. Please try again.');
         saveSession(result);pendingSignupPassword='';passwordInput.value='';confirmPasswordInput.value='';
@@ -2171,7 +2171,7 @@ document.addEventListener('click',function(e){
       }else{
         showMessage(friendly,'error');
       }
-    }finally{submit.disabled=false;form.classList.remove('auth-loading');submit.textContent='Verify code and continue';}
+    }finally{submit.disabled=false;form.classList.remove('auth-loading');submit.textContent=otpStage?'Verify code and continue':(mode==='signup'?'Create account':'Log in');}
   });
   resendButton.addEventListener('click',async()=>{
     if(mode!=='signup'||!pendingEmail){showMessage('Return to sign up and request a new verification code.','error');return;}
