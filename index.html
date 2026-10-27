@@ -2066,12 +2066,29 @@ document.addEventListener('click',function(e){
     try{
       if(mode==='login'){
         const loginId=emailInput.value.trim();
-        // Emails use Supabase's password grant directly; usernames are resolved securely by the Edge Function.
-        const result=loginId.includes('@')
-          ? await api('/auth/v1/token?grant_type=password',{email:loginId.toLowerCase(),password:enteredPassword})
-          : await api('/functions/v1/username-login',{username:loginId.toLowerCase(),password:enteredPassword});
-        if(!result.access_token||!result.user)throw new Error('Login did not return a valid session.');
-        saveSession(result);passwordInput.value='';showApp(result.user);
+        if(!loginId){showMessage('Enter your username or email address.','error');return;}
+        if(!enteredPassword){showMessage('Enter your password.','error');return;}
+        let result;
+        if(loginId.includes('@')){
+          // Supabase email/password sign-in. Use the exact email entered, normalized for case.
+          result=await api('/auth/v1/token?grant_type=password',{
+            email:loginId.toLowerCase(),
+            password:enteredPassword
+          });
+        }else{
+          // Username sign-in is resolved by the deployed username-login Edge Function.
+          result=await api('/functions/v1/username-login',{
+            username:loginId.toLowerCase(),
+            password:enteredPassword
+          });
+        }
+        if(!result || !result.access_token || !result.user){
+          console.error('Savely login returned an unexpected response:', result);
+          throw new Error('Sign-in did not return a valid session. Check the Supabase Auth logs and username-login Edge Function deployment.');
+        }
+        saveSession(result);
+        passwordInput.value='';
+        showApp(result.user);
       }else{
         pendingSignupPassword=enteredPassword;
         const result=await requestSignup();
@@ -2106,8 +2123,9 @@ document.addEventListener('click',function(e){
       }
     }catch(err){
       const msg=String(err.message||'Authentication failed. Please try again.');let friendly=msg;
-      if(/invalid login credentials/i.test(msg)||/invalid.*credentials/i.test(msg))friendly='Incorrect username/email or password. Please try again.';
-      else if(/email not confirmed/i.test(msg))friendly='Please verify your email first. If you just signed up, enter the 6-digit code sent to your inbox.';
+      if(/invalid login credentials/i.test(msg)||/invalid.*credentials/i.test(msg))friendly='Incorrect username/email or password. Check that you are using the password for this exact account.';
+      else if(/email not confirmed/i.test(msg))friendly='Your email is not confirmed yet. Switch to Sign up only if you have not registered; otherwise request a new verification code for the existing account.';
+      else if(/function.*not found|404|username-login/i.test(msg))friendly='Username login service is unavailable. If you entered a username, check that the username-login Edge Function is deployed. You can try your registered email address instead.';
       else if(/rate limit|too many requests/i.test(msg))friendly='Too many requests. Please wait a little before trying again.';
       else if(/already registered|already exists|user.*exists|email.*taken/i.test(msg)){
         friendly='An account already exists with this email. Switching to Log in.';
