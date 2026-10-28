@@ -467,6 +467,21 @@ input::placeholder, textarea::placeholder { color: #9aa4b5; }
 #versionHistoryPanel{display:block}
 </style>
 
+<style id="savely-sort-and-savings-chart-scroll-v289">
+#savingsTrendCanvasWrap{max-width:100%;overflow-x:auto;overflow-y:hidden;scrollbar-width:thin;scrollbar-color:#b8c5d4 #f1f5f9;border-radius:12px;overscroll-behavior-x:contain}
+#savingsTrendCanvasWrap::-webkit-scrollbar{height:9px}
+#savingsTrendCanvasWrap::-webkit-scrollbar-track{background:#f1f5f9;border-radius:99px}
+#savingsTrendCanvasWrap::-webkit-scrollbar-thumb{background:#b8c5d4;border:2px solid #f1f5f9;border-radius:99px}
+#savingsTrendCanvasWrap::-webkit-scrollbar-thumb:hover{background:#8d9caf}
+.financial-sort-controls{display:flex;align-items:center;gap:10px;padding:6px 8px 6px 13px;min-height:48px;border:1px solid #e2e8f0;border-radius:13px;background:linear-gradient(180deg,#fff 0%,#f8fafc 100%);box-shadow:0 2px 7px rgba(23,32,51,.035)}
+.financial-sort-controls label{display:inline-flex;align-items:center;gap:7px;color:#647087;font-size:12px;font-weight:800;letter-spacing:.01em}
+.financial-sort-controls label::before{content:"⇅";display:grid;place-items:center;width:25px;height:25px;border-radius:8px;background:#e8f6f0;color:#168765;font-size:15px;font-weight:900}
+.financial-sort-controls select{appearance:none;-webkit-appearance:none;min-height:36px;min-width:150px;max-width:220px;padding:8px 34px 8px 12px;border:1px solid #dce4ed;border-radius:9px;background-color:#fff;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%23647087' stroke-width='2.3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 11px center;color:#243047;font-size:12px;font-weight:750;cursor:pointer;box-shadow:0 1px 2px rgba(23,32,51,.035);transition:border-color .15s,box-shadow .15s,background-color .15s}
+.financial-sort-controls select:hover{border-color:#a9cdbf;background-color:#fcfffd}
+.financial-sort-controls select:focus-visible{outline:none;border-color:#168765;box-shadow:0 0 0 3px #16876520}
+@media(max-width:850px){.financial-sort-controls{width:100%;min-width:0;justify-content:space-between}.financial-sort-controls select{flex:1;min-width:0;max-width:none}}
+@media(max-width:420px){.financial-sort-controls{gap:7px;padding-left:9px}.financial-sort-controls label{font-size:11px}.financial-sort-controls label::before{width:22px;height:22px}}
+</style>
 </head>
 <body>
 
@@ -1000,8 +1015,16 @@ function renderSavingsTrend(){
  legend.innerHTML=entries.map(e=>`<span style="display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--muted)"><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${e.color||'#15966d'}"></span>${esc(e.name)}: ${peso(e.value)}</span>`).join('');
  const ctx=canvas.getContext('2d');
  if(!ctx){if(meta)meta.textContent='Your browser does not support canvas charts.';return;}
+ const chartWrap=document.getElementById('savingsTrendCanvasWrap');
+ // Let long histories grow horizontally so users can scroll instead of compressing every point.
+ const maxPoints=Math.max(2,...entries.map(entry=>Array.isArray(entry.history)?entry.history.length:0));
+ const visibleWidth=Math.max(320,Math.round(chartWrap?.clientWidth||canvas.parentElement.clientWidth||600));
+ const naturalChartWidth=Math.max(visibleWidth,Math.min(6000, maxPoints*46+110));
+ if(chartWrap){chartWrap.style.overflowX=naturalChartWidth>visibleWidth?'auto':'hidden';chartWrap.style.overflowY='hidden';}
+ canvas.style.width=naturalChartWidth+'px';
+ canvas.style.minWidth=naturalChartWidth+'px';
  const rect=canvas.getBoundingClientRect();
- const width=Math.max(320,Math.round(rect.width||canvas.parentElement.clientWidth||600)),height=Math.max(220,Math.round(rect.height||280)),dpr=Math.max(1,window.devicePixelRatio||1);
+ const width=Math.max(320,Math.round(rect.width||visibleWidth)),height=Math.max(220,Math.round(rect.height||280)),dpr=Math.max(1,window.devicePixelRatio||1);
  canvas.width=Math.round(width*dpr);canvas.height=Math.round(height*dpr);ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,width,height);
  const css=getComputedStyle(document.body),textColor=css.getPropertyValue('--muted').trim()||'#64748b',lineColor=css.getPropertyValue('--line').trim()||'#e2e8f0';
  const pad={l:76,r:20,t:18,b:58},plotW=width-pad.l-pad.r,plotH=height-pad.t-pad.b;
