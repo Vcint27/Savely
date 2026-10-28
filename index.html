@@ -646,7 +646,7 @@ input::placeholder, textarea::placeholder { color: #9aa4b5; }
         <div class="panel" id="savingsTrendPanel" style="margin-bottom:18px">
       <div class="panel-head"><div><h2>Savings growth by bank</h2><div class="panel-sub">Live comparison of current savings balances across your banks and digital wallets.</div></div><span class="panel-sub" id="savingsTrendMeta">Savings only</span></div>
       <div id="savingsTrendCanvasWrap" class="savings-chart-frame"><canvas id="savingsTrendYAxis" aria-hidden="true"></canvas><div id="savingsTrendScroll"><canvas id="savingsTrendChart" role="img" aria-label="Line graph comparing savings balances by bank and digital wallet"></canvas></div></div>
-      <div class="panel-sub" id="savingsTrendLegend" style="display:flex;flex-wrap:wrap;gap:12px;margin-top:12px"></div><div style="display:flex;justify-content:flex-end;margin-top:10px"><button type="button" class="btn btn-light" id="viewSavingsGraphButton" onclick="toggleSavingsGraphView()">View savings graph</button></div>
+      <div class="panel-sub" id="savingsTrendLegend" style="display:flex;flex-wrap:wrap;gap:12px;margin-top:12px"></div><div style="display:flex;justify-content:flex-end;margin-top:10px"><button type="button" class="btn btn-light" id="viewSavingsGraphButton" onclick="toggleSavingsGraphView(event)">View savings graph</button></div>
       <div class="footer-note">Updates when you add or edit savings. Balance changes are plotted as history, so decreases and increases appear as dips and rises.</div>
     </div>
     <div class="panel">
@@ -1263,7 +1263,33 @@ function financialBankLogo(name){
 let financialSortMode='custom';
 function setFinancialSort(mode){financialSortMode=mode;renderSavingsList();}
 function isDigitalFinancialItem(item){const n=String(item.bankName||item.name||'').toLowerCase();return /maya|maribank|gotyme|seabank|cimb|tonik|uno digital|ownbank|netbank|diskartech|komo|gcash|digital|wallet/.test(n);}
-function toggleSavingsGraphView(){const wrap=document.getElementById('savingsTrendCanvasWrap'),btn=document.getElementById('viewSavingsGraphButton');if(!wrap||!btn)return;const expanded=wrap.dataset.expanded!=='1';wrap.dataset.expanded=expanded?'1':'0';wrap.style.height=expanded?'520px':'280px';btn.textContent=expanded?'Show compact graph':'View savings graph';requestAnimationFrame(()=>renderSavingsTrend());}
+function toggleSavingsGraphView(event){
+ // Keep this action isolated from the graph panel's background-click handler.
+ if(event){event.preventDefault();event.stopPropagation();}
+ const wrap=document.getElementById('savingsTrendCanvasWrap');
+ const btn=document.getElementById('viewSavingsGraphButton');
+ if(!wrap||!btn)return;
+ // Always restore the combined total-savings history, regardless of which
+ // bank/item was previously selected in the list or on a graph endpoint.
+ savingsTrendSelectedBank=null;
+ savingsTrendSelectedAmount=null;
+ savingsTrendSelectedAt=null;
+ savingsTrendZoom=1;
+ savingsTrendPan=0;
+ document.querySelectorAll('#savingsListTable tr[data-financial-item-id]').forEach(row=>{
+  row.style.background='';
+ });
+ const expanded=wrap.dataset.expanded!=='1';
+ wrap.dataset.expanded=expanded?'1':'0';
+ wrap.style.height=expanded?'520px':'280px';
+ btn.textContent=expanded?'Show compact graph':'View savings graph';
+ requestAnimationFrame(()=>{
+  renderSavingsTrend();
+  // Ensure the scrollable plot returns to its left edge for the full overview.
+  const scrollWrap=document.getElementById('savingsTrendScrollWrap');
+  if(scrollWrap)scrollWrap.scrollLeft=0;
+ });
+}
 function renderSavingsList(){
  const items=Array.isArray(data.savingsList)?data.savingsList:[];
  const goalBankItems=(Array.isArray(data.goals)?data.goals:[]).flatMap(goal=>(Array.isArray(goal.banks)?goal.banks:Array.isArray(goal.selectedBanks)?goal.selectedBanks:[]).map((bank,index)=>{const bankName=typeof bank==='string'?bank:(bank.name||bank.bankName||bank.bank||'Bank');const rawAmount=typeof bank==='object'?(bank.amount??bank.balance??bank.value??0):0;return {id:`goalalloc-${goal.id}-${index}`,name:`${goal.name||'Savings Goal'} · ${bankName}`,amount:Math.max(0,Number(rawAmount)||0),category:'Savings',date:goal.created||todayISO(),isGoalAllocation:true,goalId:goal.id,bankName};}));
