@@ -987,7 +987,7 @@ function renderSavingsTrend(){
  events.forEach(event=>{
   const previousItemBalance=runningBalances.has(event.itemId)?runningBalances.get(event.itemId):0;
   runningBalances.set(event.itemId,event.amount);
-  totalHistory.push({at:event.at,amount:[...runningBalances.values()].reduce((sum,value)=>sum+value,0),bankName:event.bankName,delta:event.amount-previousItemBalance,previousAmount,itemAmount:event.amount,itemId:event.itemId});
+  totalHistory.push({at:event.at,amount:[...runningBalances.values()].reduce((sum,value)=>sum+value,0),bankName:event.bankName,delta:event.amount-previousItemBalance,previousAmount:previousItemBalance,itemAmount:event.amount,itemId:event.itemId});
  });
  const totalSavings=allSavingsItems.reduce((sum,item)=>sum+Math.max(0,Number(item.amount)||0),0);
  const aggregateEntry={name:'Total Savings',value:totalSavings,history:totalHistory.length?totalHistory:[{at:Date.now(),amount:totalSavings}],color:'#15966d'};
