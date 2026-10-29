@@ -148,28 +148,11 @@
 .savings-item-menu button{border:0;background:transparent;text-align:left;padding:9px 10px;border-radius:7px;font-size:12px;font-weight:700;color:var(--text);cursor:pointer}
 .savings-item-menu button:hover{background:#f1f5f9}
 .savings-item-menu button.menu-delete{color:var(--red)}
-/* Savings balance-change arrow: keep it clearly separated and before the amount. */
-.financial-change-indicator{display:inline-flex;align-items:center;justify-content:center;width:25px;height:25px;flex:0 0 25px;border-radius:50%;font-size:17px;font-weight:900;line-height:1}
-.financial-change-indicator.up{background:#e2f7ed;color:#079669}
-.financial-change-indicator.down{background:#fff0f1;color:#dc3545}
-.financial-change-indicator.neutral{background:#f1f4f8;color:#778399}
-/* Polished graph hover card; typography inherits Savely's Inter/system font stack. */
-#savingsCandleTooltip{font-family:inherit!important;font-size:12px;line-height:1.45;min-width:210px;max-width:255px;padding:0!important;overflow:hidden;border:1px solid #e3eaf1!important;border-radius:14px!important;background:#fff!important;box-shadow:0 14px 38px rgba(23,32,51,.17),0 3px 8px rgba(23,32,51,.06)!important;color:var(--text)!important}
-#savingsCandleTooltip .candle-tip-head{padding:12px 14px 10px;background:linear-gradient(135deg,#f0faf5,#fff);border-bottom:1px solid #e8f0ec}
-#savingsCandleTooltip .candle-tip-label{font-size:10px;font-weight:750;letter-spacing:.45px;text-transform:uppercase;color:var(--muted);margin-bottom:3px}
-#savingsCandleTooltip .candle-tip-total{font-size:19px;font-weight:800;letter-spacing:-.45px;color:var(--text);font-variant-numeric:tabular-nums}
-#savingsCandleTooltip .candle-tip-body{padding:10px 14px 12px}
-#savingsCandleTooltip .candle-tip-change-label{font-size:11px;color:var(--muted);margin-bottom:4px}
-#savingsCandleTooltip .candle-tip-change{display:inline-flex;align-items:center;gap:5px;font-size:14px;font-weight:800;font-variant-numeric:tabular-nums;margin-bottom:9px}
-#savingsCandleTooltip .candle-tip-bank{font-size:12px;font-weight:750;color:var(--text);padding-top:8px;border-top:1px solid #edf1f5}
-#savingsCandleTooltip .candle-tip-time{font-size:10px;color:var(--muted);margin-top:4px}
 #savingsTrendCanvasWrap{position:relative;isolation:isolate}
 #savingsTrendYAxis{position:sticky!important;left:0!important;z-index:5!important}
 #savingsTrendCanvasWrap::-webkit-scrollbar{height:9px}
 #savingsTrendCanvasWrap::-webkit-scrollbar-thumb{background:#b8c7d8;border-radius:99px}
 
-
-.financial-row-end{display:inline-flex;align-items:center;justify-content:flex-end;gap:12px;min-width:72px}.financial-change-indicator{display:inline-flex;align-items:center;justify-content:center;width:27px;height:27px;border-radius:50%;font-size:20px;font-weight:900;line-height:1;flex:0 0 27px}.financial-change-indicator.up{color:#0b9b63;background:#e4f7ee}.financial-change-indicator.down{color:#dc3545;background:#ffebed}.financial-change-indicator.neutral{color:#8b95a7;background:#f0f2f5;font-size:17px}
 </style>
 
 <style id="savely-v205-settings-cleanup">
@@ -1019,8 +1002,7 @@ function renderSavingsTrend(){
  events.forEach(event=>{
   const previousItemBalance=runningBalances.has(event.itemId)?runningBalances.get(event.itemId):0;
   runningBalances.set(event.itemId,event.amount);
-  const combinedAmount=[...runningBalances.values()].reduce((sum,value)=>sum+value,0);
-  totalHistory.push({at:event.at,amount:combinedAmount,totalAmount:combinedAmount,bankName:event.bankName,delta:event.amount-previousItemBalance,previousAmount:previousItemBalance,itemAmount:event.amount,itemId:event.itemId});
+  totalHistory.push({at:event.at,amount:[...runningBalances.values()].reduce((sum,value)=>sum+value,0),bankName:event.bankName,delta:event.amount-previousItemBalance,previousAmount:previousItemBalance,itemAmount:event.amount,itemId:event.itemId});
  });
  const totalSavings=allSavingsItems.reduce((sum,item)=>sum+Math.max(0,Number(item.amount)||0),0);
  const aggregateEntry={name:'Total Savings',value:totalSavings,history:totalHistory.length?totalHistory:[{at:Date.now(),amount:totalSavings}],color:'#15966d'};
@@ -1028,8 +1010,7 @@ function renderSavingsTrend(){
  const selectedItems=savingsTrendSelectedBank?allSavingsItems.filter(item=>String(item.name||'').trim()===savingsTrendSelectedBank || String(item.bankName||'').trim()===savingsTrendSelectedBank):[];
  const entries=savingsTrendSelectedBank?selectedItems.map(item=>{
   const history=(Array.isArray(item.graphHistory)&&item.graphHistory.length?item.graphHistory:[{at:Date.parse(item.date)||Date.now(),amount:Number(item.amount)||0}]).filter(point=>point&&!point.liveMinute).map(point=>({at:Number(point.at)||Date.now(),amount:Math.max(0,Number(point.amount)||0)})).sort((a,b)=>a.at-b.at);
-  const historyWithTotals=history.map(point=>{const combined=totalHistory.find(event=>event.itemId===String(item.id)&&Number(event.at)===Number(point.at));return {...point,totalAmount:combined?Number(combined.amount):totalSavings,itemAmount:Number(point.amount)||0,bankName:String(item.bankName||item.name||savingsTrendSelectedBank).trim()};});
-  return {name:item.name||savingsTrendSelectedBank,value:Math.max(0,Number(item.amount)||0),history:historyWithTotals.length?historyWithTotals:[{at:Date.now(),amount:Math.max(0,Number(item.amount)||0),totalAmount:totalSavings,itemAmount:Math.max(0,Number(item.amount)||0),bankName:String(item.bankName||item.name||savingsTrendSelectedBank).trim()}],color:bankColor(item.name||savingsTrendSelectedBank)};
+  return {name:item.name||savingsTrendSelectedBank,value:Math.max(0,Number(item.amount)||0),history:history.length?history:[{at:Date.now(),amount:Math.max(0,Number(item.amount)||0)}],color:bankColor(item.name||savingsTrendSelectedBank)};
  }):(allSavingsItems.length?[aggregateEntry]:[]);
  meta.textContent=savingsTrendSelectedBank?`${savingsTrendSelectedBank} · individual bank balance history`:`Total Savings · combined balance history`;
  legend.innerHTML=entries.map(e=>`<span style="display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--muted)"><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${e.color||'#15966d'}"></span>${esc(e.name)}: ${peso(e.value)}</span>`).join('');
@@ -1043,7 +1024,7 @@ function renderSavingsTrend(){
  }
  const ctx=canvas.getContext('2d');
  let candleTooltip=document.getElementById('savingsCandleTooltip');
- if(!candleTooltip){candleTooltip=document.createElement('div');candleTooltip.id='savingsCandleTooltip';candleTooltip.style.cssText='position:absolute;display:none;z-index:20;pointer-events:none;font-family:inherit;font-size:12px;color:var(--text);line-height:1.45;';canvas.parentElement.appendChild(candleTooltip);}
+ if(!candleTooltip){candleTooltip=document.createElement('div');candleTooltip.id='savingsCandleTooltip';candleTooltip.style.cssText='position:fixed;display:none;z-index:9999;pointer-events:none;box-sizing:border-box;width:max-content;min-width:190px;max-width:min(280px,calc(100vw - 16px));padding:12px 14px;border:1px solid var(--line);border-radius:12px;background:var(--surface,#fff);box-shadow:0 10px 30px rgba(15,23,42,.18);font-family:inherit;font-size:12px;color:var(--text,#0f172a);line-height:1.5;';document.body.appendChild(candleTooltip);}
  if(!ctx){if(meta)meta.textContent='Your browser does not support canvas charts.';return;}
  const viewportWidth=Math.max(320,Math.round(graphViewport.clientWidth||600));
  const historyPointCount=Math.max(1,events.length);
@@ -1077,8 +1058,34 @@ function renderSavingsTrend(){
    }
    event.stopPropagation();
   });
-  canvas.addEventListener('mousemove',event=>{const r=canvas.getBoundingClientRect(),x=event.clientX-r.left,y=event.clientY-r.top;let hit=null,best=Infinity;for(const p of savingsTrendHitTargets){if(!p.candle)continue;const d=Math.hypot(p.x-x,p.y-y);if(d<best){best=d;hit=p;}}if(hit&&best<=18){const delta=Number(hit.delta)||0;const color=delta>0?(Math.abs(delta)/Math.max(Math.abs(Number(hit.previousAmount)||0),1)>=.01?'#16a34a':'#eab308'):delta<0?(Math.abs(delta)/Math.max(Math.abs(Number(hit.previousAmount)||0),1)>=.01?'#dc2626':'#f97316'):'#64748b';const word=delta>0?'Increased':delta<0?'Decreased':'No change';candleTooltip.innerHTML='<div class="candle-tip-head"><div class="candle-tip-label">Whole savings balance</div><div class="candle-tip-total">'+peso(Number(hit.totalAmount!==undefined?hit.totalAmount:hit.amount)||0)+'</div></div><div class="candle-tip-body"><div class="candle-tip-change-label">'+(delta>0?'Amount added':delta<0?'Amount reduced':'Amount changed')+'</div><div class="candle-tip-change" style="color:'+color+'">'+(delta>0?'↑ ':delta<0?'↓ ':'→ ')+(delta>0?'+':delta<0?'−':'')+peso(Math.abs(delta))+'</div><div class="candle-tip-bank">'+esc(hit.bankName||'Savings')+'</div><div class="candle-tip-time">'+new Date(Number(hit.at)||Date.now()).toLocaleString('en-PH',{dateStyle:'medium',timeStyle:'short'})+'</div></div>';candleTooltip.style.display='block';const parent=canvas.parentElement.getBoundingClientRect();candleTooltip.style.left=Math.max(4,Math.min(parent.width-270,x+14))+'px';candleTooltip.style.top=Math.max(4,Math.min(parent.height-100,y+12))+'px';canvas.style.cursor='pointer';}else{candleTooltip.style.display='none';canvas.style.cursor='crosshair';}});
-  canvas.addEventListener('mouseleave',()=>{candleTooltip.style.display='none';});
+  let lastCandlePointer=null;
+  canvas.addEventListener('mousemove',event=>{
+   lastCandlePointer={x:event.clientX,y:event.clientY};
+   const r=canvas.getBoundingClientRect(),x=event.clientX-r.left,y=event.clientY-r.top;
+   let hit=null,best=Infinity;
+   for(const p of savingsTrendHitTargets){if(!p.candle)continue;const d=Math.hypot(p.x-x,p.y-y);if(d<best){best=d;hit=p;}}
+   if(hit&&best<=18){
+    const delta=Number(hit.delta)||0;
+    const color=delta>0?(Math.abs(delta)/Math.max(Math.abs(Number(hit.previousAmount)||0),1)>=.01?'#16a34a':'#eab308'):delta<0?(Math.abs(delta)/Math.max(Math.abs(Number(hit.previousAmount)||0),1)>=.01?'#dc2626':'#f97316'):'#64748b';
+    const word=delta>0?'Increased':delta<0?'Decreased':'No change';
+    const stamp=new Date(Number(hit.at)||Date.now()).toLocaleString('en-PH',{dateStyle:'medium',timeStyle:'short'});
+    candleTooltip.innerHTML='<div style="font-size:10px;letter-spacing:.04em;text-transform:uppercase;font-weight:700;color:var(--muted);margin-bottom:2px">Whole savings balance</div><div style="font-size:17px;font-weight:800;letter-spacing:-.02em;margin-bottom:8px">'+peso(Number(hit.wholeSavingsBalance??hit.amount)||0)+'</div><div style="border-top:1px solid var(--line);padding-top:7px"><div style="font-size:10px;color:var(--muted);margin-bottom:2px">Amount added / changed</div><div style="font-weight:800;color:'+color+';margin-bottom:5px">'+(delta>0?'+':delta<0?'−':'')+peso(Math.abs(delta))+' · '+word+'</div><div style="font-weight:700">Bank: '+esc(hit.bankName||'Savings')+'</div><div style="font-size:11px;color:var(--muted);margin-top:4px">'+stamp+'</div></div>';
+    candleTooltip.style.display='block';
+    // A viewport-fixed tooltip is not clipped by the graph's horizontal/vertical scroll container.
+    // Flip above low candles and clamp both axes so the entire card stays visible.
+    candleTooltip.style.left='8px';candleTooltip.style.top='8px';
+    const tipRect=candleTooltip.getBoundingClientRect(),gap=12;
+    let left=event.clientX+14;
+    if(left+tipRect.width>window.innerWidth-8)left=event.clientX-tipRect.width-14;
+    left=Math.max(8,Math.min(window.innerWidth-tipRect.width-8,left));
+    let top=event.clientY+14;
+    if(top+tipRect.height>window.innerHeight-8)top=event.clientY-tipRect.height-14;
+    top=Math.max(8,Math.min(window.innerHeight-tipRect.height-8,top));
+    candleTooltip.style.left=left+'px';candleTooltip.style.top=top+'px';canvas.style.cursor='pointer';
+   }else{candleTooltip.style.display='none';canvas.style.cursor='crosshair';}
+  });
+  graphViewport.addEventListener('scroll',()=>{if(lastCandlePointer)canvas.dispatchEvent(new MouseEvent('mousemove',{clientX:lastCandlePointer.x,clientY:lastCandlePointer.y,bubbles:false}));},{passive:true});
+  canvas.addEventListener('mouseleave',()=>{lastCandlePointer=null;candleTooltip.style.display='none';});
   canvas.addEventListener('pointerdown',event=>{if(event.button!==0)return;savingsTrendDrag={x:event.clientX,pan:savingsTrendPan};canvas.setPointerCapture?.(event.pointerId);});
   canvas.addEventListener('pointermove',event=>{if(!savingsTrendDrag)return;const dx=(event.clientX-savingsTrendDrag.x)/Math.max(1,canvas.getBoundingClientRect().width);if(Math.abs(dx)>3/Math.max(1,canvas.getBoundingClientRect().width))canvas.dataset.dragged='1';savingsTrendPan=Math.max(0,Math.min(savingsTrendZoom-1,savingsTrendDrag.pan-dx*savingsTrendZoom));renderSavingsTrend();});
   const endPan=()=>{savingsTrendDrag=null;};canvas.addEventListener('pointerup',endPan);canvas.addEventListener('pointercancel',endPan);
@@ -1127,7 +1134,7 @@ function renderSavingsTrend(){
   if(points.length===1) points=[{...points[0],at:points[0].at-1,amount:0},{...points[0]}];
   else if(points[0].amount!==0) points=[{...points[0],at:points[0].at-1,amount:0},...points];
   // Use evenly spaced event positions so each recorded edit creates a visible diagonal segment.
-  const coords=points.map((p,i)=>({x:pad.l+(((points.length===1?0:i/(points.length-1))*savingsTrendZoom-savingsTrendPan)*plotW),y:yForAmount(p.amount),amount:p.amount,totalAmount:Number(p.totalAmount!==undefined?p.totalAmount:p.amount)||0,at:p.at,bankName:p.bankName,delta:p.delta,itemAmount:p.itemAmount,previousAmount:i>0?Number(points[i-1].amount)||0:0})).filter(p=>p.x>=pad.l-12&&p.x<=width-pad.r+12);
+  const coords=points.map((p,i)=>({x:pad.l+(((points.length===1?0:i/(points.length-1))*savingsTrendZoom-savingsTrendPan)*plotW),y:yForAmount(p.amount),amount:p.amount,at:p.at,bankName:p.bankName,delta:p.delta,itemAmount:p.itemAmount,previousAmount:i>0?Number(points[i-1].amount)||0:0})).filter(p=>p.x>=pad.l-12&&p.x<=width-pad.r+12);
   // Draw each recorded balance segment and a color-coded candlestick marker at its endpoint.
   for(let k=1;k<coords.length;k++){
    const from=coords[k-1],to=coords[k];
@@ -1152,7 +1159,7 @@ function renderSavingsTrend(){
    ctx.fillStyle=candleColor;
    const bodyH=Math.max(7,Math.min(16,Math.abs(y-from.y)||7));
    ctx.fillRect(x-5,y-bodyH/2,10,bodyH);
-   savingsTrendHitTargets.push({x,y,bankName:String(to.bankName||baseBankName||entry.name).trim(),delta,previousAmount,amount:Number(to.itemAmount!==undefined?to.itemAmount:to.amount)||0,totalAmount:Number(to.totalAmount!==undefined?to.totalAmount:to.amount)||0,at:Number(to.at)||Date.now(),candle:true});
+   savingsTrendHitTargets.push({x,y,bankName:String(to.bankName||baseBankName||entry.name).trim(),delta,previousAmount,amount:Number(to.itemAmount!==undefined?to.itemAmount:to.amount)||0,wholeSavingsBalance:Number(to.amount)||0,at:Number(to.at)||Date.now(),candle:true});
   }
   const last=coords[coords.length-1];ctx.fillStyle=textColor;ctx.textAlign='right';ctx.fillText(entry.name.length>18?entry.name.slice(0,17)+'…':entry.name,Math.min(width-pad.r,last.x),height-pad.b+14);
  });
@@ -1223,7 +1230,7 @@ function renderOverallTrend(){
  legend.innerHTML=categories.map(c=>`<span style="display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--muted)"><span style="display:inline-block;width:10px;height:3px;border-radius:2px;background:${c.color}"></span>${c.label}: ${peso(c.value)}</span>`).join('');
  const ctx=canvas.getContext('2d');
  let candleTooltip=document.getElementById('savingsCandleTooltip');
- if(!candleTooltip){candleTooltip=document.createElement('div');candleTooltip.id='savingsCandleTooltip';candleTooltip.style.cssText='position:absolute;display:none;z-index:20;pointer-events:none;font-family:inherit;font-size:12px;color:var(--text);line-height:1.45;';canvas.parentElement.appendChild(candleTooltip);}
+ if(!candleTooltip){candleTooltip=document.createElement('div');candleTooltip.id='savingsCandleTooltip';candleTooltip.style.cssText='position:fixed;display:none;z-index:9999;pointer-events:none;box-sizing:border-box;width:max-content;min-width:190px;max-width:min(280px,calc(100vw - 16px));padding:12px 14px;border:1px solid var(--line);border-radius:12px;background:var(--surface,#fff);box-shadow:0 10px 30px rgba(15,23,42,.18);font-family:inherit;font-size:12px;color:var(--text,#0f172a);line-height:1.5;';document.body.appendChild(candleTooltip);}
  if(!ctx){if(meta)meta.textContent='Your browser does not support canvas charts.';return;}
  const graphViewport=canvas.parentElement;
  const viewportWidth=Math.max(320,Math.round(graphViewport.clientWidth||600));
@@ -1296,22 +1303,6 @@ function updateSavingsGraphAction(){const action=document.getElementById('saving
 function closeSavingsItemMenus(){document.querySelectorAll('.savings-item-menu.open').forEach(menu=>menu.classList.remove('open'));document.querySelectorAll('.savings-item-menu-button[aria-expanded="true"]').forEach(button=>button.setAttribute('aria-expanded','false'));}
 function toggleSavingsItemMenu(event,id){event.stopPropagation();const menu=document.getElementById('savings-item-menu-'+id);if(!menu)return;const wasOpen=menu.classList.contains('open');closeSavingsItemMenus();if(!wasOpen){menu.classList.add('open');const button=menu.parentElement.querySelector('.savings-item-menu-button');if(button)button.setAttribute('aria-expanded','true');}}
 document.addEventListener('click',event=>{if(!event.target.closest('.savings-item-actions'))closeSavingsItemMenus();});
-function financialChangeIndicator(item){
- const changes=Array.isArray(item?.changeHistory)?item.changeHistory:[];
- let delta=null;
- if(changes.length){
-  const latest=changes.reduce((a,b)=>(Number(b.at)||0)>(Number(a.at)||0)?b:a,changes[0]);
-  if(Number.isFinite(Number(latest.newAmount))&&Number.isFinite(Number(latest.oldAmount)))delta=Number(latest.newAmount)-Number(latest.oldAmount);
- }
- if(delta===null){
-  const history=Array.isArray(item?.graphHistory)?item.graphHistory.slice().sort((a,b)=>(Number(a.at)||0)-(Number(b.at)||0)):[];
-  if(history.length>=2){const prev=Number(history[history.length-2].amount),last=Number(history[history.length-1].amount);if(Number.isFinite(prev)&&Number.isFinite(last))delta=last-prev;}
- }
- if(delta===null||Math.abs(delta)<0.005)return '<span class="financial-change-indicator neutral" title="No recent balance change recorded" aria-label="No recent balance change">→</span>';
- return delta>0
-  ? `<span class="financial-change-indicator up" title="Balance increased by ${peso(Math.abs(delta))}" aria-label="Balance increased">↑</span>`
-  : `<span class="financial-change-indicator down" title="Balance decreased by ${peso(Math.abs(delta))}" aria-label="Balance decreased">↓</span>`;
-}
 function renderSavingsList(){
  const items=Array.isArray(data.savingsList)?data.savingsList:[];
  const goalBankItems=(Array.isArray(data.goals)?data.goals:[]).flatMap(goal=>(Array.isArray(goal.banks)?goal.banks:Array.isArray(goal.selectedBanks)?goal.selectedBanks:[]).map((bank,index)=>{const bankName=typeof bank==='string'?bank:(bank.name||bank.bankName||bank.bank||'Bank');const rawAmount=typeof bank==='object'?(bank.amount??bank.balance??bank.value??0):0;return {id:`goalalloc-${goal.id}-${index}`,name:`${goal.name||'Savings Goal'} · ${bankName}`,amount:Math.max(0,Number(rawAmount)||0),category:'Savings',date:goal.created||todayISO(),isGoalAllocation:true,goalId:goal.id,bankName};}));
@@ -1361,7 +1352,7 @@ function renderSavingsList(){
  renderSavingsTrend();
  renderOverallTrend();
  const target=document.getElementById('savingsListTable');
- target.innerHTML=selected.length?`<table><thead><tr><th style="width:42px">Move</th><th>Item / source</th><th>Date added</th><th style="text-align:right">Amount</th>${activeFinancialCategory==='Savings'?'<th>Interest estimate</th>':''}<th></th></tr></thead><tbody>${selected.map(item=>`<tr data-financial-item-id="${esc(item.id)}" data-trend-bank="${esc(item.bankName||item.name)}" title="Click to focus this bank on the graph" draggable="${item.isGoalAllocation?'false':'true'}" class="financial-draggable-row" style="cursor:pointer"><td>${item.isGoalAllocation?'<span class="muted">—</span>':`<span class="drag-handle" title="Drag to reorder" aria-label="Drag to reorder">⠿</span>`}</td><td><div class="tx-title" style="display:flex;align-items:center;min-width:180px">${financialBankLogo(item.bankName||item.name)}<span>${item.isGoalAllocation?`<span class="goal-linked-item">${esc(item.name)}</span><div class="footer-note">Linked from Savings Goals</div>`:item.category==='Savings'&&!/^(cash|coins?|coins?\s*\(.*\)|₱1 coin.*|1 coin.*)$/i.test(String(item.name||'').trim())?`<button class="link-btn" style="color:#111827" onclick="openSavingsInterest('${item.id}')">${esc(item.name)} · View interest</button>`:esc(item.name)}</span></div></td><td>${fmtDate(item.date)}</td><td style="text-align:right;font-weight:800;color:${item.category==='Debt'?'var(--red)':'var(--text)'}"><span style="display:inline-flex;align-items:center;justify-content:flex-end;gap:18px;white-space:nowrap">${financialChangeIndicator(item)}<span>${item.category==='Debt'?'−':'+'}${peso(item.amount)}</span></span></td>${activeFinancialCategory==='Savings'?`<td>${item.isGoalAllocation?'<span class="muted">Goal allocation</span>':(/^maya$/i.test(String(item.name||'').trim())||/maya savings/i.test(String(item.name||'')))?mayaInterestEstimate(item.amount,item.mayaBonusRate||3):(interestEstimate(item.amount,getInterestRate(item.name,item.category))||'<span class="muted">Rate unavailable</span>')}</td>`:''}<td style="text-align:right"><div class="financial-row-end">${item.isGoalAllocation?`<button class="link-btn" onclick="editGoal('${item.goalId}')">Edit goal</button>`:`<div class="savings-item-actions"><button type="button" class="savings-item-menu-button" aria-label="Savings item actions" aria-expanded="false" onclick="toggleSavingsItemMenu(event,'${item.id}')">⋯</button><div class="savings-item-menu" id="savings-item-menu-${item.id}"><button type="button" onclick="closeSavingsItemMenus();openSavingsHistory('${item.id}')">History</button><button type="button" onclick="closeSavingsItemMenus();editFinancialItem('${item.id}')">Edit</button><button type="button" class="menu-delete" onclick="closeSavingsItemMenus();deleteSavingsItem('${item.id}')">Delete</button></div></div>`}</div></td></tr>`).join('')}</tbody></table><div class="between" style="margin-top:14px"><span>Selected category total</span><strong>${peso(selected.reduce((sum,item)=>sum+Number(item.amount||0),0))}</strong></div>`:`<div class="empty">No ${activeFinancialCategory.toLowerCase()} items yet. Click Add to create one.</div>`;
+ target.innerHTML=selected.length?`<table><thead><tr><th style="width:42px">Move</th><th>Item / source</th><th>Date added</th><th style="text-align:right">Amount</th>${activeFinancialCategory==='Savings'?'<th>Interest estimate</th>':''}<th></th></tr></thead><tbody>${selected.map(item=>`<tr data-financial-item-id="${esc(item.id)}" data-trend-bank="${esc(item.bankName||item.name)}" title="Click to focus this bank on the graph" draggable="${item.isGoalAllocation?'false':'true'}" class="financial-draggable-row" style="cursor:pointer"><td>${item.isGoalAllocation?'<span class="muted">—</span>':`<span class="drag-handle" title="Drag to reorder" aria-label="Drag to reorder">⠿</span>`}</td><td><div class="tx-title" style="display:flex;align-items:center;min-width:180px">${financialBankLogo(item.bankName||item.name)}<span>${item.isGoalAllocation?`<span class="goal-linked-item">${esc(item.name)}</span><div class="footer-note">Linked from Savings Goals</div>`:item.category==='Savings'&&!/^(cash|coins?|coins?\s*\(.*\)|₱1 coin.*|1 coin.*)$/i.test(String(item.name||'').trim())?`<button class="link-btn" style="color:#111827" onclick="openSavingsInterest('${item.id}')">${esc(item.name)} · View interest</button>`:esc(item.name)}</span></div></td><td>${fmtDate(item.date)}</td><td style="text-align:right;font-weight:800;color:${item.category==='Debt'?'var(--red)':'var(--text)'}">${item.category==='Debt'?'−':'+'}${peso(item.amount)}</td>${activeFinancialCategory==='Savings'?`<td>${item.isGoalAllocation?'<span class="muted">Goal allocation</span>':(/^maya$/i.test(String(item.name||'').trim())||/maya savings/i.test(String(item.name||'')))?mayaInterestEstimate(item.amount,item.mayaBonusRate||3):(interestEstimate(item.amount,getInterestRate(item.name,item.category))||'<span class="muted">Rate unavailable</span>')}</td>`:''}<td style="text-align:right">${item.isGoalAllocation?`<button class="link-btn" onclick="editGoal('${item.goalId}')">Edit goal</button>`:`<div class="savings-item-actions"><button type="button" class="savings-item-menu-button" aria-label="Savings item actions" aria-expanded="false" onclick="toggleSavingsItemMenu(event,'${item.id}')">⋯</button><div class="savings-item-menu" id="savings-item-menu-${item.id}"><button type="button" onclick="closeSavingsItemMenus();openSavingsHistory('${item.id}')">History</button><button type="button" onclick="closeSavingsItemMenus();editFinancialItem('${item.id}')">Edit</button><button type="button" class="menu-delete" onclick="closeSavingsItemMenus();deleteSavingsItem('${item.id}')">Delete</button></div></div>`}</td></tr>`).join('')}</tbody></table><div class="between" style="margin-top:14px"><span>Selected category total</span><strong>${peso(selected.reduce((sum,item)=>sum+Number(item.amount||0),0))}</strong></div>`:`<div class="empty">No ${activeFinancialCategory.toLowerCase()} items yet. Click Add to create one.</div>`;
  // Clicking a savings row focuses the growth graph on that bank; clicking it again restores all banks.
  const tbody=target.querySelector('tbody');
  if(tbody){
