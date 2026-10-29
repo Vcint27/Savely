@@ -174,6 +174,10 @@ body.dark-theme #savingsListTable .financial-draggable-row { color: var(--text);
 body.dark-theme #savingsListTable .financial-draggable-row td { color: var(--text); }
 @media(max-width:600px){.theme-choice-card{align-items:flex-start;padding:14px}.theme-choice-copy{gap:10px}.theme-choice-copy p{font-size:12px}}
 
+
+.goal-applied-bank-summary strong{display:block;margin-top:3px;color:var(--text)}
+.goal-applied-bank-summary .panel-sub{margin-top:4px}
+#goalBankEditor{padding-top:8px}
 </style>
 
 <style id="savely-v205-settings-cleanup">
@@ -1669,29 +1673,20 @@ function closeAddToGoalPrompt(){
  pendingGoalSavingsItemId=null;
 }
 function askAddSavingsToGoal(itemId){
- const backdrop=document.getElementById('addToGoalBackdrop');
- const select=document.getElementById('addToGoalSelect');
- if(!backdrop||!select)return;
- pendingGoalSavingsItemId=itemId;
- const goals=Array.isArray(data.goals)?data.goals:[];
- const selectWrap=document.getElementById('addToGoalSelectWrap');
- const noGoals=document.getElementById('addToGoalNoGoals');
- const confirmBtn=document.getElementById('confirmAddToGoalButton');
- if(!goals.length){
-   if(selectWrap)selectWrap.style.display='none';
-   if(noGoals)noGoals.style.display='block';
-   if(confirmBtn)confirmBtn.style.display='none';
- }else{
-   if(selectWrap)selectWrap.style.display='block';
-   if(noGoals)noGoals.style.display='none';
-   if(confirmBtn)confirmBtn.style.display='inline-flex';
-   select.innerHTML=goals.map(goal=>`<option value="${esc(goal.id)}">${esc(goal.name||'Savings Goal')} · Target ${peso(goal.target)}</option>`).join('');
- }
- backdrop.style.display='flex';
+ // Applying from a bank's three-dot menu starts a prefilled goal form immediately.
+ // The bank and its current balance are preselected; the user only needs to set the goal name,
+ // target amount, and target date. The Edit button exposes bank/amount selection if needed.
+ pendingGoalSavingsItemId=String(itemId);
+ startCreateGoalFromSavings();
 }
 function startCreateGoalFromSavings(){
+ const item=(data.savingsList||[]).find(x=>String(x.id)===String(pendingGoalSavingsItemId));
  const backdrop=document.getElementById('addToGoalBackdrop');if(backdrop)backdrop.style.display='none';
- showPage('goals');openModal('goal');
+ if(!item){pendingGoalSavingsItemId=null;toast('Could not find that savings item. Please try again.');return;}
+ const bankName=String(item.name||'Savings').trim();
+ const balance=Math.max(0,Number(item.amount)||0);
+ showPage('goals');
+ openModal('goal',{name:'',target:Math.max(1,Math.ceil(balance)),due:'',banks:[{name:bankName,amount:balance}]});
 }
 function applySavingsItemToGoal(item,goal){
  if(!item||!goal)return false;
@@ -2026,10 +2021,10 @@ document.getElementById('nav').addEventListener('click',e=>{let b=e.target.close
 function openModal(kind,goalToEdit=null){const form=document.getElementById('modalForm'),title=document.getElementById('modalTitle'),desc=document.getElementById('modalDesc');let accountOptions=data.accounts.map(a=>`<option value="${a.id}">${esc(a.name)}</option>`).join('');let field=(label,name,type='text',value='',extra='')=>`<div class="field"><label>${label}</label><input name="${name}" type="${type}" value="${esc(value)}" ${extra}></div>`;let select=(label,name,opts)=>`<div class="field"><label>${label}</label><select name="${name}">${opts}</select></div>`;let fullfield=(label,name,type='text',value='',extra='')=>`<div class="field full"><label>${label}</label><input name="${name}" type="${type}" value="${esc(value)}" ${extra}></div>`;let body='';
 if(kind==='transaction'){title.textContent='Add transaction';desc.textContent='Record a deposit, withdrawal, interest credit, or expense.';body=`<div class="form-grid">${fullfield('Description','description','text','','required maxlength="100"')}${select('Transaction type','type','<option value="deposit">Deposit</option><option value="withdrawal">Withdrawal</option><option value="expense">Expense</option><option value="interest">Interest credit</option>')}${select('Account','accountId',accountOptions)}${field('Amount (₱)','amount','number','','required min=".01" step=".01"')}${field('Date','date','date',todayISO(),'required')}${field('Category','category','text','General','maxlength="60"')}</div>`}
 if(kind==='account'){title.textContent='Create account';desc.textContent='Add another savings account or cash pot.';body=`<div class="form-grid">${fullfield('Account name','name','text','','required maxlength="60"')}${select('Account type','type','<option>Savings</option><option>Emergency fund</option><option>Cash</option><option>Checking</option><option>Other</option>')}${fullfield('Opening balance (₱)','opening','number','0','required min="0" step=".01"')}</div>`}
-if(kind==='goal'||kind==='goal-edit'){const editing=kind==='goal-edit';const g=goalToEdit||{};const picked=Array.isArray(g.banks)?g.banks:[];const bankNames=Array.isArray(bankOptions)?bankOptions.map(b=>b.name):[];const checkedBanks=picked.map(b=>b.name);const bankChecks=bankOptions.map(b=>`<label class="goal-bank-option" data-goal-bank-group="${esc(b.group)}"><input type="checkbox" class="goal-bank-check" value="${esc(b.name)}" ${checkedBanks.includes(b.name)?'checked':''}><span class="goal-bank-icon" style="--goal-bank-color:${esc(b.color||'#16866a')}">${esc(b.short||b.name.slice(0,2).toUpperCase())}</span><span class="goal-bank-name">${esc(b.name)}</span></label>`).join('');title.textContent=editing?'Edit savings goal':'Create savings goal';desc.textContent=editing?'Update goal details and the banks included in its combined balance.':'Choose banks to combine their balances toward this goal.';body=`<div class="form-grid">${fullfield('Goal name *','name','text',g.name||'','required maxlength="80" aria-required="true"')}${fullfield('Target amount (₱) *','target','number',g.target??'','required min="1" step="1" inputmode="numeric" aria-required="true"')}<div class="field full"><label>Select banks / digital banks</label><div class="goal-bank-tabs" id="goalBankTabs" role="tablist" aria-label="Bank category"><button type="button" class="goal-bank-tab active" data-goal-bank-tab="Traditional banks">Traditional Banks</button><button type="button" class="goal-bank-tab" data-goal-bank-tab="Digital banks & wallets">Digital Banks</button><button type="button" class="goal-bank-tab" data-goal-bank-tab="Favorites">★ Favorites</button><button type="button" class="goal-bank-tab" data-goal-bank-tab="Other">Other</button></div><div class="goal-bank-picker" id="goalBankPicker">${bankChecks}</div><div class="panel-sub">Select one or more banks. Each selected bank gets its own balance line; the combined total is calculated automatically.</div></div><div class="field full" id="goalBankBalancesField" ${checkedBanks.length?'':'hidden'}><label>Bank balances (₱)</label><div id="goalBankBalances" class="goal-bank-balances"></div><div class="goal-bank-total">Combined bank total: <strong id="goalBankCombinedTotal">₱0.00</strong></div></div>${fullfield('Target date *','due','date',g.due||'','required aria-required="true"')}</div>`}
+if(kind==='goal'||kind==='goal-edit'){const editing=kind==='goal-edit';const g=goalToEdit||{};const applyingItem=(!editing&&pendingGoalSavingsItemId)?(data.savingsList||[]).find(item=>String(item.id)===String(pendingGoalSavingsItemId)):null;const picked=Array.isArray(g.banks)?g.banks:[];const bankNames=Array.isArray(bankOptions)?bankOptions.map(b=>b.name):[];const checkedBanks=picked.map(b=>b.name);const bankChecks=bankOptions.map(b=>`<label class="goal-bank-option" data-goal-bank-group="${esc(b.group)}"><input type="checkbox" class="goal-bank-check" value="${esc(b.name)}" ${checkedBanks.includes(b.name)?'checked':''}><span class="goal-bank-icon" style="--goal-bank-color:${esc(b.color||'#16866a')}">${esc(b.short||b.name.slice(0,2).toUpperCase())}</span><span class="goal-bank-name">${esc(b.name)}</span></label>`).join('');title.textContent=editing?'Edit savings goal':'Create savings goal';desc.textContent=editing?'Update goal details and the banks included in its combined balance.':applyingItem?'This bank and its current balance are pre-applied. Enter a goal name, target amount, and target date.':'Choose banks to combine their balances toward this goal.';body=`<div class="form-grid">${fullfield('Goal name *','name','text',g.name||'','required maxlength="80" aria-required="true"')}${fullfield('Target amount (₱) *','target','number',g.target??'','required min="1" step="1" inputmode="numeric" aria-required="true"')}<div class="field full">${applyingItem?`<div class="goal-applied-bank-summary" style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 14px;border:1px solid var(--line);border-radius:12px;background:var(--soft,#f7fafc);margin-bottom:10px"><div><div style="font-size:11px;color:var(--muted);font-weight:750;text-transform:uppercase;letter-spacing:.04em">Bank applied to this goal</div><strong>${esc(applyingItem.name||'Savings')}</strong><div class="panel-sub">Starting amount: ${peso(Math.max(0,Number(applyingItem.amount)||0))}</div></div><button type="button" class="btn btn-light btn-sm" id="editAppliedGoalBankButton">Edit</button></div><div id="goalBankEditor" style="display:none">`:`<label>Select banks / digital banks</label>`}<div class="goal-bank-tabs" id="goalBankTabs" role="tablist" aria-label="Bank category"><button type="button" class="goal-bank-tab active" data-goal-bank-tab="Traditional banks">Traditional Banks</button><button type="button" class="goal-bank-tab" data-goal-bank-tab="Digital banks & wallets">Digital Banks</button><button type="button" class="goal-bank-tab" data-goal-bank-tab="Favorites">★ Favorites</button><button type="button" class="goal-bank-tab" data-goal-bank-tab="Other">Other</button></div><div class="goal-bank-picker" id="goalBankPicker">${bankChecks}</div><div class="panel-sub">Select one or more banks. Each selected bank gets its own balance line; the combined total is calculated automatically.</div>${applyingItem?'</div>':''}</div><div class="field full" id="goalBankBalancesField" ${checkedBanks.length?'':'hidden'}><label>Bank balances (₱)</label><div id="goalBankBalances" class="goal-bank-balances"></div><div class="goal-bank-total">Combined bank total: <strong id="goalBankCombinedTotal">₱0.00</strong></div></div>${fullfield('Target date *','due','date',g.due||'','required aria-required="true"')}</div>`}
 if(kind==='budget'){title.textContent='Set monthly budget';desc.textContent='Define a spending limit for one category.';body=`<div class="form-grid">${fullfield('Category','category','text','','required maxlength="60"')}${fullfield('Monthly limit (₱)','limit','number','','required min=".01" step=".01"')}</div>`}
 if(kind==='recurring'){title.textContent='Recurring deposit plan';desc.textContent='This is a reminder schedule only, not an automatic transfer.';body=`<div class="form-grid">${fullfield('Schedule name','name','text','Regular savings','required maxlength="60"')}${field('Amount (₱)','amount','number','','required min=".01" step=".01"')}${select('Frequency','frequency','<option>Weekly</option><option>Biweekly</option><option>Monthly</option>')}${field('Next deposit date','next','date',todayISO(),'required')}${select('Savings account','accountId',accountOptions)}</div>`}
-form.innerHTML=body+`<div class="form-actions"><button type="button" class="btn btn-light" onclick="closeModal()">Cancel</button><button class="btn btn-primary" type="${(kind==='goal'||kind==='goal-edit')?'button':'submit'}" ${(kind==='goal'||kind==='goal-edit')?`onclick="saveGoalFromModal('${kind}', '${goalToEdit&&goalToEdit.id?goalToEdit.id:''}')"`:''}>${kind==='goal'?'Add':kind==='goal-edit'?'Update':'Save'}</button></div>`;;
+form.innerHTML=body+`<div class="form-actions"><button type="button" class="btn btn-light" onclick="closeModal()">Cancel</button><button class="btn btn-primary" type="${(kind==='goal'||kind==='goal-edit')?'button':'submit'}" ${(kind==='goal'||kind==='goal-edit')?`onclick="saveGoalFromModal('${kind}', '${goalToEdit&&goalToEdit.id?goalToEdit.id:''}')"`:''}>${applyingItem?'Create goal':kind==='goal'?'Add':kind==='goal-edit'?'Update':'Save'}</button></div>`;;
 if(kind==='goal'||kind==='goal-edit'){
  const picker=document.getElementById('goalBankPicker'),rows=document.getElementById('goalBankBalances'),field=document.getElementById('goalBankBalancesField');
  const selected=()=>Array.from(picker.querySelectorAll('.goal-bank-check:checked')).map(x=>x.value);
@@ -2056,6 +2051,15 @@ if(kind==='goal'||kind==='goal-edit'){
  }));
  picker.querySelectorAll('.goal-bank-option').forEach(card=>{const input=card.querySelector('input');input.addEventListener('change',()=>card.classList.toggle('selected',input.checked));});
  renderBankRows();tabs.querySelector('[data-goal-bank-tab="Traditional banks"]').click();
+ const editAppliedButton=document.getElementById('editAppliedGoalBankButton');
+ const goalBankEditor=document.getElementById('goalBankEditor');
+ if(editAppliedButton&&goalBankEditor){editAppliedButton.addEventListener('click',()=>{const opening=goalBankEditor.style.display==='none';goalBankEditor.style.display=opening?'block':'none';editAppliedButton.textContent=opening?'Done':'Edit';if(opening)document.getElementById('goalBankBalancesField').hidden=false;});}
+ if(applyingItem){
+   picker.querySelectorAll('.goal-bank-check').forEach(input=>{const isApplied=input.value.toLowerCase()===String(applyingItem.name||'').trim().toLowerCase();input.checked=isApplied;input.closest('.goal-bank-option')?.classList.toggle('selected',isApplied);});
+   renderBankRows();
+   if(goalBankEditor)goalBankEditor.style.display='none';
+   field.hidden=true;
+ }
 }
 form.onsubmit=e=>{e.preventDefault();let f=Object.fromEntries(new FormData(form).entries());if(kind==='transaction'){let amount=Number(f.amount);if(!Number.isFinite(amount)||amount<=0)return toast('Enter an amount greater than zero.');if((f.type==='withdrawal'||f.type==='expense')&&amount>balance(f.accountId))return toast('Not enough funds in this account.');data.transactions.push({...f,id:uid(),amount,date:f.date||todayISO(),createdAt:Date.now()})}else if(kind==='account'){data.accounts.push({...f,id:uid(),opening:Number(f.opening),type:f.type||'Savings'})}else if(kind==='goal'||kind==='goal-edit'){const goalName=String(f.name||'').trim();const goalTarget=Number(f.target);if(!goalName){toast('Enter a goal name.');return;}if(!Number.isFinite(goalTarget)||goalTarget<=0){toast('Enter a target amount greater than zero.');return;}if(!Array.isArray(data.goals))data.goals=[];if(kind==='goal-edit'){const existing=data.goals.find(g=>g.id===goalToEdit.id);if(!existing){toast('Savings goal not found.');return;}existing.name=goalName;existing.target=goalTarget;existing.due=String(f.due||'');existing.updated=Date.now();}else{const newGoal={id:uid(),name:goalName,target:goalTarget,due:String(f.due||''),created:todayISO(),banks:[]};data.goals.push(newGoal);if(pendingGoalSavingsItemId){const pendingItem=(data.savingsList||[]).find(item=>String(item.id)===String(pendingGoalSavingsItemId));if(pendingItem)applySavingsItemToGoal(pendingItem,newGoal);pendingGoalSavingsItemId=null;}}}else if(kind==='budget'){let found=data.budgets.find(b=>b.category.toLowerCase()===f.category.toLowerCase());if(found)found.limit=Number(f.limit);else data.budgets.push({...f,id:uid(),limit:Number(f.limit)})}else if(kind==='recurring'){data.recurring.push({...f,id:uid(),amount:Number(f.amount)})}closeModal();save();toast('Saved successfully.')};if(kind==='goal'||kind==='goal-edit')attachGoalCalendarIcon();document.getElementById('modalBackdrop').style.display='flex'}
 
@@ -2118,7 +2122,7 @@ function saveGoalFromModal(mode,id){
  let goal;
  if(mode==='goal-edit'){goal=data.goals.find(g=>String(g.id)===String(id));if(!goal){toast('Savings goal not found.');return;}const old={name:goal.name,target:goal.target,due:goal.due,updated:goal.updated};Object.assign(goal,{name,target,due,banks,updated:Date.now()});try{localStorage.setItem(STORE,JSON.stringify(data));}catch(error){Object.assign(goal,old);console.error(error);toast('Could not save changes. Check browser storage settings.');return;}}
  else{goal={id:uid(),name,target,due,banks,created:todayISO()};data.goals.push(goal);try{localStorage.setItem(STORE,JSON.stringify(data));}catch(error){data.goals=data.goals.filter(g=>g.id!==goal.id);console.error(error);toast('Could not save the goal. Check browser storage settings.');return;}}
- closeModal();try{renderGoals();}catch(error){console.error('Savings goals page refresh failed:',error);}try{renderDashboard();}catch(error){console.error('Overview Savings Progress refresh failed:',error);}try{renderSavingsList();}catch(error){console.error('Financial List goal allocation refresh failed:',error);}toast(mode==='goal-edit'?'Savings goal updated.':'Savings goal added successfully.');
+ if(mode!=='goal-edit')pendingGoalSavingsItemId=null;closeModal();try{renderGoals();}catch(error){console.error('Savings goals page refresh failed:',error);}try{renderDashboard();}catch(error){console.error('Overview Savings Progress refresh failed:',error);}try{renderSavingsList();}catch(error){console.error('Financial List goal allocation refresh failed:',error);}toast(mode==='goal-edit'?'Savings goal updated.':'Savings goal added successfully.');
 }
 function closeModal(){document.getElementById('modalBackdrop').style.display='none'}
 function deleteTx(id){let t=data.transactions.find(x=>x.id===id);if(!t)return;if(confirm('Delete this transaction?')){data.transactions=data.transactions.filter(x=>x.id!==id);save();toast('Transaction deleted.')}}
