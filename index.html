@@ -586,6 +586,47 @@ body.dark-theme #page-interest .interest-summary-panel #interestCalcEnding{color
 @media(max-width:600px){body.dark-theme #page-interest .interest-bank-grid{grid-template-columns:repeat(2,minmax(0,1fr))}body.dark-theme #page-interest .interest-bank-card{padding:9px;gap:8px}}
 </style>
 
+
+<style id="savely-dark-financial-items-final-fix">
+/* Dark mode: Financial List interest rates and three-dot action menus */
+body.dark-theme #savingsListTable .interest-chip,
+body.dark-theme #savingsListTable .pill:not(.expense) {
+  background:#17483e !important;
+  color:#a7f3d0 !important;
+  border:1px solid #276653 !important;
+}
+body.dark-theme #savingsListTable .interest-sub { color:#aebbd0 !important; }
+body.dark-theme #savingsListTable .muted { color:#aebbd0 !important; }
+body.dark-theme #savingsListTable .savings-item-menu-button {
+  background:#1b273a !important;
+  color:#e7edf7 !important;
+  border:1px solid #3a4960 !important;
+  box-shadow:none !important;
+}
+body.dark-theme #savingsListTable .savings-item-menu-button:hover,
+body.dark-theme #savingsListTable .savings-item-menu-button[aria-expanded="true"] {
+  background:#26364d !important;
+  border-color:#4b607b !important;
+  color:#ffffff !important;
+}
+body.dark-theme #savingsListTable .savings-item-menu {
+  background:#151e2e !important;
+  color:#e7edf7 !important;
+  border:1px solid #3a4960 !important;
+  box-shadow:0 12px 30px rgba(0,0,0,.42) !important;
+}
+body.dark-theme #savingsListTable .savings-item-menu button {
+  background:transparent !important;
+  color:#e7edf7 !important;
+}
+body.dark-theme #savingsListTable .savings-item-menu button:hover {
+  background:#26364d !important;
+  color:#ffffff !important;
+}
+body.dark-theme #savingsListTable .savings-item-menu button.menu-delete { color:#fda4af !important; }
+body.dark-theme #savingsListTable .financial-draggable-row:hover td { background:#1a293b; }
+</style>
+
 </head>
 <body>
 
