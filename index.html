@@ -148,6 +148,8 @@
 .savings-item-menu button{border:0;background:transparent;text-align:left;padding:9px 10px;border-radius:7px;font-size:12px;font-weight:700;color:var(--text);cursor:pointer}
 .savings-item-menu button:hover{background:#f1f5f9}
 .savings-item-menu button.menu-delete{color:var(--red)}
+#savingsTrendCanvasWrap{position:relative;isolation:isolate}
+#savingsTrendYAxis{position:sticky!important;left:0!important;z-index:5!important}
 #savingsTrendCanvasWrap::-webkit-scrollbar{height:9px}
 #savingsTrendCanvasWrap::-webkit-scrollbar-thumb{background:#b8c7d8;border-radius:99px}
 
@@ -1012,6 +1014,13 @@ function renderSavingsTrend(){
  }):(allSavingsItems.length?[aggregateEntry]:[]);
  meta.textContent=savingsTrendSelectedBank?`${savingsTrendSelectedBank} · individual bank balance history`:`Total Savings · combined balance history`;
  legend.innerHTML=entries.map(e=>`<span style="display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--muted)"><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${e.color||'#15966d'}"></span>${esc(e.name)}: ${peso(e.value)}</span>`).join('');
+ // Keep the Y-axis labels in a sticky overlay so only the plotted history scrolls horizontally.
+ let axisCanvas=document.getElementById('savingsTrendYAxis');
+ if(!axisCanvas){
+  axisCanvas=document.createElement('canvas');axisCanvas.id='savingsTrendYAxis';axisCanvas.setAttribute('aria-hidden','true');
+  axisCanvas.style.cssText='position:sticky;left:0;top:0;z-index:5;float:left;margin-right:-76px;width:76px;height:100%;display:block;pointer-events:none;background:var(--surface,#fff)';
+  graphViewport.insertBefore(axisCanvas,canvas);
+ }
  const ctx=canvas.getContext('2d');
  let candleTooltip=document.getElementById('savingsCandleTooltip');
  if(!candleTooltip){candleTooltip=document.createElement('div');candleTooltip.id='savingsCandleTooltip';candleTooltip.style.cssText='position:absolute;display:none;z-index:20;pointer-events:none;min-width:180px;max-width:260px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--surface,#fff);box-shadow:0 8px 24px rgba(15,23,42,.14);font:12px system-ui,sans-serif;color:var(--text,#0f172a);line-height:1.5;';canvas.parentElement.appendChild(candleTooltip);}
@@ -1080,7 +1089,14 @@ function renderSavingsTrend(){
  const yForAmount=value=>pad.t+plotH-((value-axisLow)/axisRange)*plotH;
  const fmt=n=>'₱'+Number(n||0).toLocaleString('en-PH',{minimumFractionDigits:2,maximumFractionDigits:2});
  ctx.font='11px system-ui,sans-serif';ctx.textBaseline='middle';
- for(let j=0;j<=4;j++){const y=pad.t+plotH*j/4,val=axisHigh-(axisRange*j/4);ctx.strokeStyle=lineColor;ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(pad.l,y);ctx.lineTo(width-pad.r,y);ctx.stroke();ctx.fillStyle=textColor;ctx.textAlign='right';ctx.fillText(fmt(Math.max(0,val)),pad.l-8,y);}
+ for(let j=0;j<=4;j++){const y=pad.t+plotH*j/4,val=axisHigh-(axisRange*j/4);ctx.strokeStyle=lineColor;ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(pad.l,y);ctx.lineTo(width-pad.r,y);ctx.stroke();}
+ // Render the peso labels on a separate sticky canvas, not on the scrolling chart canvas.
+ const axisDpr=Math.max(1,window.devicePixelRatio||1),axisWidth=76;
+ axisCanvas.style.height=height+'px';axisCanvas.width=Math.round(axisWidth*axisDpr);axisCanvas.height=Math.round(height*axisDpr);
+ const axisCtx=axisCanvas.getContext('2d');axisCtx.setTransform(axisDpr,0,0,axisDpr,0,0);axisCtx.clearRect(0,0,axisWidth,height);
+ axisCtx.fillStyle=getComputedStyle(document.body).getPropertyValue('--surface').trim()||'#fff';axisCtx.fillRect(0,0,axisWidth,height);
+ axisCtx.font='11px system-ui,sans-serif';axisCtx.textBaseline='middle';axisCtx.textAlign='right';axisCtx.fillStyle=textColor;
+ for(let j=0;j<=4;j++){const y=pad.t+plotH*j/4,val=axisHigh-(axisRange*j/4);axisCtx.fillText(fmt(Math.max(0,val)),axisWidth-8,y);}
  if(!entries.length){ctx.fillStyle=textColor;ctx.textAlign='center';ctx.fillText('Add savings accounts to see the comparison graph.',pad.l+plotW/2,pad.t+plotH/2);return;}
  // While the combined total line is shown, register invisible hit targets for each bank's latest recorded endpoint.
  if(!savingsTrendSelectedBank){allSavingsItems.forEach(item=>{const hist=(Array.isArray(item.graphHistory)&&item.graphHistory.length?item.graphHistory:[{at:Date.now(),amount:Number(item.amount)||0}]).filter(p=>p&&!p.liveMinute).sort((a,b)=>a.at-b.at);if(!hist.length)return;const idx=hist.length-1;const x=pad.l+(((hist.length===1?1:idx/(hist.length-1))*savingsTrendZoom-savingsTrendPan)*plotW);const y=yForAmount(Number(hist[idx].amount)||0);if(x>=pad.l-12&&x<=width-pad.r+12)savingsTrendHitTargets.push({x,y,amount:Number(hist[idx].amount)||0,bankName:String(item.bankName||item.name||'').trim(),at:Number(hist[idx].at)||Date.now()});});}
