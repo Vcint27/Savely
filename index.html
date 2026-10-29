@@ -2148,6 +2148,10 @@ function closeModal(){document.getElementById('modalBackdrop').style.display='no
 function deleteTx(id){let t=data.transactions.find(x=>x.id===id);if(!t)return;if(confirm('Delete this transaction?')){data.transactions=data.transactions.filter(x=>x.id!==id);save();toast('Transaction deleted.')}}
 function deleteAccount(id){if(data.accounts.length<2)return toast('Keep at least one account.');if(data.transactions.some(t=>t.accountId===id))return toast('This account has transactions. Delete or reassign them first.');if(confirm('Delete this account?')){data.accounts=data.accounts.filter(a=>a.id!==id);save();toast('Account deleted.')}}
 function editGoal(id){const g=data.goals.find(x=>x.id===id);if(!g)return toast('Savings goal not found.');openModal('goal-edit',g)}
+// Explicitly expose goal modal handlers for the reliability layer and inline UI handlers.
+window.openModal=openModal;
+window.editGoal=editGoal;
+window.getSavelyGoalById=function(id){return Array.isArray(data.goals)?data.goals.find(g=>String(g.id)===String(id)):null;};
 function deleteGoal(id){const goal=(Array.isArray(data.goals)?data.goals:[]).find(x=>String(x.id)===String(id));if(!goal){toast('Savings goal not found.');return;}showGoalDeleteConfirm(id,goal.name)} 
 function showGoalDeleteConfirm(id,name){let modal=document.getElementById('goalDeleteConfirm');if(!modal){modal=document.createElement('div');modal.id='goalDeleteConfirm';modal.className='modal-backdrop';modal.style.zIndex='99999';modal.innerHTML=`<div class="modal" role="dialog" aria-modal="true" aria-labelledby="goalDeleteTitle" style="max-width:430px"><h2 id="goalDeleteTitle">Delete savings goal?</h2><p id="goalDeleteMessage" style="margin:12px 0 24px;color:var(--muted)">Are you sure you want to delete this savings goal?</p><div class="form-actions"><button type="button" class="btn btn-light" id="goalDeleteNo">No</button><button type="button" class="btn btn-primary" id="goalDeleteYes" style="background:var(--red,#dc2626)">Yes, delete</button></div></div>`;document.body.appendChild(modal);}modal.querySelector('#goalDeleteMessage').textContent='Are you sure you want to delete this savings goal "'+name+'"?';modal.style.display='flex';const yes=modal.querySelector('#goalDeleteYes'),no=modal.querySelector('#goalDeleteNo');yes.onclick=function(){const before=data.goals;data.goals=(Array.isArray(data.goals)?data.goals:[]).filter(g=>String(g.id)!==String(id));try{localStorage.setItem(STORE,JSON.stringify(data));modal.style.display='none';renderGoals();toast('Savings goal deleted.');}catch(err){data.goals=before;console.error('Could not delete savings goal:',err);toast('Could not delete the goal. Browser storage may be unavailable.');}};no.onclick=function(){modal.style.display='none';};modal.onclick=function(e){if(e.target===modal)modal.style.display='none';};}
 function deleteBudget(id){data.budgets=data.budgets.filter(b=>b.id!==id);save();toast('Budget removed.')}
@@ -3037,7 +3041,7 @@ document.addEventListener('click',function(e){
       backdrop.style.zIndex='10050';
       if(mode==='edit'){
         if(typeof window.editGoal==='function') window.editGoal(String(id));
-        else window.openModal('goal-edit',(window.data&&Array.isArray(window.data.goals)?window.data.goals:[]).find(g=>String(g.id)===String(id)));
+        else window.openModal('goal-edit',typeof window.getSavelyGoalById==='function'?window.getSavelyGoalById(id):null);
       } else {
         window.pendingGoalSavingsItemId=null;
         window.openModal('goal');
@@ -3056,7 +3060,7 @@ document.addEventListener('click',function(e){
     if(edit && /^edit$/i.test((edit.textContent||'').trim())){
       const card=edit.closest('.goal-card');const inline=edit.getAttribute('onclick')||'';const match=inline.match(/editGoal\(['"]([^'"]+)['"]\)/);
       let id=match?match[1]:'';
-      if(!id && card){const index=Array.from(document.querySelectorAll('#allGoals .goal-card')).indexOf(card);const goals=window.data&&Array.isArray(window.data.goals)?window.data.goals:[];if(goals[index])id=goals[index].id;}
+      if(!id && card){const index=Array.from(document.querySelectorAll('#allGoals .goal-card')).indexOf(card);const goals=Array.from(document.querySelectorAll('#allGoals .goal-card'));if(goals[index]){const btn=goals[index].querySelector('button[onclick*="editGoal"]');const m=btn&&(btn.getAttribute('onclick')||'').match(/editGoal\(['"]([^'"]+)['"]\)/);if(m)id=m[1];}}
       if(id){e.preventDefault();e.stopImmediatePropagation();showGoalModal('edit',id);}
     }
   },true);
