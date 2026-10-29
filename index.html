@@ -513,7 +513,7 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
 #savingsTrendCanvasWrap{width:100%;max-width:100%;overflow-x:auto!important;overflow-y:hidden!important;overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch;touch-action:pan-x pan-y;scrollbar-gutter:stable;position:relative}
 #savingsTrendChart{display:block;max-width:none!important;touch-action:pan-x pan-y}
 #savingsTrendYAxis{position:sticky!important;left:0!important;z-index:5!important;pointer-events:none!important}
-#savingsCandleTooltip{font-family:inherit!important;overflow-wrap:anywhere}
+#savingsCandleTooltip{font-family:inherit!important;overflow-wrap:anywhere;transition:none!important;animation:none!important}
 .table-wrap,.financial-tabs,.bank-picker-tabs,.financial-subnav,.nav{max-width:100%;-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain}
 img,svg,canvas{max-width:100%}
 @media(max-width:1050px){.layout{grid-template-columns:minmax(0,1fr)}.cards{grid-template-columns:repeat(2,minmax(0,1fr))}.financial-layout{grid-template-columns:1fr}}
@@ -1256,18 +1256,21 @@ function renderSavingsTrend(){
     const word=delta>0?'Increased':delta<0?'Decreased':'No change';
     const stamp=new Date(Number(hit.at)||Date.now()).toLocaleString('en-PH',{dateStyle:'medium',timeStyle:'short'});
     candleTooltip.innerHTML='<div style="font-size:10px;letter-spacing:.04em;text-transform:uppercase;font-weight:700;color:var(--muted);margin-bottom:2px">Whole savings balance</div><div style="font-size:17px;font-weight:800;letter-spacing:-.02em;margin-bottom:8px">'+peso(Number(hit.wholeSavingsBalance??hit.amount)||0)+'</div><div style="border-top:1px solid var(--line);padding-top:7px"><div style="font-size:10px;color:var(--muted);margin-bottom:2px">Amount added / changed</div><div style="font-weight:800;color:'+color+';margin-bottom:5px">'+(delta>0?'+':delta<0?'−':'')+peso(Math.abs(delta))+' · '+word+'</div><div style="font-weight:700">Bank: '+esc(hit.bankName||'Savings')+'</div><div style="font-size:11px;color:var(--muted);margin-top:4px">'+stamp+'</div></div>';
+    // Measure while invisible, then reveal only after the final position is set.
+    // This prevents a one-frame flash at the top-left before the tooltip follows the candle.
+    candleTooltip.style.transition='none';
+    candleTooltip.style.visibility='hidden';
     candleTooltip.style.display='block';
-    // A viewport-fixed tooltip is not clipped by the graph's horizontal/vertical scroll container.
-    // Flip above low candles and clamp both axes so the entire card stays visible.
-    candleTooltip.style.left='8px';candleTooltip.style.top='8px';
-    const tipRect=candleTooltip.getBoundingClientRect(),gap=12;
+    candleTooltip.style.left='0px';candleTooltip.style.top='0px';
+    const tipRect=candleTooltip.getBoundingClientRect();
     let left=event.clientX+14;
     if(left+tipRect.width>window.innerWidth-8)left=event.clientX-tipRect.width-14;
     left=Math.max(8,Math.min(window.innerWidth-tipRect.width-8,left));
     let top=event.clientY+14;
     if(top+tipRect.height>window.innerHeight-8)top=event.clientY-tipRect.height-14;
     top=Math.max(8,Math.min(window.innerHeight-tipRect.height-8,top));
-    candleTooltip.style.left=left+'px';candleTooltip.style.top=top+'px';canvas.style.cursor='pointer';
+    candleTooltip.style.left=left+'px';candleTooltip.style.top=top+'px';
+    candleTooltip.style.visibility='visible';canvas.style.cursor='pointer';
    }else{candleTooltip.style.display='none';canvas.style.cursor='crosshair';}
   });
   graphViewport.addEventListener('scroll',()=>{if(lastCandlePointer)canvas.dispatchEvent(new MouseEvent('mousemove',{clientX:lastCandlePointer.x,clientY:lastCandlePointer.y,bubbles:false}));},{passive:true});
