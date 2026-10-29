@@ -2879,5 +2879,48 @@ document.addEventListener('click',function(e){
 })();
 </script>
 
+<script>
+/* Reliable standalone Apply-to-goal popup: does not depend on the shared modal renderer. */
+(function(){
+  window.askAddSavingsToGoal=function(itemId){
+    const list=Array.isArray(data.savingsList)?data.savingsList:[];
+    const item=list.find(x=>String(x.id)===String(itemId));
+    if(!item){ if(typeof toast==='function')toast('Could not find that savings item. Refresh the Financial List and try again.'); return; }
+    pendingGoalSavingsItemId=String(item.id);
+    let layer=document.getElementById('applyGoalStandaloneBackdrop');
+    if(!layer){
+      layer=document.createElement('div'); layer.id='applyGoalStandaloneBackdrop'; layer.className='modal-backdrop';
+      layer.style.cssText='display:none;position:fixed;inset:0;z-index:100000;align-items:center;justify-content:center;padding:16px;background:rgba(8,15,30,.58);';
+      layer.innerHTML=`<section class="modal" role="dialog" aria-modal="true" aria-labelledby="applyGoalStandaloneTitle" style="width:min(560px,calc(100vw - 32px));max-height:90vh;overflow:auto"><h2 id="applyGoalStandaloneTitle">Create savings goal</h2><p class="panel-sub">This savings item will be linked to your new goal.</p><form id="applyGoalStandaloneForm"><div class="form-grid"><div class="field full"><label for="applyGoalStandaloneBank">Bank / savings item</label><div style="display:flex;gap:8px"><select id="applyGoalStandaloneBank" name="bank" required style="flex:1"></select><button type="button" class="btn btn-light" id="applyGoalStandaloneEdit">Edit</button></div><small class="panel-sub" id="applyGoalStandaloneBalance"></small></div><div class="field full"><label for="applyGoalStandaloneName">Goal name *</label><input id="applyGoalStandaloneName" name="name" maxlength="80" required placeholder="e.g. Emergency Fund"></div><div class="field full"><label for="applyGoalStandaloneTarget">Target amount (₱) *</label><input id="applyGoalStandaloneTarget" name="target" type="number" min="1" step="1" inputmode="numeric" required></div><div class="field full"><label for="applyGoalStandaloneDue">Target date *</label><input id="applyGoalStandaloneDue" name="due" type="date" required></div></div><div class="form-actions"><button type="button" class="btn btn-light" id="applyGoalStandaloneCancel">Cancel</button><button type="submit" class="btn btn-primary">Create goal</button></div></form></section>`;
+      document.body.appendChild(layer);
+      layer.addEventListener('click',e=>{if(e.target===layer)layer.style.display='none'});
+      layer.querySelector('#applyGoalStandaloneCancel').addEventListener('click',()=>layer.style.display='none');
+      layer.querySelector('#applyGoalStandaloneEdit').addEventListener('click',()=>{const select=layer.querySelector('#applyGoalStandaloneBank');select.disabled=!select.disabled;layer.querySelector('#applyGoalStandaloneEdit').textContent=select.disabled?'Edit':'Done';});
+      layer.querySelector('#applyGoalStandaloneBank').addEventListener('change',()=>{
+        const chosen=(Array.isArray(data.savingsList)?data.savingsList:[]).find(x=>String(x.id)===layer.querySelector('#applyGoalStandaloneBank').value);
+        if(chosen){layer.querySelector('#applyGoalStandaloneBalance').textContent='Current balance: '+peso(Math.max(0,Number(chosen.amount)||0));layer.querySelector('#applyGoalStandaloneTarget').value=Math.max(1,Math.ceil(Number(chosen.amount)||0));pendingGoalSavingsItemId=String(chosen.id);}
+      });
+      layer.querySelector('#applyGoalStandaloneForm').addEventListener('submit',e=>{
+        e.preventDefault();const form=e.currentTarget;const bankId=layer.querySelector('#applyGoalStandaloneBank').value;
+        const chosen=(Array.isArray(data.savingsList)?data.savingsList:[]).find(x=>String(x.id)===bankId);
+        const name=String(form.elements.name.value||'').trim(),targetRaw=String(form.elements.target.value||'').trim(),due=String(form.elements.due.value||''),target=Number(targetRaw);
+        if(!chosen){toast('Select a valid savings item.');return;}if(!name){form.elements.name.focus();return;}if(!/^\d+$/.test(targetRaw)||!Number.isSafeInteger(target)||target<=0){form.elements.target.focus();return;}if(!due){form.elements.due.focus();return;}
+        if(!Array.isArray(data.goals))data.goals=[];
+        const goal={id:uid(),name,target,due,banks:[{name:String(chosen.name||'Savings'),amount:Math.max(0,Number(chosen.amount)||0)}],created:todayISO()};
+        data.goals.push(goal);
+        try{save();layer.style.display='none';pendingGoalSavingsItemId=null;try{renderGoals()}catch(err){console.error(err)}try{renderDashboard()}catch(err){console.error(err)}try{renderSavingsList()}catch(err){console.error(err)}toast('Savings goal created successfully.');}
+        catch(err){data.goals=data.goals.filter(g=>g.id!==goal.id);console.error('Saving goal failed',err);toast('Could not save the goal. Please try again.');}
+      });
+    }
+    const select=layer.querySelector('#applyGoalStandaloneBank');
+    select.innerHTML=list.map(x=>`<option value="${String(x.id).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;')}">${String(x.name||'Savings').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}</option>`).join('');
+    select.value=String(item.id);select.disabled=true;layer.querySelector('#applyGoalStandaloneEdit').textContent='Edit';
+    layer.querySelector('#applyGoalStandaloneName').value='';layer.querySelector('#applyGoalStandaloneTarget').value=Math.max(1,Math.ceil(Number(item.amount)||0));
+    layer.querySelector('#applyGoalStandaloneDue').value='';layer.querySelector('#applyGoalStandaloneBalance').textContent='Current balance: '+peso(Math.max(0,Number(item.amount)||0));
+    layer.style.display='flex';setTimeout(()=>layer.querySelector('#applyGoalStandaloneName').focus({preventScroll:true}),50);
+  };
+})();
+</script>
+
 </body>
 </html>
