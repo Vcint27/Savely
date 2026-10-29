@@ -1245,36 +1245,41 @@ function renderSavingsTrend(){
    event.stopPropagation();
   });
   let lastCandlePointer=null;
+  let candleTooltipHideTimer=null;
   canvas.addEventListener('mousemove',event=>{
+   if(candleTooltipHideTimer){clearTimeout(candleTooltipHideTimer);candleTooltipHideTimer=null;}
    lastCandlePointer={x:event.clientX,y:event.clientY};
    const r=canvas.getBoundingClientRect(),x=event.clientX-r.left,y=event.clientY-r.top;
    let hit=null,best=Infinity;
    for(const p of savingsTrendHitTargets){if(!p.candle)continue;const d=Math.hypot(p.x-x,p.y-y);if(d<best){best=d;hit=p;}}
-   if(hit&&best<=18){
+   if(hit&&best<=26){
     const delta=Number(hit.delta)||0;
     const color=delta>0?(Math.abs(delta)/Math.max(Math.abs(Number(hit.previousAmount)||0),1)>=.01?'#16a34a':'#eab308'):delta<0?(Math.abs(delta)/Math.max(Math.abs(Number(hit.previousAmount)||0),1)>=.01?'#dc2626':'#f97316'):'#64748b';
     const word=delta>0?'Increased':delta<0?'Decreased':'No change';
     const stamp=new Date(Number(hit.at)||Date.now()).toLocaleString('en-PH',{dateStyle:'medium',timeStyle:'short'});
     candleTooltip.innerHTML='<div style="font-size:10px;letter-spacing:.04em;text-transform:uppercase;font-weight:700;color:var(--muted);margin-bottom:2px">Whole savings balance</div><div style="font-size:17px;font-weight:800;letter-spacing:-.02em;margin-bottom:8px">'+peso(Number(hit.wholeSavingsBalance??hit.amount)||0)+'</div><div style="border-top:1px solid var(--line);padding-top:7px"><div style="font-size:10px;color:var(--muted);margin-bottom:2px">Amount added / changed</div><div style="font-weight:800;color:'+color+';margin-bottom:5px">'+(delta>0?'+':delta<0?'−':'')+peso(Math.abs(delta))+' · '+word+'</div><div style="font-weight:700">Bank: '+esc(hit.bankName||'Savings')+'</div><div style="font-size:11px;color:var(--muted);margin-top:4px">'+stamp+'</div></div>';
-    // Measure while invisible, then reveal only after the final position is set.
-    // This prevents a one-frame flash at the top-left before the tooltip follows the candle.
+    // Keep the tooltip visible while updating it; never flash it hidden or move it to (0,0).
+    // Position relative to the pointer with viewport clamping to avoid flicker near chart edges.
     candleTooltip.style.transition='none';
-    candleTooltip.style.visibility='hidden';
     candleTooltip.style.display='block';
-    candleTooltip.style.left='0px';candleTooltip.style.top='0px';
+    candleTooltip.style.visibility='visible';
     const tipRect=candleTooltip.getBoundingClientRect();
-    let left=event.clientX+14;
-    if(left+tipRect.width>window.innerWidth-8)left=event.clientX-tipRect.width-14;
+    let left=event.clientX+16;
+    if(left+tipRect.width>window.innerWidth-8)left=event.clientX-tipRect.width-16;
     left=Math.max(8,Math.min(window.innerWidth-tipRect.width-8,left));
-    let top=event.clientY+14;
-    if(top+tipRect.height>window.innerHeight-8)top=event.clientY-tipRect.height-14;
+    let top=event.clientY+16;
+    if(top+tipRect.height>window.innerHeight-8)top=event.clientY-tipRect.height-16;
     top=Math.max(8,Math.min(window.innerHeight-tipRect.height-8,top));
     candleTooltip.style.left=left+'px';candleTooltip.style.top=top+'px';
-    candleTooltip.style.visibility='visible';canvas.style.cursor='pointer';
-   }else{candleTooltip.style.display='none';canvas.style.cursor='crosshair';}
+    canvas.style.cursor='pointer';
+   }else{
+    // A short grace period prevents the tooltip flashing off when the pointer crosses tiny gaps between markers.
+    candleTooltipHideTimer=setTimeout(()=>{candleTooltip.style.display='none';candleTooltipHideTimer=null;},140);
+    canvas.style.cursor='crosshair';
+   }
   });
   graphViewport.addEventListener('scroll',()=>{if(lastCandlePointer)canvas.dispatchEvent(new MouseEvent('mousemove',{clientX:lastCandlePointer.x,clientY:lastCandlePointer.y,bubbles:false}));},{passive:true});
-  canvas.addEventListener('mouseleave',()=>{lastCandlePointer=null;candleTooltip.style.display='none';});
+  canvas.addEventListener('mouseleave',()=>{lastCandlePointer=null;if(candleTooltipHideTimer){clearTimeout(candleTooltipHideTimer);candleTooltipHideTimer=null;}candleTooltip.style.display='none';});
   canvas.addEventListener('pointerdown',event=>{if(event.button!==0)return;savingsTrendDrag={x:event.clientX,pan:savingsTrendPan};canvas.setPointerCapture?.(event.pointerId);});
   canvas.addEventListener('pointermove',event=>{if(!savingsTrendDrag)return;const dx=(event.clientX-savingsTrendDrag.x)/Math.max(1,canvas.getBoundingClientRect().width);if(Math.abs(dx)>3/Math.max(1,canvas.getBoundingClientRect().width))canvas.dataset.dragged='1';savingsTrendPan=Math.max(0,Math.min(savingsTrendZoom-1,savingsTrendDrag.pan-dx*savingsTrendZoom));renderSavingsTrend();});
   const endPan=()=>{savingsTrendDrag=null;};canvas.addEventListener('pointerup',endPan);canvas.addEventListener('pointercancel',endPan);
