@@ -560,6 +560,32 @@ img,svg,canvas{max-width:100%}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*::before,*::after{scroll-behavior:auto!important;transition-duration:.01ms!important;animation-duration:.01ms!important;animation-iteration-count:1!important}}
 </style>
 
+
+<style id="savely-interest-calculator-dark-mode-fix-v1">
+/* Interest Calculator: consistent, readable dark-theme surfaces */
+body.dark-theme #page-interest .interest-bank-tab{background:#172235!important;color:#cbd5e1!important;border-color:#334155!important}
+body.dark-theme #page-interest .interest-bank-tab.active{background:#168765!important;color:#fff!important;border-color:#168765!important}
+body.dark-theme #page-interest .interest-bank-card{background:#172235!important;color:#e7edf7!important;border-color:#334155!important;box-shadow:none}
+body.dark-theme #page-interest .interest-bank-card:hover{background:#1c2b40!important;border-color:#4b607b!important}
+body.dark-theme #page-interest .interest-bank-card.active{background:#153d35!important;color:#f0fdf7!important;border-color:#24b889!important;box-shadow:0 0 0 1px #24b88933!important}
+body.dark-theme #page-interest .interest-bank-name{color:#e7edf7!important}
+body.dark-theme #page-interest .interest-bank-rate{color:#aebbd0!important}
+body.dark-theme #page-interest .interest-selected-note{color:#aebbd0!important}
+body.dark-theme #page-interest .interest-bank-source a{color:#65d6ae!important}
+body.dark-theme #page-interest .interest-period-card{background:#172235!important;color:#e7edf7!important;border-color:#334155!important}
+body.dark-theme #page-interest .interest-period-card span,body.dark-theme #page-interest .interest-period-card small{color:#aebbd0!important}
+body.dark-theme #page-interest .interest-period-card strong{color:#f8fafc!important}
+body.dark-theme #page-interest .interest-period-card:hover{background:#1c2b40!important;border-color:#4b607b!important}
+body.dark-theme #page-interest .interest-period-card.active{background:#153d35!important;border-color:#24b889!important;box-shadow:0 0 0 2px #24b88933!important}
+body.dark-theme #page-interest .interest-period-card.active span,body.dark-theme #page-interest .interest-period-card.active small{color:#c3e8dc!important}
+body.dark-theme #page-interest .interest-period-card.active strong{color:#ffffff!important}
+body.dark-theme #page-interest .interest-summary-panel,body.dark-theme #page-interest .interest-summary-panel *{color:var(--text)!important}
+body.dark-theme #page-interest .interest-summary-panel{background:linear-gradient(135deg,#102a25 0%,#15392f 100%)!important;border-color:#27664f!important}
+body.dark-theme #page-interest .interest-summary-panel .panel-sub,body.dark-theme #page-interest .interest-summary-panel .footer-note{color:#b8dfd0!important}
+body.dark-theme #page-interest .interest-summary-panel #interestCalcEnding{color:#76e0b5!important}
+@media(max-width:600px){body.dark-theme #page-interest .interest-bank-grid{grid-template-columns:repeat(2,minmax(0,1fr))}body.dark-theme #page-interest .interest-bank-card{padding:9px;gap:8px}}
+</style>
+
 </head>
 <body>
 
@@ -689,7 +715,7 @@ img,svg,canvas{max-width:100%}
       </div>
       <div class="footer-note" style="margin-top:10px">Estimates use simple interest and the selected rate. Promotional rates may require missions, balance tiers, or eligibility. Rates were checked against available October 2026 bank information where available. They are not live quotes; confirm the bank's official terms before depositing.</div>
     </div>
-    <div class="panel" style="margin-top:18px;background:linear-gradient(135deg,#e8f8ef 0%,#d7f3e3 100%);border:1px solid #9bd8b3;color:#14532d">
+    <div class="panel interest-summary-panel" style="margin-top:18px;background:linear-gradient(135deg,#e8f8ef 0%,#d7f3e3 100%);border:1px solid #9bd8b3;color:#14532d">
       <div class="panel-sub" id="interestCalcSelectedPeriodLabel" style="color:#26734d">Daily estimated total amount</div>
       <h2 id="interestCalcEnding" style="font-size:30px;margin-top:8px;color:#166534">₱50,000.00</h2>
       <div class="panel-sub" id="interestCalcSummary" style="color:#26734d">Includes estimated net interest after withholding tax.</div>
