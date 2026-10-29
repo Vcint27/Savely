@@ -167,6 +167,11 @@ body.dark-theme th{color:#9ba9bf;border-color:var(--line)}body.dark-theme td{bor
 body.dark-theme .modal,body.dark-theme .confirm-dialog,body.dark-theme .interest-modal{background:var(--panel)!important;color:var(--text);border-color:var(--line)}body.dark-theme .modal-backdrop{background:rgba(2,6,15,.76)}
 body.dark-theme .btn-secondary{background:#263247;color:var(--text);border-color:var(--line)}body.dark-theme .stat-icon{background:var(--green2)}body.dark-theme .account-icon{background:#202d4c}body.dark-theme .notice{background:#352b19;border-color:#5e4a23;color:#f4d89c}
 body.dark-theme .auth-gate{background:#0c1220}body.dark-theme .auth-form-side{background:#111a29;color:var(--text)}
+/* Dark-mode readability fix: bank/item names in the Financial List must use the theme text color, not the light-theme inline navy. */
+body.dark-theme #savingsListTable .link-btn, body.dark-theme #savingsListTable .tx-title, body.dark-theme #savingsListTable .tx-title > span, body.dark-theme #savingsListTable .goal-linked-item { color: var(--text) !important; }
+body.dark-theme #savingsListTable .link-btn:hover { color: #65d6ae !important; }
+body.dark-theme #savingsListTable .financial-draggable-row { color: var(--text); }
+body.dark-theme #savingsListTable .financial-draggable-row td { color: var(--text); }
 @media(max-width:600px){.theme-choice-card{align-items:flex-start;padding:14px}.theme-choice-copy{gap:10px}.theme-choice-copy p{font-size:12px}}
 
 </style>
