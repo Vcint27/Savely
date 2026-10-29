@@ -3001,5 +3001,42 @@ document.addEventListener('click',function(e){
 })();
 </script>
 
+
+<script id="savely-goal-buttons-reliability-fix">
+(function(){
+  function showGoalModal(mode,id){
+    try{
+      const backdrop=document.getElementById('modalBackdrop');
+      if(!backdrop || typeof window.openModal!=='function') throw new Error('Goal modal is unavailable');
+      backdrop.style.zIndex='10050';
+      if(mode==='edit'){
+        if(typeof window.editGoal==='function') window.editGoal(String(id));
+        else window.openModal('goal-edit',(window.data&&Array.isArray(window.data.goals)?window.data.goals:[]).find(g=>String(g.id)===String(id)));
+      } else {
+        window.pendingGoalSavingsItemId=null;
+        window.openModal('goal');
+      }
+      backdrop.style.display='flex';
+      backdrop.setAttribute('aria-hidden','false');
+      const form=document.getElementById('modalForm');
+      if(form){const first=form.querySelector('input:not([type=checkbox]),select,button');if(first)setTimeout(()=>first.focus({preventScroll:true}),30);}
+    }catch(err){console.error('Savely goal modal failed to open:',err);if(typeof window.toast==='function')window.toast('Could not open the savings goal form. Please refresh and try again.');}
+  }
+  document.addEventListener('click',function(e){
+    const target=e.target instanceof Element?e.target:null;if(!target)return;
+    const newGoal=target.closest('#page-goals .panel-head button');
+    if(newGoal){e.preventDefault();e.stopImmediatePropagation();showGoalModal('new');return;}
+    const edit=target.closest('#allGoals .goal-card button');
+    if(edit && /^edit$/i.test((edit.textContent||'').trim())){
+      const card=edit.closest('.goal-card');const inline=edit.getAttribute('onclick')||'';const match=inline.match(/editGoal\(['"]([^'"]+)['"]\)/);
+      let id=match?match[1]:'';
+      if(!id && card){const index=Array.from(document.querySelectorAll('#allGoals .goal-card')).indexOf(card);const goals=window.data&&Array.isArray(window.data.goals)?window.data.goals:[];if(goals[index])id=goals[index].id;}
+      if(id){e.preventDefault();e.stopImmediatePropagation();showGoalModal('edit',id);}
+    }
+  },true);
+  window.addEventListener('keydown',function(e){if(e.key==='Escape'){const b=document.getElementById('modalBackdrop');if(b&&b.style.display==='flex'&&typeof window.closeModal==='function')window.closeModal();}});
+})();
+</script>
+
 </body>
 </html>
