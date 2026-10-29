@@ -1014,6 +1014,7 @@ function renderSavingsTrend(){
  }):(allSavingsItems.length?[aggregateEntry]:[]);
  meta.textContent=savingsTrendSelectedBank?`${savingsTrendSelectedBank} · individual bank balance history`:`Total Savings · combined balance history`;
  legend.innerHTML=entries.map(e=>`<span style="display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--muted)"><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${e.color||'#15966d'}"></span>${esc(e.name)}: ${peso(e.value)}</span>`).join('');
+ const graphViewport=canvas.parentElement;
  // Keep the Y-axis labels in a sticky overlay so only the plotted history scrolls horizontally.
  let axisCanvas=document.getElementById('savingsTrendYAxis');
  if(!axisCanvas){
@@ -1025,7 +1026,6 @@ function renderSavingsTrend(){
  let candleTooltip=document.getElementById('savingsCandleTooltip');
  if(!candleTooltip){candleTooltip=document.createElement('div');candleTooltip.id='savingsCandleTooltip';candleTooltip.style.cssText='position:absolute;display:none;z-index:20;pointer-events:none;min-width:180px;max-width:260px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--surface,#fff);box-shadow:0 8px 24px rgba(15,23,42,.14);font:12px system-ui,sans-serif;color:var(--text,#0f172a);line-height:1.5;';canvas.parentElement.appendChild(candleTooltip);}
  if(!ctx){if(meta)meta.textContent='Your browser does not support canvas charts.';return;}
- const graphViewport=canvas.parentElement;
  const viewportWidth=Math.max(320,Math.round(graphViewport.clientWidth||600));
  const historyPointCount=Math.max(1,events.length);
  const graphContentWidth=Math.max(viewportWidth,Math.min(9000,Math.round(110+historyPointCount*54)));
