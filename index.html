@@ -1558,7 +1558,7 @@ function renderSavingsList(){
  renderSavingsTrend();
  renderOverallTrend();
  const target=document.getElementById('savingsListTable');
- target.innerHTML=selected.length?`<table><thead><tr><th style="width:42px">Move</th><th>Item / source</th><th>Date added</th><th style="text-align:right">Amount</th>${activeFinancialCategory==='Savings'?'<th>Interest estimate</th>':''}<th></th></tr></thead><tbody>${selected.map(item=>`<tr data-financial-item-id="${esc(item.id)}" data-trend-bank="${esc(item.bankName||item.name)}" title="Click to focus this bank on the graph" draggable="${item.isGoalAllocation?'false':'true'}" class="financial-draggable-row" style="cursor:pointer"><td>${item.isGoalAllocation?'<span class="muted">—</span>':`<span class="drag-handle" title="Drag to reorder" aria-label="Drag to reorder">⠿</span>`}</td><td><div class="tx-title" style="display:flex;align-items:center;min-width:180px">${financialBankLogo(item.bankName||item.name)}<span>${item.isGoalAllocation?`<span class="goal-linked-item">${esc(item.name)}</span><div class="footer-note">Linked from Savings Goals</div>`:esc(item.name)}</span></div></td><td>${fmtDate(item.date)}</td><td style="text-align:right;font-weight:800;color:${item.category==='Debt'?'var(--red)':'var(--text)'}">${item.category==='Debt'?'−':'+'}${peso(item.amount)}</td>${activeFinancialCategory==='Savings'?`<td>${item.isGoalAllocation?'<span class="muted">Goal allocation</span>':(/^maya$/i.test(String(item.name||'').trim())||/maya savings/i.test(String(item.name||'')))?mayaInterestEstimate(item.amount,item.mayaBonusRate||3):(interestEstimate(item.amount,getInterestRate(item.name,item.category))||'<span class="muted">Rate unavailable</span>')}</td>`:''}<td style="text-align:right">${item.isGoalAllocation?`<button class="link-btn" onclick="editGoal('${item.goalId}')">Edit goal</button>`:`<div class="savings-item-actions"><button type="button" class="savings-item-menu-button" aria-label="Savings item actions" aria-expanded="false" onclick="toggleSavingsItemMenu(event,'${item.id}')">⋯</button><div class="savings-item-menu" id="savings-item-menu-${item.id}">${activeFinancialCategory==='Savings'&&!/^(cash|coins?|coins?\s*\(.*\)|₱1 coin.*|1 coin.*)$/i.test(String(item.name||'').trim())?`<button type="button" onclick="closeSavingsItemMenus();openSavingsInterest('${item.id}')">View interest</button>`:''}<button type="button" onclick="closeSavingsItemMenus();openSavingsHistory('${item.id}')">History</button><button type="button" onclick="closeSavingsItemMenus();editFinancialItem('${item.id}')">Edit</button><button type="button" class="menu-delete" onclick="closeSavingsItemMenus();deleteSavingsItem('${item.id}')">Delete</button></div></div>`}</td></tr>`).join('')}</tbody></table><div class="between" style="margin-top:14px"><span>Selected category total</span><strong>${peso(selected.reduce((sum,item)=>sum+Number(item.amount||0),0))}</strong></div>`:`<div class="empty">No ${activeFinancialCategory.toLowerCase()} items yet. Click Add to create one.</div>`;
+ target.innerHTML=selected.length?`<table><thead><tr><th style="width:42px">Move</th><th>Item / source</th><th>Date added</th><th style="text-align:right">Amount</th>${activeFinancialCategory==='Savings'?'<th>Interest estimate</th>':''}<th></th></tr></thead><tbody>${selected.map(item=>`<tr data-financial-item-id="${esc(item.id)}" data-trend-bank="${esc(item.bankName||item.name)}" title="Click to focus this bank on the graph" draggable="${item.isGoalAllocation?'false':'true'}" class="financial-draggable-row" style="cursor:pointer"><td>${item.isGoalAllocation?'<span class="muted">—</span>':`<span class="drag-handle" title="Drag to reorder" aria-label="Drag to reorder">⠿</span>`}</td><td><div class="tx-title" style="display:flex;align-items:center;min-width:180px">${financialBankLogo(item.bankName||item.name)}<span>${item.isGoalAllocation?`<span class="goal-linked-item">${esc(item.name)}</span><div class="footer-note">Linked from Savings Goals</div>`:esc(item.name)}</span></div></td><td>${fmtDate(item.date)}</td><td style="text-align:right;font-weight:800;color:${item.category==='Debt'?'var(--red)':'var(--text)'}">${item.category==='Debt'?'−':'+'}${peso(item.amount)}</td>${activeFinancialCategory==='Savings'?`<td>${item.isGoalAllocation?'<span class="muted">Goal allocation</span>':(/^maya$/i.test(String(item.name||'').trim())||/maya savings/i.test(String(item.name||'')))?mayaInterestEstimate(item.amount,item.mayaBonusRate||3):(interestEstimate(item.amount,getInterestRate(item.name,item.category))||'<span class="muted">Rate unavailable</span>')}</td>`:''}<td style="text-align:right">${item.isGoalAllocation?`<button class="link-btn" onclick="editGoal('${item.goalId}')">Edit goal</button>`:`<div class="savings-item-actions"><button type="button" class="savings-item-menu-button" aria-label="Savings item actions" aria-expanded="false" onclick="toggleSavingsItemMenu(event,'${item.id}')">⋯</button><div class="savings-item-menu" id="savings-item-menu-${item.id}">${activeFinancialCategory==='Savings'?`<button type="button" onclick="closeSavingsItemMenus();askAddSavingsToGoal('${item.id}')">Apply to savings goal</button>`:''}${activeFinancialCategory==='Savings'&&!/^(cash|coins?|coins?\s*\(.*\)|₱1 coin.*|1 coin.*)$/i.test(String(item.name||'').trim())?`<button type="button" onclick="closeSavingsItemMenus();openSavingsInterest('${item.id}')">View interest</button>`:''}<button type="button" onclick="closeSavingsItemMenus();openSavingsHistory('${item.id}')">History</button><button type="button" onclick="closeSavingsItemMenus();editFinancialItem('${item.id}')">Edit</button><button type="button" class="menu-delete" onclick="closeSavingsItemMenus();deleteSavingsItem('${item.id}')">Delete</button></div></div>`}</td></tr>`).join('')}</tbody></table><div class="between" style="margin-top:14px"><span>Selected category total</span><strong>${peso(selected.reduce((sum,item)=>sum+Number(item.amount||0),0))}</strong></div>`:`<div class="empty">No ${activeFinancialCategory.toLowerCase()} items yet. Click Add to create one.</div>`;
  // Clicking a savings row focuses the growth graph on that bank; clicking it again restores all banks.
  const tbody=target.querySelector('tbody');
  if(tbody){
@@ -1672,32 +1672,42 @@ function askAddSavingsToGoal(itemId){
  const backdrop=document.getElementById('addToGoalBackdrop');
  const select=document.getElementById('addToGoalSelect');
  if(!backdrop||!select)return;
- const goals=Array.isArray(data.goals)?data.goals:[];
- if(!goals.length){
-   if(confirm('Savings item added. You do not have any savings goals yet. Would you like to create one now?')){
-     showPage('goals');openModal('goal');
-   }
-   return;
- }
  pendingGoalSavingsItemId=itemId;
- select.innerHTML=goals.map((goal,index)=>`<option value="${esc(goal.id)}">${esc(goal.name||'Savings Goal')} · Target ${peso(goal.target)}</option>`).join('');
+ const goals=Array.isArray(data.goals)?data.goals:[];
+ const selectWrap=document.getElementById('addToGoalSelectWrap');
+ const noGoals=document.getElementById('addToGoalNoGoals');
+ const confirmBtn=document.getElementById('confirmAddToGoalButton');
+ if(!goals.length){
+   if(selectWrap)selectWrap.style.display='none';
+   if(noGoals)noGoals.style.display='block';
+   if(confirmBtn)confirmBtn.style.display='none';
+ }else{
+   if(selectWrap)selectWrap.style.display='block';
+   if(noGoals)noGoals.style.display='none';
+   if(confirmBtn)confirmBtn.style.display='inline-flex';
+   select.innerHTML=goals.map(goal=>`<option value="${esc(goal.id)}">${esc(goal.name||'Savings Goal')} · Target ${peso(goal.target)}</option>`).join('');
+ }
  backdrop.style.display='flex';
+}
+function startCreateGoalFromSavings(){
+ const backdrop=document.getElementById('addToGoalBackdrop');if(backdrop)backdrop.style.display='none';
+ showPage('goals');openModal('goal');
+}
+function applySavingsItemToGoal(item,goal){
+ if(!item||!goal)return false;
+ if(!Array.isArray(goal.banks))goal.banks=[];
+ const bankName=String(item.name||'Savings').trim();
+ const existing=goal.banks.find(b=>String(b.name||'').toLowerCase()===bankName.toLowerCase());
+ if(existing)existing.amount=Math.max(0,Number(existing.amount)||0)+Math.max(0,Number(item.amount)||0);
+ else {const meta=(typeof bankOptions!=='undefined'&&Array.isArray(bankOptions))?bankOptions.find(b=>String(b.name).toLowerCase()===bankName.toLowerCase()):null;goal.banks.push({name:bankName,amount:Math.max(0,Number(item.amount)||0),...(meta?{short:meta.short,color:meta.color,group:meta.group}:{})});}
+ goal.updated=Date.now();return true;
 }
 function confirmAddSavingsToGoal(){
  const item=(data.savingsList||[]).find(x=>x.id===pendingGoalSavingsItemId);
  const goalId=document.getElementById('addToGoalSelect')?.value;
  const goal=(data.goals||[]).find(g=>String(g.id)===String(goalId));
  if(!item||!goal){toast('Choose a valid savings goal.');return;}
- if(!Array.isArray(goal.banks))goal.banks=[];
- const bankName=String(item.name||'Savings').trim();
- const existing=goal.banks.find(b=>String(b.name||'').toLowerCase()===bankName.toLowerCase());
- if(existing){
-   existing.amount=Math.max(0,Number(existing.amount)||0)+Math.max(0,Number(item.amount)||0);
- }else{
-   const meta=(typeof bankOptions!=='undefined'&&Array.isArray(bankOptions))?bankOptions.find(b=>String(b.name).toLowerCase()===bankName.toLowerCase()):null;
-   goal.banks.push({name:bankName,amount:Math.max(0,Number(item.amount)||0),...(meta?{short:meta.short,color:meta.color,group:meta.group}:{})});
- }
- goal.updated=Date.now();
+ if(!applySavingsItemToGoal(item,goal)){toast('Could not apply this savings item.');return;}
  try{localStorage.setItem(STORE,JSON.stringify(data));}
  catch(error){toast('Could not update the savings goal. Please export a backup and try again.');return;}
  closeAddToGoalPrompt();
@@ -2047,7 +2057,7 @@ if(kind==='goal'||kind==='goal-edit'){
  picker.querySelectorAll('.goal-bank-option').forEach(card=>{const input=card.querySelector('input');input.addEventListener('change',()=>card.classList.toggle('selected',input.checked));});
  renderBankRows();tabs.querySelector('[data-goal-bank-tab="Traditional banks"]').click();
 }
-form.onsubmit=e=>{e.preventDefault();let f=Object.fromEntries(new FormData(form).entries());if(kind==='transaction'){let amount=Number(f.amount);if(!Number.isFinite(amount)||amount<=0)return toast('Enter an amount greater than zero.');if((f.type==='withdrawal'||f.type==='expense')&&amount>balance(f.accountId))return toast('Not enough funds in this account.');data.transactions.push({...f,id:uid(),amount,date:f.date||todayISO(),createdAt:Date.now()})}else if(kind==='account'){data.accounts.push({...f,id:uid(),opening:Number(f.opening),type:f.type||'Savings'})}else if(kind==='goal'||kind==='goal-edit'){const goalName=String(f.name||'').trim();const goalTarget=Number(f.target);if(!goalName){toast('Enter a goal name.');return;}if(!Number.isFinite(goalTarget)||goalTarget<=0){toast('Enter a target amount greater than zero.');return;}if(!Array.isArray(data.goals))data.goals=[];if(kind==='goal-edit'){const existing=data.goals.find(g=>g.id===goalToEdit.id);if(!existing){toast('Savings goal not found.');return;}existing.name=goalName;existing.target=goalTarget;existing.due=String(f.due||'');existing.updated=Date.now();}else{data.goals.push({id:uid(),name:goalName,target:goalTarget,due:String(f.due||''),created:todayISO()});}}else if(kind==='budget'){let found=data.budgets.find(b=>b.category.toLowerCase()===f.category.toLowerCase());if(found)found.limit=Number(f.limit);else data.budgets.push({...f,id:uid(),limit:Number(f.limit)})}else if(kind==='recurring'){data.recurring.push({...f,id:uid(),amount:Number(f.amount)})}closeModal();save();toast('Saved successfully.')};if(kind==='goal'||kind==='goal-edit')attachGoalCalendarIcon();document.getElementById('modalBackdrop').style.display='flex'}
+form.onsubmit=e=>{e.preventDefault();let f=Object.fromEntries(new FormData(form).entries());if(kind==='transaction'){let amount=Number(f.amount);if(!Number.isFinite(amount)||amount<=0)return toast('Enter an amount greater than zero.');if((f.type==='withdrawal'||f.type==='expense')&&amount>balance(f.accountId))return toast('Not enough funds in this account.');data.transactions.push({...f,id:uid(),amount,date:f.date||todayISO(),createdAt:Date.now()})}else if(kind==='account'){data.accounts.push({...f,id:uid(),opening:Number(f.opening),type:f.type||'Savings'})}else if(kind==='goal'||kind==='goal-edit'){const goalName=String(f.name||'').trim();const goalTarget=Number(f.target);if(!goalName){toast('Enter a goal name.');return;}if(!Number.isFinite(goalTarget)||goalTarget<=0){toast('Enter a target amount greater than zero.');return;}if(!Array.isArray(data.goals))data.goals=[];if(kind==='goal-edit'){const existing=data.goals.find(g=>g.id===goalToEdit.id);if(!existing){toast('Savings goal not found.');return;}existing.name=goalName;existing.target=goalTarget;existing.due=String(f.due||'');existing.updated=Date.now();}else{const newGoal={id:uid(),name:goalName,target:goalTarget,due:String(f.due||''),created:todayISO(),banks:[]};data.goals.push(newGoal);if(pendingGoalSavingsItemId){const pendingItem=(data.savingsList||[]).find(item=>String(item.id)===String(pendingGoalSavingsItemId));if(pendingItem)applySavingsItemToGoal(pendingItem,newGoal);pendingGoalSavingsItemId=null;}}}else if(kind==='budget'){let found=data.budgets.find(b=>b.category.toLowerCase()===f.category.toLowerCase());if(found)found.limit=Number(f.limit);else data.budgets.push({...f,id:uid(),limit:Number(f.limit)})}else if(kind==='recurring'){data.recurring.push({...f,id:uid(),amount:Number(f.amount)})}closeModal();save();toast('Saved successfully.')};if(kind==='goal'||kind==='goal-edit')attachGoalCalendarIcon();document.getElementById('modalBackdrop').style.display='flex'}
 
 function attachGoalCalendarIcon(){
  const form=document.getElementById('modalForm');
@@ -2203,10 +2213,11 @@ document.addEventListener('click',function(e){
 <div class="modal-backdrop" id="addToGoalBackdrop" style="display:none;z-index:1200" onclick="if(event.target===this)closeAddToGoalPrompt()">
   <div class="modal" style="width:min(520px,calc(100% - 28px));max-height:85vh;overflow:auto">
     <div class="panel-head"><div><h2>Add this savings to a goal?</h2><p class="panel-sub">Choose which savings goal should include this bank and amount.</p></div><button type="button" class="btn btn-light" onclick="closeAddToGoalPrompt()">✕</button></div>
-    <div class="field"><label for="addToGoalSelect">Savings goal</label><select id="addToGoalSelect" style="width:100%"></select></div>
+    <div class="field" id="addToGoalSelectWrap"><label for="addToGoalSelect">Savings goal</label><select id="addToGoalSelect" style="width:100%"></select></div>
+    <div id="addToGoalNoGoals" style="display:none;padding:14px;border:1px solid var(--line);border-radius:12px;background:var(--soft,#f7fafc)"><strong>No savings goals yet</strong><p style="margin:6px 0 12px">Create a savings goal now and this savings item will be applied to it automatically.</p><button type="button" class="btn btn-primary" onclick="startCreateGoalFromSavings()">＋ Create savings goal</button></div>
     <div class="form-actions" style="display:flex;justify-content:flex-end;gap:8px;margin-top:18px">
-      <button type="button" class="btn btn-light" onclick="closeAddToGoalPrompt()">No, thanks</button>
-      <button type="button" class="btn btn-primary" onclick="confirmAddSavingsToGoal()">Yes, add to goal</button>
+      <button type="button" class="btn btn-light" onclick="closeAddToGoalPrompt()">Cancel</button>
+      <button type="button" id="confirmAddToGoalButton" class="btn btn-primary" onclick="confirmAddSavingsToGoal()">Apply to goal</button>
     </div>
   </div>
 </div>
