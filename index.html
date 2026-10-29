@@ -1685,8 +1685,11 @@ function startCreateGoalFromSavings(){
  if(!item){pendingGoalSavingsItemId=null;toast('Could not find that savings item. Please try again.');return;}
  const bankName=String(item.name||'Savings').trim();
  const balance=Math.max(0,Number(item.amount)||0);
- showPage('goals');
+ // Keep the user on the Financial List and show the goal form as a modal overlay.
+ // Do not navigate to the Savings Goals page when Apply to savings goal is selected.
  openModal('goal',{name:'',target:Math.max(1,Math.ceil(balance)),due:'',banks:[{name:bankName,amount:balance}]});
+ const nameInput=document.querySelector('#modalForm [name="name"]');
+ if(nameInput) setTimeout(()=>nameInput.focus({preventScroll:true}),30);
 }
 function applySavingsItemToGoal(item,goal){
  if(!item||!goal)return false;
