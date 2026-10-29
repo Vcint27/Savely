@@ -2627,5 +2627,88 @@ document.addEventListener('click',function(e){
 })();
 </script>
 
+
+<!-- Independent live clock fallback: runs separately from the main app script. -->
+<script id="savely-independent-live-clock">
+(function () {
+  'use strict';
+  function readPrefs() {
+    try {
+      var saved = JSON.parse(localStorage.getItem('savelyDateTimePrefs') || 'null');
+      return Object.assign({ timezone: 'Asia/Manila', format: '12', customTimestamp: null, customSetAt: null }, saved || {});
+    } catch (_) {
+      return { timezone: 'Asia/Manila', format: '12', customTimestamp: null, customSetAt: null };
+    }
+  }
+  function getNow(prefs) {
+    var hasCustom = prefs.customTimestamp !== null && prefs.customTimestamp !== '' &&
+      prefs.customSetAt !== null && prefs.customSetAt !== '';
+    var stamp = Number(prefs.customTimestamp), setAt = Number(prefs.customSetAt);
+    return hasCustom && Number.isFinite(stamp) && Number.isFinite(setAt)
+      ? new Date(stamp + (Date.now() - setAt))
+      : new Date();
+  }
+  function format(date, opts, timezone) {
+    return new Intl.DateTimeFormat('en-PH', Object.assign({ timeZone: timezone }, opts)).format(date);
+  }
+  function tick() {
+    try {
+      var prefs = readPrefs();
+      var timezone = prefs.timezone || 'Asia/Manila';
+      var now = getNow(prefs);
+      var time = format(now, {
+        hour: 'numeric', minute: '2-digit', second: '2-digit',
+        hour12: String(prefs.format) !== '24'
+      }, timezone);
+      var date = format(now, {
+        weekday: 'long', month: 'long', day: 'numeric', year: 'numeric'
+      }, timezone);
+
+      var settings = document.getElementById('settingsLiveDateTime');
+      if (settings) {
+        settings.innerHTML =
+          '<div style="font-size:30px;font-weight:800;font-variant-numeric:tabular-nums;letter-spacing:-.5px">' +
+          time + '</div><div style="font-size:15px;margin-top:5px">' + date + '</div>';
+      }
+
+      var compact = document.getElementById('today');
+      if (compact) {
+        compact.setAttribute('aria-label', date + ', ' + time + ', ' + timezone);
+        compact.title = 'Live date and time · ' + timezone;
+        compact.innerHTML = '<span style="display:block;font-weight:750;font-variant-numeric:tabular-nums">' +
+          time + '</span><span style="display:block;font-size:11px">' + date + ' · PHT</span>';
+      }
+
+      var zone = document.getElementById('dateTimeZoneLabel');
+      if (zone) {
+        var offset = '';
+        try {
+          offset = new Intl.DateTimeFormat('en-US', {
+            timeZone: timezone, timeZoneName: 'shortOffset'
+          }).formatToParts(now).filter(function (p) { return p.type === 'timeZoneName'; })[0].value;
+        } catch (_) {}
+        zone.textContent = 'Timezone: ' + timezone + (offset ? ' (' + offset + ')' : '');
+      }
+
+      var title = document.getElementById('pageTitle');
+      var activePage = document.querySelector('.page.active');
+      if (title && activePage && activePage.id === 'page-dashboard') {
+        var hour = Number(format(now, { hour: '2-digit', hourCycle: 'h23' }, timezone));
+        title.textContent = hour >= 12 && hour < 17 ? 'Good afternoon 👋' :
+          (hour >= 17 || hour < 5 ? 'Good evening 🌙' : 'Good morning ☀️');
+      }
+    } catch (err) {
+      console.error('Savely independent clock update failed:', err);
+    }
+  }
+  tick();
+  window.setInterval(tick, 1000);
+  document.addEventListener('visibilitychange', function () {
+    if (!document.hidden) tick();
+  });
+  window.addEventListener('pageshow', tick);
+})();
+</script>
+
 </body>
 </html>
