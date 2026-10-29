@@ -3001,8 +3001,36 @@ document.addEventListener('click',function(e){
   function readLocation(){try{return JSON.parse(localStorage.getItem(STORE_KEY)||'null')}catch(e){return null}}
   function render(temp,code,place){const v=labels[code]||['🌡️','Current conditions'];if($('savelyWeatherIcon'))$('savelyWeatherIcon').textContent=v[0];if($('savelyWeatherTemp'))$('savelyWeatherTemp').textContent=Math.round(temp)+'°C';if($('savelyWeatherDesc'))$('savelyWeatherDesc').textContent=v[1]+(place?' · '+place:'');if($('savelyWeather'))$('savelyWeather').title='Live weather: '+v[1]+', '+Math.round(temp)+'°C'+(place?' · '+place:'');}
   async function load(lat,lon,place){try{const url='https://api.open-meteo.com/v1/forecast?latitude='+encodeURIComponent(lat)+'&longitude='+encodeURIComponent(lon)+'&current=temperature_2m,weather_code&timezone=auto';const r=await fetch(url,{cache:'no-store'});if(!r.ok)throw Error('Weather request failed');const d=await r.json();if(!d.current)throw Error('No current weather');render(d.current.temperature_2m,d.current.weather_code,place);return true}catch(e){if($('savelyWeatherTemp'))$('savelyWeatherTemp').textContent='—';if($('savelyWeatherDesc'))$('savelyWeatherDesc').textContent='Weather unavailable';if($('savelyWeather'))$('savelyWeather').title='Could not load current weather. Check internet connection.';return false;}}
-  async function geocodeSaved(loc){const queries=[ [loc.barangay,loc.city,loc.province,loc.region,'Philippines'].filter(Boolean).join(', '),[loc.city,loc.province,loc.region,'Philippines'].filter(Boolean).join(', '),[loc.city,loc.region,'Philippines'].filter(Boolean).join(', ') ];for(const q of queries){if(!q)continue;try{const url='https://geocoding-api.open-meteo.com/v1/search?name='+encodeURIComponent(q)+'&count=5&language=en&format=json';const r=await fetch(url);if(!r.ok)continue;const d=await r.json();const list=d.results||[];const match=list.find(x=>String(x.country_code||'').toUpperCase()==='PH')||list[0];if(match&&Number.isFinite(match.latitude)&&Number.isFinite(match.longitude)){await load(match.latitude,match.longitude,[loc.barangay,loc.city,loc.province].filter(Boolean).join(', '));return;}}catch(e){}}
-    if($('savelyWeatherDesc'))$('savelyWeatherDesc').textContent='Location not found';if($('savelyWeatherTemp'))$('savelyWeatherTemp').textContent='—';
+  async function geocodeSaved(loc){
+    // Open-Meteo's `name` parameter expects a place name, not a comma-separated address.
+    // Try the selected city first, then less-specific city-name variants.
+    const cleanCity=String(loc.city||'').replace(/^(city of|municipality of|municipality)\s+/i,'').trim();
+    const candidates=[cleanCity,loc.city,loc.province,loc.region].filter((v,i,a)=>v&&a.indexOf(v)===i);
+    for(const q of candidates){
+      try{
+        const url='https://geocoding-api.open-meteo.com/v1/search?name='+encodeURIComponent(q)+'&count=10&language=en&format=json&countryCode=PH';
+        const r=await fetch(url,{cache:'no-store'});
+        if(!r.ok)continue;
+        const d=await r.json();
+        const list=(d.results||[]).filter(x=>String(x.country_code||'').toUpperCase()==='PH');
+        // Prefer a result whose locality name resembles the saved city.
+        const wanted=cleanCity.toLowerCase();
+        const match=list.find(x=>String(x.name||'').toLowerCase()===wanted)
+          ||list.find(x=>String(x.name||'').toLowerCase().includes(wanted)||wanted.includes(String(x.name||'').toLowerCase()))
+          ||list[0];
+        if(match&&Number.isFinite(match.latitude)&&Number.isFinite(match.longitude)){
+          const ok=await load(match.latitude,match.longitude,[loc.barangay,loc.city,loc.province].filter(Boolean).join(', '));
+          if(ok)return true;
+        }
+      }catch(e){}
+    }
+    // Do not silently use device coordinates for a saved location; show a clear fallback
+    // and keep the selected city label visible so the user knows what failed.
+    if($('savelyWeatherIcon'))$('savelyWeatherIcon').textContent='🌦️';
+    if($('savelyWeatherTemp'))$('savelyWeatherTemp').textContent='—';
+    if($('savelyWeatherDesc'))$('savelyWeatherDesc').textContent='Weather unavailable';
+    if($('savelyWeather'))$('savelyWeather').title='Could not find weather coordinates for '+[loc.city,loc.province,loc.region].filter(Boolean).join(', ')+'. Check internet connection or choose another city.';
+    return false;
   }
   function start(){const saved=readLocation();if(saved&&saved.city){geocodeSaved(saved);return;}const fallback=()=>load(15.4817,120.5979,'Tarlac City');if(!navigator.geolocation){fallback();return;}navigator.geolocation.getCurrentPosition(async p=>{const ok=await load(p.coords.latitude,p.coords.longitude,'Local area');if(!ok)fallback();},fallback,{enableHighAccuracy:false,timeout:5000,maximumAge:600000});}
   window.savelyReloadWeather=start;
@@ -3016,15 +3044,40 @@ document.addEventListener('click',function(e){
  const API='https://psgc.cloud/api/v2', KEY='savely_weather_location_v1';
  const $=id=>document.getElementById(id);let regions=[],provinces=[],cities=[],barangays=[];
  function arr(x){if(Array.isArray(x))return x;if(x&&Array.isArray(x.data))return x.data;if(x&&Array.isArray(x.results))return x.results;return []}
- function name(x){return x.name||x.area_name||x.label||''}function code(x){return x.code||x.psgc_code||x.id||name(x)}
- async function get(path){const r=await fetch(API+path,{headers:{Accept:'application/json'}});if(!r.ok)throw Error('Location directory request failed ('+r.status+')');return arr(await r.json())}
+ function name(x){return x.name||x.area_name||x.label||x.barangay_name||x.description||''}function code(x){return x.code||x.psgc_code||x.psgcCode||x.id||name(x)}
+ async function get(path){const r=await fetch(API+path,{headers:{Accept:'application/json'},cache:'no-store'});if(!r.ok)throw Error('Location directory request failed ('+r.status+')');return arr(await r.json())}
+ async function getFirst(paths){let last;for(const url of paths){try{const r=await fetch(url,{headers:{Accept:'application/json'},cache:'no-store'});if(!r.ok)throw Error('HTTP '+r.status);const data=await r.json();const list=arr(data);if(list.length)return list;last=Error('Empty location list');}catch(e){last=e;}}throw last||Error('Location directory unavailable');}
  function fill(sel,items,placeholder,selected){sel.innerHTML='';const first=document.createElement('option');first.value='';first.textContent=placeholder;sel.appendChild(first);items.slice().sort((a,b)=>name(a).localeCompare(name(b))).forEach(x=>{const o=document.createElement('option');o.value=code(x);o.textContent=name(x);o.dataset.name=name(x);sel.appendChild(o)});sel.disabled=!items.length;if(selected)sel.value=selected;}
  function selectedName(id){const e=$(id),o=e&&e.options[e.selectedIndex];return o?o.dataset.name||o.textContent:''}
  function status(msg,isError){const e=$('weatherLocationLoadStatus');if(e){e.textContent=msg;e.className=isError?'notice':'panel-sub';}}
  async function loadRegions(){if(regions.length)return;status('Loading Philippine regions…');regions=await get('/regions');fill($('weatherRegionSelect'),regions,'Choose region');status('Select a region to continue.');}
  async function onRegion(){const r=regions.find(x=>String(code(x))===$('weatherRegionSelect').value);provinces=[];cities=[];barangays=[];fill($('weatherProvinceSelect'),[],'Loading provinces…');fill($('weatherCitySelect'),[],'Choose city or municipality');fill($('weatherBarangaySelect'),[],'Optional — choose barangay');if(!r)return;try{const key=encodeURIComponent(name(r));provinces=await get('/regions/'+key+'/provinces');if(provinces.length){fill($('weatherProvinceSelect'),provinces,'Choose province / district');$('weatherProvinceSelect').disabled=false;}else{fill($('weatherProvinceSelect'),[{name:'Metro Manila / No province',code:'__none__'}],'Choose province / district');$('weatherProvinceSelect').disabled=false;}status('Choose a province or district.');}catch(e){status('Could not load provinces. Check your internet connection and try again.',true);}}
  async function onProvince(){const p=$('weatherProvinceSelect').value,r=regions.find(x=>String(code(x))===$('weatherRegionSelect').value);cities=[];barangays=[];fill($('weatherCitySelect'),[],'Loading cities…');fill($('weatherBarangaySelect'),[],'Optional — choose barangay');if(!p||!r)return;try{const rk=encodeURIComponent(name(r));if(p==='__none__')cities=await get('/regions/'+rk+'/cities-municipalities');else{const prov=provinces.find(x=>String(code(x))===p);cities=await get('/regions/'+rk+'/provinces/'+encodeURIComponent(name(prov))+'/cities-municipalities');}fill($('weatherCitySelect'),cities,'Choose city or municipality');status('Choose a city or municipality.');}catch(e){status('Could not load cities/municipalities. Try selecting the region again.',true);}}
- async function onCity(){const c=$('weatherCitySelect').value,r=regions.find(x=>String(code(x))===$('weatherRegionSelect').value),p=$('weatherProvinceSelect').value;barangays=[];fill($('weatherBarangaySelect'),[],'Loading barangays…');if(!c||!r)return;try{const city=cities.find(x=>String(code(x))===c);let path='/regions/'+encodeURIComponent(name(r))+'/cities-municipalities/'+encodeURIComponent(name(city))+'/barangays';if(p&&p!=='__none__'){const prov=provinces.find(x=>String(code(x))===p);path='/regions/'+encodeURIComponent(name(r))+'/provinces/'+encodeURIComponent(name(prov))+'/cities-municipalities/'+encodeURIComponent(name(city))+'/barangays';}barangays=await get(path);fill($('weatherBarangaySelect'),barangays,'Optional — choose barangay');status(barangays.length?'Choose a barangay (optional), then save.':'No barangays were returned; you can still save the city.');}catch(e){fill($('weatherBarangaySelect'),[],'Barangay list unavailable — optional');status('City loaded. Barangay list is temporarily unavailable; you can still save this city.',false);}}
+ async function onCity(){
+   const c=$('weatherCitySelect').value,r=regions.find(x=>String(code(x))===$('weatherRegionSelect').value),p=$('weatherProvinceSelect').value;
+   barangays=[];fill($('weatherBarangaySelect'),[],'Loading barangays…');
+   if(!c||!r)return;
+   const city=cities.find(x=>String(code(x))===c),cityName=name(city),cityCode=code(city);
+   const prov=p&&p!=='__none__'?provinces.find(x=>String(code(x))===p):null;
+   const rk=encodeURIComponent(name(r)),pk=prov?encodeURIComponent(name(prov)):'',cn=encodeURIComponent(cityName),cc=encodeURIComponent(cityCode);
+   const paths=[];
+   if(prov)paths.push(API+'/regions/'+rk+'/provinces/'+pk+'/cities-municipalities/'+cn+'/barangays');
+   paths.push(API+'/regions/'+rk+'/cities-municipalities/'+cn+'/barangays');
+   paths.push(API+'/cities-municipalities/'+cn+'/barangays');
+   if(cityCode!==cityName)paths.push(API+'/cities-municipalities/'+cc+'/barangays');
+   paths.push('https://psgc.cloud/api/v1/cities-municipalities/'+cc+'/barangays');
+   paths.push('https://psgc.cloud/api/v1/cities-municipalities/'+cn+'/barangays');
+   try{
+     barangays=await getFirst(paths);
+     // Normalize common API response field names for the dropdown.
+     barangays=barangays.map(x=>({name:name(x)||x.barangay_name||x.description||'',code:code(x)||x.psgcCode||x.psgc_code||''})).filter(x=>x.name);
+     fill($('weatherBarangaySelect'),barangays,'Optional — choose barangay');
+     status(barangays.length?'Loaded '+barangays.length+' barangays. Choose one (optional), then save.':'No barangays were returned; you can still save the city.');
+   }catch(e){
+     fill($('weatherBarangaySelect'),[],'Barangay list unavailable — optional');
+     status('Could not retrieve barangays from the directory right now. Check your internet connection and retry selecting the city.',true);
+   }
+ }
  window.openWeatherLocationSettings=async function(){const b=$('weatherLocationBackdrop');if(!b)return;b.style.display='flex';status('Loading Philippine locations…');try{await loadRegions();const saved=(()=>{try{return JSON.parse(localStorage.getItem(KEY)||'null')}catch(e){return null}})();if(saved){const findByName=(items,n)=>items.find(x=>name(x)===n);const r=findByName(regions,saved.region);if(r){$('weatherRegionSelect').value=code(r);await onRegion();const p=findByName(provinces,saved.province);if(p){$('weatherProvinceSelect').value=code(p);await onProvince();}else if(saved.region&&/national capital region|metro manila/i.test(saved.region)){ $('weatherProvinceSelect').value='__none__';await onProvince();}const c=findByName(cities,saved.city);if(c){$('weatherCitySelect').value=code(c);await onCity();const br=findByName(barangays,saved.barangay);if(br)$('weatherBarangaySelect').value=code(br);}}} }catch(e){status('Could not load the Philippine location directory. Check your internet connection.',true);}};
  window.closeWeatherLocationSettings=function(){$('weatherLocationBackdrop').style.display='none'};
  window.saveWeatherLocationSettings=function(){const region=selectedName('weatherRegionSelect'),province=$('weatherProvinceSelect').value==='__none__'?'':selectedName('weatherProvinceSelect'),city=selectedName('weatherCitySelect'),barangay=selectedName('weatherBarangaySelect');if(!region||!city){status('Please select a region and city/municipality.',true);return;}const loc={region,province,city,barangay:barangay&& !barangay.startsWith('Optional')?barangay:'',updatedAt:Date.now()};try{localStorage.setItem(KEY,JSON.stringify(loc));}catch(e){status('Could not save location in this browser.',true);return;}const sum=$('weatherLocationSummary');if(sum)sum.textContent=[loc.barangay,loc.city,loc.province,loc.region].filter(Boolean).join(', ');window.closeWeatherLocationSettings();if(window.savelyReloadWeather)window.savelyReloadWeather();if(typeof window.toast==='function')window.toast('Weather location updated.');};
