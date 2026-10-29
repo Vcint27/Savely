@@ -178,6 +178,15 @@ body.dark-theme #savingsListTable .financial-draggable-row td { color: var(--tex
 .goal-applied-bank-summary strong{display:block;margin-top:3px;color:var(--text)}
 .goal-applied-bank-summary .panel-sub{margin-top:4px}
 #goalBankEditor{padding-top:8px}
+
+/* Live weather badge beside the clock */
+.weather-pill{display:flex;align-items:center;gap:9px;min-height:54px;padding:8px 12px;border:1px solid var(--line);border-radius:12px;background:var(--card,#fff);color:var(--text);white-space:nowrap}
+.weather-icon{font-size:25px;line-height:1}
+.weather-copy{display:flex;flex-direction:column;gap:2px}
+.weather-copy strong{font-size:13px;font-weight:800;font-variant-numeric:tabular-nums}
+.weather-copy small{font-size:10px;color:var(--muted);max-width:140px;overflow:hidden;text-overflow:ellipsis}
+@media(max-width:760px){.top-actions{gap:6px}.weather-pill{min-height:44px;padding:6px 8px;gap:5px}.weather-icon{font-size:20px}.weather-copy strong{font-size:12px}.weather-copy small{font-size:9px;max-width:90px}.date-pill{padding:8px!important}}
+
 </style>
 
 <style id="savely-v205-settings-cleanup">
@@ -713,7 +722,7 @@ body.dark-theme #savingsListTable .financial-draggable-row:hover td { background
   <div class="side-bottom"><strong>Small steps add up.</strong><p>Keep your goals in sight and your savings moving forward.</p></div>
 </aside>
 <main class="main">
-  <header class="topbar"><div><div class="eyebrow" id="eyebrow">YOUR MONEY, IN FOCUS</div><h1 class="page-title" id="pageTitle">Good afternoon 👋</h1></div><div class="top-actions"><div class="date-pill" id="today">
+  <header class="topbar"><div><div class="eyebrow" id="eyebrow">YOUR MONEY, IN FOCUS</div><h1 class="page-title" id="pageTitle">Good afternoon 👋</h1></div><div class="top-actions"><div class="weather-pill" id="savelyWeather" title="Live weather"><span class="weather-icon" id="savelyWeatherIcon">🌤️</span><span class="weather-copy"><strong id="savelyWeatherTemp">Loading…</strong><small id="savelyWeatherDesc">Current weather</small></span></div><div class="date-pill" id="today">
 
 </div><button id="topbarAddSavingsButton" class="btn btn-primary" style="background:var(--green);border-color:var(--green)" onclick="openFinancialAdd()">＋ <span class="desktop-label">Add Savings</span><span class="mobile-label">Add Savings</span></button><div class="avatar">S</div><div class="auth-user-chip" id="savely-auth-user-chip" hidden><span class="auth-user-email" id="savely-auth-user-email"></span></div></div></header>
   <section class="page active" id="page-dashboard">
@@ -2946,6 +2955,18 @@ document.addEventListener('click',function(e){
     layer.querySelector('#applyGoalStandaloneDue').value='';layer.querySelector('#applyGoalStandaloneBalance').textContent='Current balance: '+peso(Math.max(0,Number(item.amount)||0));
     layer.style.display='flex';setTimeout(()=>layer.querySelector('#applyGoalStandaloneName').focus({preventScroll:true}),50);
   };
+})();
+</script>
+
+
+<script id="savely-live-weather">
+(function(){
+  const $=id=>document.getElementById(id);
+  const labels={0:['☀️','Sunny'],1:['🌤️','Mostly clear'],2:['⛅','Partly cloudy'],3:['☁️','Cloudy'],45:['🌫️','Foggy'],48:['🌫️','Foggy'],51:['🌦️','Light drizzle'],53:['🌦️','Drizzle'],55:['🌧️','Heavy drizzle'],56:['🌧️','Freezing drizzle'],57:['🌧️','Freezing drizzle'],61:['🌧️','Light rain'],63:['🌧️','Rain'],65:['🌧️','Heavy rain'],66:['🌧️','Freezing rain'],67:['🌧️','Heavy freezing rain'],71:['🌨️','Light snow'],73:['🌨️','Snow'],75:['❄️','Heavy snow'],77:['🌨️','Snow grains'],80:['🌦️','Rain showers'],81:['🌧️','Rain showers'],82:['⛈️','Heavy showers'],85:['🌨️','Snow showers'],86:['❄️','Heavy snow showers'],95:['⛈️','Thunderstorm'],96:['⛈️','Thunderstorm with hail'],99:['⛈️','Severe thunderstorm']};
+  function render(temp,code,place){const v=labels[code]||['🌡️','Current conditions'];$('savelyWeatherIcon').textContent=v[0];$('savelyWeatherTemp').textContent=Math.round(temp)+'°C';$('savelyWeatherDesc').textContent=v[1]+(place?' · '+place:'');$('savelyWeather').title='Live weather: '+v[1]+', '+Math.round(temp)+'°C'+(place?' · '+place:'');}
+  async function load(lat,lon,place){try{const url='https://api.open-meteo.com/v1/forecast?latitude='+encodeURIComponent(lat)+'&longitude='+encodeURIComponent(lon)+'&current=temperature_2m,weather_code&timezone=auto';const r=await fetch(url,{cache:'no-store'});if(!r.ok)throw Error('Weather request failed');const d=await r.json();if(!d.current)throw Error('No current weather');render(d.current.temperature_2m,d.current.weather_code,place);return true;}catch(e){$('savelyWeatherTemp').textContent='—';$('savelyWeatherDesc').textContent='Weather unavailable';$('savelyWeather').title='Could not load current weather. Check internet connection.';return false;}}
+  function start(){const fallback=()=>load(15.4817,120.5979,'Tarlac');if(!navigator.geolocation){fallback();return;}navigator.geolocation.getCurrentPosition(async p=>{const ok=await load(p.coords.latitude,p.coords.longitude,'Local area');if(!ok)fallback();},fallback,{enableHighAccuracy:false,timeout:5000,maximumAge:600000});}
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start);else start();setInterval(start,10*60*1000);
 })();
 </script>
 
