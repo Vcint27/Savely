@@ -625,7 +625,7 @@ input::placeholder, textarea::placeholder { color: #9aa4b5; }
     <div class="cards" id="financialCategoryStats"></div>
         <div class="panel" id="savingsTrendPanel" style="margin-bottom:18px">
       <div class="panel-head"><div><h2>Savings growth by bank</h2><div class="panel-sub">Live comparison of current savings balances across your banks and digital wallets.</div></div><span class="panel-sub" id="savingsTrendMeta">Savings only</span></div>
-      <div style="width:100%;height:280px;position:relative;overflow-x:auto;overflow-y:hidden;scrollbar-width:thin" id="savingsTrendCanvasWrap"><canvas id="savingsTrendChart" role="img" aria-label="Line graph comparing savings balances by bank and digital wallet" style="width:100%;height:100%;display:block"></canvas></div>
+      <div style="width:100%;height:280px;position:relative;overflow-x:auto!important;overflow-y:hidden!important;scrollbar-width:thin;overscroll-behavior-x:contain" id="savingsTrendCanvasWrap"><canvas id="savingsTrendChart" role="img" aria-label="Line graph comparing savings balances by bank and digital wallet" style="width:100%;height:100%;display:block"></canvas></div>
       <div class="panel-sub" id="savingsTrendLegend" style="display:flex;flex-wrap:wrap;gap:12px;margin-top:12px"></div><div style="display:flex;justify-content:flex-end;margin-top:10px"><button type="button" class="btn btn-light" id="viewSavingsGraphButton" onclick="toggleSavingsGraphView()">View savings graph</button></div>
       <div class="footer-note">Updates when you add or edit savings. Balance changes are plotted as history, so decreases and increases appear as dips and rises.</div>
     </div>
@@ -1013,7 +1013,7 @@ function renderSavingsTrend(){
  legend.innerHTML=entries.map(e=>`<span style="display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--muted)"><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${e.color||'#15966d'}"></span>${esc(e.name)}: ${peso(e.value)}</span>`).join('');
  const ctx=canvas.getContext('2d');
  let candleTooltip=document.getElementById('savingsCandleTooltip');
- if(!candleTooltip){candleTooltip=document.createElement('div');candleTooltip.id='savingsCandleTooltip';candleTooltip.style.cssText='position:absolute;display:none;z-index:20;pointer-events:none;min-width:180px;max-width:260px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--surface,#fff);box-shadow:0 8px 24px rgba(15,23,42,.14);font:12px system-ui,sans-serif;color:var(--text,#0f172a);line-height:1.5;';canvas.parentElement.style.overflow='visible';canvas.parentElement.appendChild(candleTooltip);}
+ if(!candleTooltip){candleTooltip=document.createElement('div');candleTooltip.id='savingsCandleTooltip';candleTooltip.style.cssText='position:absolute;display:none;z-index:20;pointer-events:none;min-width:180px;max-width:260px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--surface,#fff);box-shadow:0 8px 24px rgba(15,23,42,.14);font:12px system-ui,sans-serif;color:var(--text,#0f172a);line-height:1.5;';canvas.parentElement.appendChild(candleTooltip);}
  if(!ctx){if(meta)meta.textContent='Your browser does not support canvas charts.';return;}
  const graphViewport=canvas.parentElement;
  const viewportWidth=Math.max(320,Math.round(graphViewport.clientWidth||600));
@@ -1187,7 +1187,7 @@ function renderOverallTrend(){
  legend.innerHTML=categories.map(c=>`<span style="display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--muted)"><span style="display:inline-block;width:10px;height:3px;border-radius:2px;background:${c.color}"></span>${c.label}: ${peso(c.value)}</span>`).join('');
  const ctx=canvas.getContext('2d');
  let candleTooltip=document.getElementById('savingsCandleTooltip');
- if(!candleTooltip){candleTooltip=document.createElement('div');candleTooltip.id='savingsCandleTooltip';candleTooltip.style.cssText='position:absolute;display:none;z-index:20;pointer-events:none;min-width:180px;max-width:260px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--surface,#fff);box-shadow:0 8px 24px rgba(15,23,42,.14);font:12px system-ui,sans-serif;color:var(--text,#0f172a);line-height:1.5;';canvas.parentElement.style.overflow='visible';canvas.parentElement.appendChild(candleTooltip);}
+ if(!candleTooltip){candleTooltip=document.createElement('div');candleTooltip.id='savingsCandleTooltip';candleTooltip.style.cssText='position:absolute;display:none;z-index:20;pointer-events:none;min-width:180px;max-width:260px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--surface,#fff);box-shadow:0 8px 24px rgba(15,23,42,.14);font:12px system-ui,sans-serif;color:var(--text,#0f172a);line-height:1.5;';canvas.parentElement.appendChild(candleTooltip);}
  if(!ctx){if(meta)meta.textContent='Your browser does not support canvas charts.';return;}
  const graphViewport=canvas.parentElement;
  const viewportWidth=Math.max(320,Math.round(graphViewport.clientWidth||600));
