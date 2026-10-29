@@ -796,7 +796,12 @@ function typeLabel(t){return ({deposit:'Deposit',withdrawal:'Withdrawal',expense
 function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 let dateTimePrefs={timezone:'Asia/Manila',format:'12',customTimestamp:null,customSetAt:null};
 try{const savedDateTimePrefs=JSON.parse(localStorage.getItem('savelyDateTimePrefs')||'null');if(savedDateTimePrefs&&savedDateTimePrefs.timezone)dateTimePrefs={...dateTimePrefs,...savedDateTimePrefs};}catch(e){}
-function getDisplayedDateTime(){if(Number.isFinite(Number(dateTimePrefs.customTimestamp))&&Number.isFinite(Number(dateTimePrefs.customSetAt)))return new Date(Number(dateTimePrefs.customTimestamp)+(Date.now()-Number(dateTimePrefs.customSetAt)));return new Date();}
+function getDisplayedDateTime(){
+ const hasCustomTime=dateTimePrefs.customTimestamp!==null&&dateTimePrefs.customTimestamp!==''&&dateTimePrefs.customSetAt!==null&&dateTimePrefs.customSetAt!=='';
+ const stamp=Number(dateTimePrefs.customTimestamp),setAt=Number(dateTimePrefs.customSetAt);
+ if(hasCustomTime&&Number.isFinite(stamp)&&Number.isFinite(setAt))return new Date(stamp+(Date.now()-setAt));
+ return new Date(Date.now());
+}
 function openDateTimeSettings(){
  document.getElementById('dateTimeTimezone').value=dateTimePrefs.timezone;
  document.getElementById('dateTimeFormat').value=dateTimePrefs.format;
@@ -844,7 +849,41 @@ async function saveDateTimeSettings(){
  closeDateTimeSettings();updateLiveDateTime();accrueRealtimeInterest();toast('Date and time settings saved.');
 }
 function getTimeBasedGreeting(){const now=getDisplayedDateTime();const parts=new Intl.DateTimeFormat('en-GB',{timeZone:dateTimePrefs.timezone,hour:'2-digit',hourCycle:'h23'}).formatToParts(now);const hour=Number(parts.find(p=>p.type==='hour')?.value??now.getHours());if(hour>=12&&hour<17)return 'Good afternoon 👋';if(hour>=17||hour<5)return 'Good evening 🌙';return 'Good morning ☀️';}
-function updateLiveDateTime(){const now=getDisplayedDateTime();const greetingTitle=document.getElementById('pageTitle');const activePage=document.querySelector('.page.active');if(greetingTitle&&activePage&&activePage.id==='page-dashboard')greetingTitle.textContent=getTimeBasedGreeting();const date=new Intl.DateTimeFormat('en-PH',{timeZone:dateTimePrefs.timezone,weekday:'long',month:'long',day:'numeric',year:'numeric'}).format(now);const time=new Intl.DateTimeFormat('en-PH',{timeZone:dateTimePrefs.timezone,hour:'numeric',minute:'2-digit',second:'2-digit',hour12:dateTimePrefs.format!=='24'}).format(now);const el=document.getElementById('today');if(el){el.setAttribute('aria-label',`${date}, ${time} Philippine Time`);el.title='Live Philippine date and time';el.innerHTML=`<span style="display:block;font-weight:750;color:var(--text);font-variant-numeric:tabular-nums">${time}</span><span style="display:block;font-size:11px">${date} · PHT</span>`;}const settingsEl=document.getElementById('settingsLiveDateTime');if(settingsEl){const zoneLabel=document.getElementById('dateTimeZoneLabel');if(zoneLabel){const offset=new Intl.DateTimeFormat('en-US',{timeZone:dateTimePrefs.timezone,timeZoneName:'shortOffset'}).formatToParts(now).find(p=>p.type==='timeZoneName')?.value||'';zoneLabel.textContent=`Timezone: ${dateTimePrefs.timezone} (${offset})`;}settingsEl.innerHTML=`<div style="font-size:30px;font-weight:800;font-variant-numeric:tabular-nums;letter-spacing:-.5px">${time}</div><div style="font-size:15px;margin-top:5px">${date}</div>`;}}
+function updateLiveDateTime(){
+ const now=getDisplayedDateTime();
+ const greetingTitle=document.getElementById('pageTitle');
+ const activePage=document.querySelector('.page.active');
+ if(greetingTitle&&activePage&&activePage.id==='page-dashboard'){
+  try{greetingTitle.textContent=getTimeBasedGreeting();}catch(e){}
+ }
+ const el=document.getElementById('today');
+ const settingsEl=document.getElementById('settingsLiveDateTime');
+ let timezone=(dateTimePrefs&&dateTimePrefs.timezone)||'Asia/Manila';
+ let date='',time='';
+ try{
+  date=new Intl.DateTimeFormat('en-PH',{timeZone:timezone,weekday:'long',month:'long',day:'numeric',year:'numeric'}).format(now);
+  time=new Intl.DateTimeFormat('en-PH',{timeZone:timezone,hour:'numeric',minute:'2-digit',second:'2-digit',hour12:dateTimePrefs.format!=='24'}).format(now);
+ }catch(err){
+  timezone='Asia/Manila';
+  date=new Intl.DateTimeFormat('en-PH',{timeZone:timezone,weekday:'long',month:'long',day:'numeric',year:'numeric'}).format(now);
+  time=new Intl.DateTimeFormat('en-PH',{timeZone:timezone,hour:'numeric',minute:'2-digit',second:'2-digit',hour12:dateTimePrefs.format!=='24'}).format(now);
+ }
+ if(el){
+  el.setAttribute('aria-label',`${date}, ${time}, ${timezone}`);
+  el.title=`Live date and time · ${timezone}`;
+  el.innerHTML=`<span style="display:block;font-weight:750;color:var(--text);font-variant-numeric:tabular-nums">${time}</span><span style="display:block;font-size:11px">${date} · PHT</span>`;
+ }
+ if(settingsEl){
+  const zoneLabel=document.getElementById('dateTimeZoneLabel');
+  if(zoneLabel){
+   try{
+    const offset=new Intl.DateTimeFormat('en-US',{timeZone:timezone,timeZoneName:'shortOffset'}).formatToParts(now).find(p=>p.type==='timeZoneName')?.value||'';
+    zoneLabel.textContent=`Timezone: ${timezone} (${offset})`;
+   }catch(e){zoneLabel.textContent=`Timezone: ${timezone}`;}
+  }
+  settingsEl.innerHTML=`<div style="font-size:30px;font-weight:800;font-variant-numeric:tabular-nums;letter-spacing:-.5px">${time}</div><div style="font-size:15px;margin-top:5px">${date}</div>`;
+ }
+}
 function render(){updateLiveDateTime();renderDashboard();renderTransactions();renderAccounts();renderGoals();renderBudget();renderReports();renderRecurring();renderSavingsList()}
 function renderDashboard(){const bal=totalBalance(),goal=data.goals[0];const month=todayISO().slice(0,7);const inc=data.transactions.filter(t=>(t.type==='deposit'||t.type==='interest')&&t.date.slice(0,7)===month).reduce((s,t)=>s+ +t.amount,0);const out=data.transactions.filter(t=>(t.type==='expense'||t.type==='withdrawal')&&t.date.slice(0,7)===month).reduce((s,t)=>s+ +t.amount,0);
 const financialItems=Array.isArray(data.savingsList)?data.savingsList:[];
@@ -1998,7 +2037,7 @@ function updateMariBankLivePanel(){
  if(timestampEl)timestampEl.textContent=new Intl.DateTimeFormat('en-PH',{timeZone:'Asia/Manila',year:'numeric',month:'short',day:'numeric',hour:'numeric',minute:'2-digit',second:'2-digit',hour12:true}).format(now)+' PHT';
 }
 updateMariBankLivePanel();
-setInterval(updateLiveDateTime,1000);
+updateLiveDateTime();\nsetInterval(()=>{try{updateLiveDateTime();}catch(err){console.error('Savely live clock update failed:',err);}},1000);\ndocument.addEventListener('visibilitychange',()=>{if(!document.hidden){try{updateLiveDateTime();}catch(err){console.error('Savely live clock refresh failed:',err);}}});
 setInterval(updateMariBankLivePanel,1000);
 setInterval(accrueRealtimeInterest,30000);
 accrueRealtimeInterest();
