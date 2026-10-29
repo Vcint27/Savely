@@ -481,6 +481,64 @@ input::placeholder, textarea::placeholder { color: #9aa4b5; }
 #versionHistoryPanel{display:block}
 </style>
 
+
+<style id="savely-cross-device-compatibility">
+/* Cross-device web layout: keep content inside the viewport without removing desktop behavior. */
+html{width:100%;max-width:100%;-webkit-text-size-adjust:100%;text-size-adjust:100%;scroll-behavior:smooth}
+body{width:100%;min-width:320px;overflow-x:hidden;overscroll-behavior-x:none}
+.app,.main,.page,.panel,.stat,.financial-layout,.financial-category-panel{min-width:0;max-width:100%}
+button,a,input,select,textarea{touch-action:manipulation}
+button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid #16876555;outline-offset:2px}
+#savingsTrendCanvasWrap{width:100%;max-width:100%;overflow-x:auto!important;overflow-y:hidden!important;overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch;touch-action:pan-x pan-y;scrollbar-gutter:stable;position:relative}
+#savingsTrendChart{display:block;max-width:none!important;touch-action:pan-x pan-y}
+#savingsTrendYAxis{position:sticky!important;left:0!important;z-index:5!important;pointer-events:none!important}
+#savingsCandleTooltip{font-family:inherit!important;overflow-wrap:anywhere}
+.table-wrap,.financial-tabs,.bank-picker-tabs,.financial-subnav,.nav{max-width:100%;-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain}
+img,svg,canvas{max-width:100%}
+@media(max-width:1050px){.layout{grid-template-columns:minmax(0,1fr)}.cards{grid-template-columns:repeat(2,minmax(0,1fr))}.financial-layout{grid-template-columns:1fr}}
+@media(max-width:760px){
+ .app{display:flex;flex-direction:column;min-height:100vh}
+ .sidebar{width:100%;min-width:0;padding:12px 12px 8px;gap:10px;position:relative;top:auto;z-index:8}
+ .brand{font-size:18px;padding:0 4px}.brand-mark{width:32px;height:32px;border-radius:10px}
+ .nav{display:flex;gap:5px;overflow-x:auto;padding:2px 0 5px;scrollbar-width:thin}
+ .nav button{flex:0 0 auto;white-space:nowrap;padding:9px 11px;font-size:12px}
+ .main{width:100%;padding:17px 12px 30px}
+ .topbar{align-items:flex-start;flex-wrap:wrap;gap:10px;margin-bottom:18px}
+ .topbar>div:first-child{min-width:0;flex:1 1 180px}.page-title{font-size:clamp(21px,5vw,27px);overflow-wrap:anywhere}
+ .top-actions{max-width:100%;flex-wrap:wrap;gap:7px}.top-actions .btn{font-size:12px;padding:9px 10px}
+ .cards{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+ .stat{padding:13px}.stat-value{font-size:clamp(17px,4vw,22px);white-space:normal;overflow-wrap:anywhere}
+ .panel{padding:14px;border-radius:14px}.panel-head{align-items:flex-start;flex-wrap:wrap;gap:9px;margin-bottom:13px}
+ .section-grid,.form-grid{grid-template-columns:minmax(0,1fr)}.field.full{grid-column:auto}
+ .financial-tabs{gap:6px;padding-bottom:9px}.financial-tab{min-width:0;padding:9px 13px;font-size:12px}
+ .financial-category-panel{padding:12px}
+ .financial-items-head{align-items:stretch;flex-direction:column}.financial-items-actions{display:flex;flex-wrap:wrap;justify-content:flex-start}
+ .financial-sort-controls{min-width:0;max-width:100%;flex:1 1 100%}.financial-sort-controls select{min-width:0;max-width:100%;width:100%}
+ #savingsTrendCanvasWrap{height:clamp(300px,65vh,520px);min-height:280px;border-radius:8px}
+ #savingsTrendYAxis{max-width:none!important}
+ .table-wrap{width:100%;overflow-x:auto}
+ table{min-width:620px}
+ .modal-backdrop{padding:10px;align-items:center}.modal{width:100%;max-width:100%;max-height:calc(100dvh - 20px);padding:17px;border-radius:15px;overflow:auto}
+ .financial-list-modal,.interest-modal{width:100%;max-width:100%;max-height:calc(100dvh - 20px);padding:14px}
+ .interest-summary-grid{grid-template-columns:1fr}
+ .toast{left:12px;right:12px;bottom:12px;text-align:center}
+}
+@media(max-width:480px){
+ .main{padding:13px 9px 24px}.sidebar{padding-inline:9px}.cards{gap:7px}.stat{padding:10px;border-radius:12px}.stat-top{font-size:10px;gap:5px}.stat-icon{width:27px;height:27px;font-size:14px}.stat-value{font-size:17px;margin:8px 0 3px;letter-spacing:-.3px}.stat-foot{font-size:10px}
+ .panel{padding:11px}.panel h2{font-size:15px}.panel-sub{font-size:11px}
+ .financial-subnav{overflow-x:auto;white-space:nowrap}.financial-subnav button{flex:0 0 auto}
+ .form-actions{flex-wrap:wrap}.form-actions .btn{flex:1 1 auto}
+ .bank-picker{grid-template-columns:repeat(2,minmax(0,1fr))}
+ #savingsTrendCanvasWrap{height:340px}
+}
+@media(hover:none),(pointer:coarse){
+ #savingsTrendCanvasWrap{scrollbar-width:thin;scrollbar-color:#b8c7d8 transparent}
+ #savingsCandleTooltip{pointer-events:none;box-shadow:0 12px 32px rgba(15,23,42,.2)}
+ .nav button,.financial-tab,.bank-picker-tab,.btn{min-height:40px}
+}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*::before,*::after{scroll-behavior:auto!important;transition-duration:.01ms!important;animation-duration:.01ms!important;animation-iteration-count:1!important}}
+</style>
+
 </head>
 <body>
 
@@ -2484,6 +2542,46 @@ document.addEventListener('click',function(e){
     wrap('renderOverallTrend','overallTrendChart','overallTrendMeta');
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install,{once:true});else install();
+})();
+</script>
+
+
+<script id="savely-cross-device-chart-touch-support">
+(function(){
+  // Touch users can tap a candle to reveal its existing tooltip; a second tap still follows normal chart selection.
+  function installTouchTooltip(){
+    const canvas=document.getElementById('savingsTrendChart');
+    if(!canvas||canvas.dataset.touchTooltipReady==='1')return;
+    canvas.dataset.touchTooltipReady='1';
+    let hideTimer=null;
+    canvas.addEventListener('touchstart',function(ev){
+      const t=ev.touches&&ev.touches[0];if(!t)return;
+      clearTimeout(hideTimer);
+      // Reuse the same hit testing, formatting, and viewport-edge clamping as desktop hover.
+      canvas.dispatchEvent(new MouseEvent('mousemove',{clientX:t.clientX,clientY:t.clientY,bubbles:false,view:window}));
+      hideTimer=setTimeout(function(){const tip=document.getElementById('savingsCandleTooltip');if(tip)tip.style.display='none';},2600);
+    },{passive:true});
+    canvas.addEventListener('touchmove',function(ev){
+      const t=ev.touches&&ev.touches[0];if(!t)return;
+      canvas.dispatchEvent(new MouseEvent('mousemove',{clientX:t.clientX,clientY:t.clientY,bubbles:false,view:window}));
+    },{passive:true});
+    canvas.addEventListener('touchend',function(){
+      // Keep the tooltip briefly after the finger lifts so it can be read on phones/tablets.
+      clearTimeout(hideTimer);hideTimer=setTimeout(function(){const tip=document.getElementById('savingsCandleTooltip');if(tip)tip.style.display='none';},3200);
+    },{passive:true});
+  }
+  function redrawOnResize(){
+    clearTimeout(window.__savelyResponsiveRedrawTimer);
+    window.__savelyResponsiveRedrawTimer=setTimeout(function(){
+      try{if(document.getElementById('page-financial-list')?.classList.contains('active')&&typeof renderSavingsTrend==='function')renderSavingsTrend();}catch(e){console.warn('Savings graph responsive redraw skipped',e)}
+      try{if(document.getElementById('page-dashboard')?.classList.contains('active')&&typeof renderOverallTrend==='function')renderOverallTrend();}catch(e){console.warn('Overview graph responsive redraw skipped',e)}
+    },140);
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',installTouchTooltip,{once:true});else installTouchTooltip();
+  window.addEventListener('resize',redrawOnResize,{passive:true});
+  // The graph is rendered dynamically after page navigation, so retry installation when the page changes.
+  const observer=new MutationObserver(function(){installTouchTooltip()});
+  if(document.body)observer.observe(document.body,{childList:true,subtree:true});
 })();
 </script>
 
