@@ -2225,14 +2225,7 @@ accrueRealtimeInterest();
 
 
 <script id="savely-goals-fallback">
-document.addEventListener('click',function(e){
- const b=e.target.closest('button,a');
- if(!b)return;
- const label=(b.innerText||b.textContent||'').trim().toLowerCase();
- if(label==='new goal'||label==='+ new goal'||label==='create savings goal'){
-   if(typeof openModal==='function'){e.preventDefault();openModal('goal');}
- }
-});
+// Goal buttons are handled by the reliable goal-modal layer at the end of this file.
 </script>
 
 
@@ -3087,34 +3080,89 @@ document.addEventListener('click',function(e){
 </script>
 <script id="savely-goal-buttons-reliability-fix">
 (function(){
-  function showGoalModal(mode,id){
+  const originalOpenModal = window.openModal;
+  function fallbackGoalForm(mode,id){
+    const backdrop=document.getElementById('modalBackdrop');
+    const form=document.getElementById('modalForm');
+    const title=document.getElementById('modalTitle');
+    const desc=document.getElementById('modalDesc');
+    if(!backdrop||!form||!title||!desc) throw new Error('Required goal form elements are missing');
+    const goals=Array.isArray(window.getSavelyGoalById)?[]:null;
+    const g=mode==='edit'&&typeof window.getSavelyGoalById==='function'?window.getSavelyGoalById(id):null;
+    if(mode==='edit'&&!g) throw new Error('The selected savings goal could not be found');
+    const safe=v=>String(v??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+    title.textContent=mode==='edit'?'Edit savings goal':'Create savings goal';
+    desc.textContent='Enter the goal details below. Your existing savings goals will be preserved.';
+    form.innerHTML='<div class="form-grid"><div class="field full"><label for="goalFallbackName">Goal name *</label><input id="goalFallbackName" name="name" type="text" maxlength="80" required value="'+safe(g?.name||'')+'"></div><div class="field full"><label for="goalFallbackTarget">Target amount (₱) *</label><input id="goalFallbackTarget" name="target" type="number" min="1" step="1" required value="'+safe(g?.target??'')+'"></div><div class="field full"><label for="goalFallbackDue">Target date *</label><input id="goalFallbackDue" name="due" type="date" required value="'+safe(g?.due||'')+'"></div></div><div class="form-actions"><button type="button" class="btn btn-light" id="goalFallbackCancel">Cancel</button><button type="submit" class="btn btn-primary">'+(mode==='edit'?'Update goal':'Create goal')+'</button></div>';
+    form.onsubmit=function(e){
+      e.preventDefault();
+      const name=String(form.elements.namedItem('name').value||'').trim();
+      const raw=String(form.elements.namedItem('target').value||'').trim();
+      const target=Number(raw),due=String(form.elements.namedItem('due').value||'');
+      if(!name){form.elements.namedItem('name').focus();return;}
+      if(!/^\d+$/.test(raw)||!Number.isSafeInteger(target)||target<=0){form.elements.namedItem('target').focus();return;}
+      if(!due){form.elements.namedItem('due').focus();return;}
+      if(typeof window.saveGoalFromModal==='function'){
+        // The normal save handler is designed for the full modal. This fallback saves directly if needed.
+        try { window.saveGoalFromModal(mode==='edit'?'goal-edit':'goal', mode==='edit'?id:''); return; } catch(err){ console.error('Standard goal save failed; using fallback save.',err); }
+      }
+      const storeKey='savely_html_v1';let state;
+      try{state=JSON.parse(localStorage.getItem(storeKey)||'{}');}catch(err){state={};}
+      if(!Array.isArray(state.goals))state.goals=[];
+      if(mode==='edit'){
+        const existing=state.goals.find(x=>String(x.id)===String(id));
+        if(!existing){alert('Savings goal not found. Please refresh and try again.');return;}
+        Object.assign(existing,{name,target,due,updated:Date.now()});
+      }else state.goals.push({id:'goal-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,8),name,target,due,created:new Date().toISOString().slice(0,10),banks:[]});
+      try{localStorage.setItem(storeKey,JSON.stringify(state));}catch(err){alert('Could not save this goal in browser storage.');return;}
+      backdrop.style.display='none';
+      if(typeof window.render==='function')window.render();else if(typeof window.renderGoals==='function')window.renderGoals();
+      if(typeof window.toast==='function')window.toast(mode==='edit'?'Savings goal updated.':'Savings goal added successfully.');
+    };
+    document.getElementById('goalFallbackCancel').onclick=function(){backdrop.style.display='none';};
+    backdrop.style.zIndex='10050';backdrop.style.display='flex';backdrop.setAttribute('aria-hidden','false');
+    setTimeout(()=>form.elements.namedItem('name')?.focus({preventScroll:true}),25);
+  }
+  window.openModal=function(kind,goal){
+    try{
+      if(typeof originalOpenModal!=='function')throw new Error('Original modal function is unavailable');
+      originalOpenModal(kind,goal);
+    }catch(err){
+      console.error('Savely openModal failed; opening resilient fallback:',err);
+      if(kind==='goal'||kind==='goal-edit'){
+        const id=kind==='goal-edit'?(goal&&goal.id):'';
+        fallbackGoalForm(kind==='goal-edit'?'edit':'new',id);
+      }else throw err;
+    }
+  };
+  window.editGoal=function(id){
+    const g=typeof window.getSavelyGoalById==='function'?window.getSavelyGoalById(id):null;
+    if(!g){if(typeof window.toast==='function')window.toast('Savings goal not found. Please refresh and try again.');return;}
+    window.openModal('goal-edit',g);
+  };
+  function openGoal(mode,id){
     try{
       const backdrop=document.getElementById('modalBackdrop');
-      if(!backdrop || typeof window.openModal!=='function') throw new Error('Goal modal is unavailable');
-      backdrop.style.zIndex='10050';
-      if(mode==='edit'){
-        if(typeof window.editGoal==='function') window.editGoal(String(id));
-        else window.openModal('goal-edit',typeof window.getSavelyGoalById==='function'?window.getSavelyGoalById(id):null);
-      } else {
-        window.pendingGoalSavingsItemId=null;
-        window.openModal('goal');
-      }
-      backdrop.style.display='flex';
-      backdrop.setAttribute('aria-hidden','false');
-      const form=document.getElementById('modalForm');
-      if(form){const first=form.querySelector('input:not([type=checkbox]),select,button');if(first)setTimeout(()=>first.focus({preventScroll:true}),30);}
-    }catch(err){console.error('Savely goal modal failed to open:',err);if(typeof window.toast==='function')window.toast('Could not open the savings goal form. Please refresh and try again.');}
+      if(!backdrop)throw new Error('Goal modal backdrop is missing');
+      if(mode==='edit')window.editGoal(id);else window.openModal('goal');
+      backdrop.style.display='flex';backdrop.style.zIndex='10050';backdrop.setAttribute('aria-hidden','false');
+    }catch(err){
+      console.error('Savely goal form failed to open:',err);
+      fallbackGoalForm(mode,id);
+    }
   }
   document.addEventListener('click',function(e){
     const target=e.target instanceof Element?e.target:null;if(!target)return;
     const newGoal=target.closest('#page-goals .panel-head button');
-    if(newGoal){e.preventDefault();e.stopImmediatePropagation();showGoalModal('new');return;}
+    if(newGoal){e.preventDefault();e.stopImmediatePropagation();openGoal('new');return;}
     const edit=target.closest('#allGoals .goal-card button');
-    if(edit && /^edit$/i.test((edit.textContent||'').trim())){
-      const card=edit.closest('.goal-card');const inline=edit.getAttribute('onclick')||'';const match=inline.match(/editGoal\(['"]([^'"]+)['"]\)/);
+    if(edit&&/^edit$/i.test((edit.textContent||'').trim())){
+      const card=edit.closest('.goal-card');
+      const inline=edit.getAttribute('onclick')||'';
+      const match=inline.match(/editGoal\(['"]([^'"]+)['"]\)/);
       let id=match?match[1]:'';
-      if(!id && card){const index=Array.from(document.querySelectorAll('#allGoals .goal-card')).indexOf(card);const goals=Array.from(document.querySelectorAll('#allGoals .goal-card'));if(goals[index]){const btn=goals[index].querySelector('button[onclick*="editGoal"]');const m=btn&&(btn.getAttribute('onclick')||'').match(/editGoal\(['"]([^'"]+)['"]\)/);if(m)id=m[1];}}
-      if(id){e.preventDefault();e.stopImmediatePropagation();showGoalModal('edit',id);}
+      if(!id&&card){const btn=card.querySelector('button[onclick*="editGoal"]');const m=btn&&(btn.getAttribute('onclick')||'').match(/editGoal\(['"]([^'"]+)['"]\)/);if(m)id=m[1];}
+      if(id){e.preventDefault();e.stopImmediatePropagation();openGoal('edit',id);}
     }
   },true);
   window.addEventListener('keydown',function(e){if(e.key==='Escape'){const b=document.getElementById('modalBackdrop');if(b&&b.style.display==='flex'&&typeof window.closeModal==='function')window.closeModal();}});
